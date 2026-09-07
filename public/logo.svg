@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none">
+  <!-- Symbol -->
+  <rect x="8" y="12" width="56" height="56" rx="16" fill="#123B35" />
+  <circle cx="36" cy="40" r="15" stroke="#F3F1EA" stroke-width="4" stroke-linecap="round" />
+  <path d="M42 46L52 56" stroke="#B8D96B" stroke-width="4" stroke-linecap="round" />
+  <!-- Brand Wordmark -->
+  <text x="80" y="49" fill="#123B35" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="28" letter-spacing="0.04em">QIVENTRA</text>
+  <circle cx="258" cy="36" r="4" fill="#B8D96B" />
+</svg>

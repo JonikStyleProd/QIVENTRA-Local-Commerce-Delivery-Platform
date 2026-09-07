@@ -1,0 +1,6 @@
+{
+  "name": "QIVENTRA",
+  "description": "Hyperlocal commerce and fast delivery platform for Israel: fresh markets, groceries, bakeries, pharmacies, and tech essentials.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

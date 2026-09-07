@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="iconMarkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12433B"/>
+      <stop offset="50%" stop-color="#0E3831"/>
+      <stop offset="100%" stop-color="#082621"/>
+    </linearGradient>
+    <linearGradient id="iconPistachio" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C5E37A"/>
+      <stop offset="100%" stop-color="#A7CD55"/>
+    </linearGradient>
+  </defs>
+  <rect x="28" y="28" width="456" height="456" rx="128" fill="url(#iconMarkBg)" />
+  <polygon points="152,274 228,274 278,354 202,354" fill="url(#iconPistachio)"/>
+  <path d="M 52 216 C 54 156 100 134 176 134 L 272 134 C 316 134 348 156 384 208 L 476 348 L 436 376 L 350 248 C 344 336 296 386 216 386 L 144 386 C 92 386 52 348 52 288 L 52 216 Z"
+        fill="#0E3831" stroke="#FFFFFF" stroke-width="38" stroke-linejoin="round" stroke-linecap="round" />
+</svg>
+

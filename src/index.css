@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-app: #F3F1EA;
+    --bg-surface: #FFFFFF;
+    --bg-surface-elevated: #F9F8F5;
+    --bg-surface-card: #FFFFFF;
+    --text-primary: #151817;
+    --text-secondary: #4D5956;
+    --text-muted: #788682;
+    --border-color: #E2DFD4;
+    --border-subtle: #EFECE3;
+    
+    --brand-mineral: #123B35;
+    --brand-mineral-dark: #0D2B26;
+    --brand-mineral-light: #1A4E46;
+    --brand-pistachio: #B8D96B;
+    --brand-pistachio-hover: #A7CB57;
+    --brand-dark: #151817;
+    --brand-light: #F3F1EA;
+
+    --status-success: #1E824C;
+    --status-success-bg: #E8F5EE;
+    --status-warning: #B7791F;
+    --status-warning-bg: #FEF8E7;
+    --status-error: #C53030;
+    --status-error-bg: #FDECEB;
+    --status-info: #2B6CB0;
+    --status-info-bg: #EBF4FC;
+  }
+
+  .dark {
+    --bg-app: #0F1312;
+    --bg-surface: #161B19;
+    --bg-surface-elevated: #1E2523;
+    --bg-surface-card: #19201E;
+    --text-primary: #F3F1EA;
+    --text-secondary: #A0AEA9;
+    --text-muted: #707F7A;
+    --border-color: #27332E;
+    --border-subtle: #1E2724;
+
+    --brand-mineral: #1E524A;
+    --brand-mineral-dark: #143C36;
+    --brand-mineral-light: #286C62;
+    --brand-pistachio: #B8D96B;
+    --brand-pistachio-hover: #C5E37F;
+    --brand-dark: #151817;
+    --brand-light: #F3F1EA;
+
+    --status-success: #48BB78;
+    --status-success-bg: #132E20;
+    --status-warning: #F6AD55;
+    --status-warning-bg: #332612;
+    --status-error: #FC8181;
+    --status-error-bg: #3D1919;
+    --status-info: #63B3ED;
+    --status-info-bg: #152C3E;
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: 'Heebo', 'Plus Jakarta Sans', 'Rubik', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  * {
+    border-color: var(--border-color);
+  }
+}
+
+/* Custom Utilities for Design System */
+.bg-app {
+  background-color: var(--bg-app);
+}
+.bg-surface {
+  background-color: var(--bg-surface);
+}
+.bg-surface-elevated {
+  background-color: var(--bg-surface-elevated);
+}
+.bg-surface-card {
+  background-color: var(--bg-surface-card);
+}
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.border-subtle {
+  border-color: var(--border-subtle);
+}
+.border-theme {
+  border-color: var(--border-color);
+}
+.bg-mineral {
+  background-color: #123B35;
+}
+.text-mineral {
+  color: #123B35;
+}
+.bg-pistachio {
+  background-color: #B8D96B;
+}
+.text-pistachio {
+  color: #B8D96B;
+}
+
+/* Accessible focus ring */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid #B8D96B;
+  outline-offset: 2px;
+}
+
+/* Official QIVENTRA Brand Logo Standard CSS per strict specification */
+.brand-logo {
+  display: block !important;
+  width: auto !important;
+  height: 40px !important;
+  max-width: 210px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  flex-shrink: 0 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.brand-logo-mark {
+  display: block !important;
+  width: auto !important;
+  height: 40px !important;
+  max-width: 40px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  flex-shrink: 0 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(18, 59, 53, 0.2);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(184, 217, 107, 0.2);
+}
+
+/* Responsive Product Grid conforming strictly to desktop and mobile layout constraints */
+.product-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.product-grid > * {
+  height: 100%;
+}
+
+@media (min-width: 375px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (min-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1400px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+/* Prevent horizontal overflow across the entire page */
+html, body, #root {
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+/* Hero Vector Route Animation (8s cycle, 60fps smooth hardware-accelerated interpolation) */
+@keyframes deliveryDash {
+  0% {
+    stroke-dasharray: 30 250;
+    stroke-dashoffset: 280;
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dasharray: 30 250;
+    stroke-dashoffset: -280;
+    opacity: 0.3;
+  }
+}
+
+@keyframes courierTransit {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate3d(8px, -10px, 0) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+    opacity: 0.9;
+  }
+}
+
+.animate-delivery-dash {
+  animation: deliveryDash 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-courier-transit {
+  animation: courierTransit 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
