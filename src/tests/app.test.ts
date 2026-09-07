@@ -312,4 +312,74 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
   });
 });
 
+describe('QIVENTRA PWA v2 & Mobile Hero Suite', () => {
+  it('validates PWA v2 manifest requirements', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+
+    const manifestPath = path.resolve(process.cwd(), 'public/manifest.webmanifest');
+    expect(fs.existsSync(manifestPath)).toBe(true);
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    expect(manifest.id).toBe('/');
+    expect(manifest.name).toBe('QIVENTRA');
+    expect(manifest.short_name).toBe('QIVENTRA');
+    expect(manifest.display).toBe('standalone');
+    expect(manifest.theme_color).toBe('#123B35');
+    expect(manifest.background_color).toBe('#F3F1EA');
+    expect(manifest.icons).toHaveLength(4);
+
+    const iconSrcs = manifest.icons.map((i: { src: string }) => i.src);
+    expect(iconSrcs).toContain('/icons/qiventra-icon-v2-192.png');
+    expect(iconSrcs).toContain('/icons/qiventra-icon-v2-512.png');
+    expect(iconSrcs).toContain('/icons/qiventra-maskable-v2-192.png');
+    expect(iconSrcs).toContain('/icons/qiventra-maskable-v2-512.png');
+  });
+
+  it('ensures all versioned PWA icon files exist in /public/icons/', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+
+    const expectedIcons = [
+      'qiventra-icon-v2-48.png',
+      'qiventra-icon-v2-72.png',
+      'qiventra-icon-v2-96.png',
+      'qiventra-icon-v2-128.png',
+      'qiventra-icon-v2-144.png',
+      'qiventra-icon-v2-192.png',
+      'qiventra-icon-v2-384.png',
+      'qiventra-icon-v2-512.png',
+      'qiventra-maskable-v2-192.png',
+      'qiventra-maskable-v2-512.png',
+      'qiventra-apple-touch-v2-180.png',
+      'qiventra-favicon-v2-32.png',
+    ];
+
+    expectedIcons.forEach((filename) => {
+      const p = path.resolve(process.cwd(), 'public/icons', filename);
+      expect(fs.existsSync(p), `Missing icon file: ${filename}`).toBe(true);
+      const stat = fs.statSync(p);
+      expect(stat.size).toBeGreaterThan(0);
+    });
+  });
+
+  it('renders MobileHeroDeliveryAnimation without throwing across RU, EN, and HE', async () => {
+    const React = await import('react');
+    const { renderToString } = await import('react-dom/server');
+    const { LanguageProvider } = await import('../context/LanguageContext');
+    const { MobileHeroDeliveryAnimation } = await import('../components/home/MobileHeroDeliveryAnimation');
+
+    const html = renderToString(
+      React.createElement(
+        LanguageProvider,
+        null,
+        React.createElement(MobileHeroDeliveryAnimation)
+      )
+    );
+    expect(html).toBeTruthy();
+    expect(html).toContain('clamp(110px, 30vw, 150px)');
+  });
+});
+
+
 

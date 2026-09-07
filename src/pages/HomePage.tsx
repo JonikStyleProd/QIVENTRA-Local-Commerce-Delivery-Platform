@@ -22,6 +22,7 @@ import { ProductCard } from '../components/ui/ProductCard';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { HeroDeliveryAnimation } from '../components/home/HeroDeliveryAnimation';
+import { MobileHeroDeliveryAnimation } from '../components/home/MobileHeroDeliveryAnimation';
 
 export const HomePage: React.FC = () => {
   const {
@@ -98,9 +99,12 @@ export const HomePage: React.FC = () => {
               </h1>
 
               {/* Subheadline */}
-              <p className="text-xs sm:text-sm text-[#F3F1EA]/85 leading-relaxed mb-4 max-w-xl font-normal">
+              <p className="text-xs sm:text-sm text-[#F3F1EA]/85 leading-relaxed mb-3 sm:mb-4 max-w-xl font-normal">
                 {t.home.heroSubtitle}
               </p>
+
+              {/* Mobile Compact Hero Delivery Animation */}
+              <MobileHeroDeliveryAnimation />
 
               {/* Address & Search Bar */}
               <div className="bg-surface p-1.5 sm:p-2 rounded-xl sm:rounded-2xl shadow-lg border border-white/20 text-primary">
