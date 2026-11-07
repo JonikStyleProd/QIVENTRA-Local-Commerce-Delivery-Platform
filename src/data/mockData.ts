@@ -191,8 +191,8 @@ export const MOCK_STORES: Store[] = [
     promoText: 'Бесплатная доставка от 80 ₪',
     tags: ['Фермерское', 'Эко-упаковка', 'Кошер Органик'],
     bannerGradient: 'from-[#123B35] to-[#1D5E54]',
-    logoUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-carmel-market.webp',
+    coverUrl: '/photos/store-carmel-market.webp',
   },
   {
     id: 'store-2',
@@ -228,7 +228,6 @@ export const MOCK_STORES: Store[] = [
     tags: ['Официальный импорт', 'Экспресс', 'Гарантия'],
     bannerGradient: 'from-[#151817] to-[#2B3532]',
     logoUrl: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'store-3',
@@ -265,8 +264,8 @@ export const MOCK_STORES: Store[] = [
     promoText: 'Спешелти кофе в подарок к выпечке до 11:30',
     tags: ['Свежая хала', 'Спешелти кофе', 'На закваске'],
     bannerGradient: 'from-[#382613] to-[#5C3E20]',
-    logoUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-levinsky-bakery.webp',
+    coverUrl: '/photos/store-levinsky-bakery.webp',
   },
   {
     id: 'store-4',
@@ -300,8 +299,8 @@ export const MOCK_STORES: Store[] = [
     isEco: true,
     tags: ['Авторские букеты', 'Оливковые деревья', 'Открытка в подарок'],
     bannerGradient: 'from-[#1B4332] to-[#2D6A4F]',
-    logoUrl: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-jaffa-flowers.webp',
+    coverUrl: '/photos/store-jaffa-flowers.webp',
   },
   {
     id: 'store-5',
@@ -335,8 +334,8 @@ export const MOCK_STORES: Store[] = [
     isEco: true,
     tags: ['Ручная работа', 'Натуральные ткани', 'Керамика'],
     bannerGradient: 'from-[#29322E] to-[#404E48]',
-    logoUrl: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-neve-tzedek-home.webp',
+    coverUrl: '/photos/store-neve-tzedek-home.webp',
   },
   {
     id: 'store-6',
@@ -370,8 +369,8 @@ export const MOCK_STORES: Store[] = [
     isEco: true,
     tags: ['Витамины', 'Сертификат GMP', '24/7 Экспресс'],
     bannerGradient: 'from-[#103B38] to-[#1F6E67]',
-    logoUrl: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-galilee-pharmacy.webp',
+    coverUrl: '/photos/store-galilee-pharmacy.webp',
   },
 ];
 
@@ -424,7 +423,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'רב מכר',
     },
     tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=600&q=80',
+    imageUrl: '/photos/labneh.webp',
   },
   {
     id: 'prod-2',
@@ -462,7 +461,7 @@ export const MOCK_PRODUCTS: Product[] = [
     inStock: true,
     badge: '-18%',
     tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/avocado.webp'
   },
   {
     id: 'prod-3',
@@ -506,7 +505,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'אורגני',
     },
     tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/olive-oil.webp'
   },
   {
     id: 'prod-4',
@@ -549,7 +548,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'חם מהתנור',
     },
     tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/challah.webp'
   },
   {
     id: 'prod-5',
@@ -592,7 +591,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'בחירה מובילה',
     },
     tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/almond-croissant.webp'
   },
   {
     id: 'prod-6',
@@ -627,7 +626,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.91,
     reviewsCount: 88,
     inStock: true,
-    imageUrl: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/cold-brew.webp'
   },
   {
     id: 'prod-7',
@@ -835,7 +834,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'פרימיום',
     },
     tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/bouquet.webp'
   },
   {
     id: 'prod-12',
@@ -877,7 +876,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'כשר וטבעוני',
     },
     tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/supplement.webp'
   },
 ];
 

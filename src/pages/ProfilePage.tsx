@@ -3,8 +3,6 @@ import {
   MapPin,
   Smartphone,
   ShieldCheck,
-  Moon,
-  Sun,
   Store,
   Bike,
   LogOut,
@@ -14,7 +12,6 @@ import {
   Upload,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { Button } from '../components/ui/Button';
@@ -34,7 +31,6 @@ export const ProfilePage: React.FC = () => {
   } = useApp();
 
   const { language, t, isRTL } = useLanguage();
-  const { resolvedTheme, toggleTheme } = useTheme();
   const { showToast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
@@ -62,7 +58,7 @@ export const ProfilePage: React.FC = () => {
       <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="relative group shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#123B35] text-[#F3F1EA] overflow-hidden shadow-md flex items-center justify-center border-2 border-theme">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] overflow-hidden shadow-md flex items-center justify-center border-2 border-theme">
               {currentUser.avatarUrl ? (
                 <SafeImage
                   src={currentUser.avatarUrl}
@@ -79,7 +75,7 @@ export const ProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsUploadModalOpen(true)}
-              className="absolute -bottom-1 -end-1 p-1.5 rounded-xl bg-surface border border-theme text-primary hover:text-[#123B35] dark:hover:text-[#B8D96B] shadow-sm transition hover:scale-110"
+              className="absolute -bottom-1 -end-1 p-1.5 rounded-xl bg-surface border border-theme text-primary hover:text-[#1E1E1E] dark:hover:text-[#FFD84D] shadow-sm transition hover:scale-110"
               title={t.media.changePhoto}
               aria-label={t.media.changePhoto}
             >
@@ -125,13 +121,13 @@ export const ProfilePage: React.FC = () => {
         <div className="rounded-3xl bg-surface border border-theme p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-primary flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
+              <MapPin className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
               <span>{t.profile.savedAddresses}</span>
             </h3>
             <button
               type="button"
               onClick={() => setIsAddressModalOpen(true)}
-              className="text-xs font-semibold text-[#123B35] dark:text-[#B8D96B] hover:underline"
+              className="text-xs font-semibold text-[#1E1E1E] dark:text-[#FFD84D] hover:underline"
             >
               {t.profile.manage}
             </button>
@@ -150,7 +146,7 @@ export const ProfilePage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-primary">{addrTitle}</span>
                       {addr.isDefault && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817] font-semibold">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E] font-semibold">
                           {t.address.primaryBadge}
                         </span>
                       )}
@@ -166,7 +162,7 @@ export const ProfilePage: React.FC = () => {
         {/* PWA, Language & System Settings Section */}
         <div className="rounded-3xl bg-surface border border-theme p-6 shadow-xs space-y-4">
           <h3 className="text-base font-bold text-primary flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
+            <Smartphone className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
             <span>{t.profile.appSettings}</span>
           </h3>
 
@@ -180,30 +176,6 @@ export const ProfilePage: React.FC = () => {
                 </span>
               </div>
               <LanguageSwitcher variant="compact" />
-            </div>
-
-            {/* Theme Toggle Row */}
-            <div className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between">
-              <div>
-                <span className="font-bold text-primary block">{t.profile.themeSetting}</span>
-                <span className="text-secondary text-[11px]">
-                  {resolvedTheme === 'dark' ? t.profile.themeDark : t.profile.themeLight}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleTheme}
-                leftIcon={
-                  resolvedTheme === 'dark' ? (
-                    <Sun className="w-3.5 h-3.5 text-[#B8D96B]" />
-                  ) : (
-                    <Moon className="w-3.5 h-3.5 text-[#123B35]" />
-                  )
-                }
-              >
-                {t.profile.switchTheme}
-              </Button>
             </div>
 
             {/* PWA In-App Card */}
@@ -234,9 +206,9 @@ export const ProfilePage: React.FC = () => {
               onClick={() => navigateTo('vendor')}
               className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
             >
-              <Store className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B] mb-2" />
+              <Store className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] mb-2" />
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-[#123B35] dark:group-hover:text-[#B8D96B]">
+                <span className="text-xs font-bold text-primary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
                   {t.profile.vendorPortalTitle}
                 </span>
                 {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
@@ -251,9 +223,9 @@ export const ProfilePage: React.FC = () => {
               onClick={() => navigateTo('courier')}
               className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
             >
-              <Bike className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B] mb-2" />
+              <Bike className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] mb-2" />
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-[#123B35] dark:group-hover:text-[#B8D96B]">
+                <span className="text-xs font-bold text-primary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
                   {t.profile.courierPortalTitle}
                 </span>
                 {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
@@ -268,9 +240,9 @@ export const ProfilePage: React.FC = () => {
               onClick={() => navigateTo('admin')}
               className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
             >
-              <ShieldCheck className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B] mb-2" />
+              <ShieldCheck className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] mb-2" />
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-[#123B35] dark:group-hover:text-[#B8D96B]">
+                <span className="text-xs font-bold text-primary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
                   {t.profile.adminPortalTitle}
                 </span>
                 {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}

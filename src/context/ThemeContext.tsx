@@ -11,14 +11,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    try {
-      const saved = localStorage.getItem('qiventra-theme') as ThemeMode;
-      return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'light';
-    } catch {
-      return 'light';
-    }
-  });
+  // The Collage design has no dark variant, so a previously saved dark or system choice is not applied.
+  const [theme, setThemeState] = useState<ThemeMode>('light');
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 

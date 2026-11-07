@@ -1,74 +1,93 @@
 @import "tailwindcss";
 
+/* The Collage design is light-only: `dark:` follows the .dark class, never the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -------------------------------------------------------------
+   COLLAGE DESIGN TOKENS (design/collage/README.md)
+------------------------------------------------------------- */
+@theme {
+  --color-paper: #FFF8EC;
+  --color-paper-dot: #E9DFCB;
+  --color-ink: #1E1E1E;
+  --color-action: #E8473B;
+  /* Same red for text smaller than 19px bold: white on #E8473B is only 3.9:1. */
+  --color-action-strong: #D4352A;
+  --color-link: #2E5BFF;
+  --color-accent: #FFD84D;
+  --color-tint-food: #FFE3DF;
+  --color-tint-health: #E3E9FF;
+  --color-tint-gift: #FFF1B8;
+  --color-tint-tech: #E6F4E0;
+  --color-tint-pets: #F1EBDD;
+  --color-ink-2: #5A554C;
+  --color-ink-3: #6E685C;
+  --color-ink-4: #7A7466;
+  --color-notebook-line: #DCE4FF;
+  --color-notebook-margin: #F3A39B;
+
+  --shadow-hard-2: 2px 2px 0 #1E1E1E;
+  --shadow-hard-3: 3px 3px 0 #1E1E1E;
+  --shadow-hard-4: 4px 4px 0 #1E1E1E;
+  --shadow-hard-5: 5px 5px 0 #1E1E1E;
+  --shadow-hard-6: 6px 6px 0 #1E1E1E;
+  --shadow-hard-8: 8px 8px 0 #1E1E1E;
+  --shadow-polaroid: 0 22px 34px -22px rgba(0, 0, 0, 0.55);
+  --shadow-sticker: 0 14px 24px -14px rgba(0, 0, 0, 0.35);
+
+  --font-sans: 'Nunito', 'Rubik', system-ui, sans-serif;
+  --font-hand: 'Caveat', 'Amatic SC', cursive;
+
+  --breakpoint-desk: 56.25rem;
+}
+
 @layer base {
   :root {
-    --bg-app: #F3F1EA;
+    --bg-app: #FFF8EC;
     --bg-surface: #FFFFFF;
-    --bg-surface-elevated: #F9F8F5;
+    --bg-surface-elevated: #FFF8EC;
     --bg-surface-card: #FFFFFF;
-    --text-primary: #151817;
-    --text-secondary: #4D5956;
-    --text-muted: #788682;
-    --border-color: #E2DFD4;
-    --border-subtle: #EFECE3;
-    
-    --brand-mineral: #123B35;
-    --brand-mineral-dark: #0D2B26;
-    --brand-mineral-light: #1A4E46;
-    --brand-pistachio: #B8D96B;
-    --brand-pistachio-hover: #A7CB57;
-    --brand-dark: #151817;
-    --brand-light: #F3F1EA;
+    --text-primary: #1E1E1E;
+    --text-secondary: #5A554C;
+    --text-muted: #6E685C;
+    --border-color: #E9DFCB;
+    --border-subtle: #F1EBDD;
+
+    --brand-mineral: #1E1E1E;
+    --brand-mineral-dark: #1E1E1E;
+    --brand-mineral-light: #5A554C;
+    --brand-pistachio: #FFD84D;
+    --brand-pistachio-hover: #FFD84D;
+    --brand-dark: #1E1E1E;
+    --brand-light: #FFF8EC;
 
     --status-success: #1E824C;
-    --status-success-bg: #E8F5EE;
+    --status-success-bg: #E6F4E0;
     --status-warning: #B7791F;
-    --status-warning-bg: #FEF8E7;
+    --status-warning-bg: #FFF1B8;
     --status-error: #C53030;
-    --status-error-bg: #FDECEB;
-    --status-info: #2B6CB0;
-    --status-info-bg: #EBF4FC;
-  }
-
-  .dark {
-    --bg-app: #0F1312;
-    --bg-surface: #161B19;
-    --bg-surface-elevated: #1E2523;
-    --bg-surface-card: #19201E;
-    --text-primary: #F3F1EA;
-    --text-secondary: #A0AEA9;
-    --text-muted: #707F7A;
-    --border-color: #27332E;
-    --border-subtle: #1E2724;
-
-    --brand-mineral: #1E524A;
-    --brand-mineral-dark: #143C36;
-    --brand-mineral-light: #286C62;
-    --brand-pistachio: #B8D96B;
-    --brand-pistachio-hover: #C5E37F;
-    --brand-dark: #151817;
-    --brand-light: #F3F1EA;
-
-    --status-success: #48BB78;
-    --status-success-bg: #132E20;
-    --status-warning: #F6AD55;
-    --status-warning-bg: #332612;
-    --status-error: #FC8181;
-    --status-error-bg: #3D1919;
-    --status-info: #63B3ED;
-    --status-info-bg: #152C3E;
+    --status-error-bg: #FFE3DF;
+    --status-info: #2E5BFF;
+    --status-info-bg: #E3E9FF;
   }
 
   body {
     background-color: var(--bg-app);
     color: var(--text-primary);
-    font-family: 'Heebo', 'Plus Jakarta Sans', 'Rubik', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-sans);
+    font-weight: 600;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
   * {
     border-color: var(--border-color);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 }
 
@@ -101,25 +120,38 @@
   border-color: var(--border-color);
 }
 .bg-mineral {
-  background-color: #123B35;
+  background-color: #1E1E1E;
 }
 .text-mineral {
-  color: #123B35;
+  color: #1E1E1E;
 }
 .bg-pistachio {
-  background-color: #B8D96B;
+  background-color: #FFD84D;
 }
 .text-pistachio {
-  color: #B8D96B;
+  color: #FFD84D;
 }
 
-/* Accessible focus ring */
-.focus-ring {
-  outline: none;
+/* -------------------------------------------------------------
+   FOCUS: unlayered on purpose, so `focus:outline-none` utilities
+   on older screens cannot remove the visible keyboard ring.
+------------------------------------------------------------- */
+:focus-visible {
+  outline: 3px solid #2E5BFF;
+  outline-offset: 3px;
+  border-radius: 10px;
 }
-.focus-ring:focus-visible {
-  outline: 2px solid #B8D96B;
-  outline-offset: 2px;
+.on-blue :focus-visible {
+  outline-color: #FFD84D;
+}
+.seg-group button:focus-visible {
+  outline-offset: -5px;
+}
+.seg-group button[aria-pressed='true']:focus-visible {
+  outline-color: #FFD84D;
+}
+h1[tabindex='-1']:focus {
+  outline: none;
 }
 
 /* Official QIVENTRA Brand Logo Standard CSS per strict specification */
@@ -139,7 +171,7 @@
   display: block !important;
   width: auto !important;
   height: 40px !important;
-  max-width: 40px !important;
+  max-width: 44px !important;
   object-fit: contain !important;
   object-position: center !important;
   flex-shrink: 0 !important;
@@ -147,13 +179,269 @@
   filter: none !important;
 }
 
-/* Respect reduced motion */
+/* -------------------------------------------------------------
+   COLLAGE COMPONENT STYLES
+------------------------------------------------------------- */
+@layer components {
+  .paper-dots {
+    background-image: radial-gradient(var(--color-paper-dot) 1.4px, transparent 1.4px);
+    background-size: 24px 24px;
+  }
+
+  /* Handwriting: short notes only, never prices, buttons or important messages. */
+  .hand {
+    font-family: var(--font-hand);
+    font-weight: 700;
+  }
+
+  /*
+   * Hebrew handwriting: Amatic SC is much smaller and thinner than Caveat at the same size, and its
+   * digits must match its letters. Latin shop names in <bdi> stay in Caveat at their normal size.
+   */
+  :lang(he) .hand {
+    font-family: 'Amatic SC', 'Caveat', cursive;
+    font-size-adjust: 0.55;
+    -webkit-text-stroke: 0.35px currentColor;
+    letter-spacing: 0.02em;
+  }
+  :lang(he) .hand bdi {
+    font-family: var(--font-hand);
+    font-size-adjust: none;
+    -webkit-text-stroke: 0;
+    letter-spacing: normal;
+  }
+
+  .tape {
+    position: absolute;
+    z-index: 1;
+    width: 90px;
+    height: 26px;
+    top: -12px;
+    inset-inline-start: 50%;
+    margin-inline-start: -45px;
+    transform: rotate(-4deg);
+    background: rgba(255, 216, 77, 0.8);
+    pointer-events: none;
+  }
+  .tape-blue {
+    background: rgba(46, 91, 255, 0.28);
+  }
+  .tape-red {
+    background: rgba(232, 71, 59, 0.3);
+  }
+  .tape-sm {
+    width: 56px;
+    height: 18px;
+    top: -8px;
+    margin-inline-start: -28px;
+  }
+
+  .btn-tilt {
+    transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.3, 1);
+  }
+  .btn-tilt:hover {
+    transform: rotate(-2deg) translateY(-2px);
+  }
+  .btn-tilt:active {
+    transform: scale(0.96);
+  }
+
+  .chip-tilt {
+    transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.3, 1), background-color 0.2s;
+  }
+  .chip-tilt:hover {
+    transform: rotate(-3deg);
+  }
+  .chip-tilt:active {
+    transform: scale(0.94);
+  }
+
+  .card-tilt {
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform 0.3s cubic-bezier(0.2, 1.2, 0.3, 1);
+  }
+  .card-tilt:hover,
+  .card-tilt:focus-visible {
+    transform: rotate(0deg) translateY(-6px);
+  }
+  .card-tilt:active {
+    transform: scale(0.97);
+  }
+
+  .notebook-row {
+    transition: background-color 0.2s;
+  }
+  .notebook-row:hover {
+    background-color: rgba(46, 91, 255, 0.06);
+  }
+
+  .scroll-row {
+    scrollbar-width: none;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Motion table from the design README. Every class is disabled for reduced motion below. */
+  .anim-stick {
+    transform: rotate(var(--r, 0deg));
+    animation: collage-stick 0.7s cubic-bezier(0.2, 1.2, 0.3, 1) both;
+  }
+  .anim-stick:hover {
+    animation: collage-wobble 0.5s ease-in-out;
+  }
+  .anim-drop {
+    animation: collage-drop 0.6s cubic-bezier(0.2, 1.2, 0.3, 1) both;
+  }
+  .anim-draw {
+    stroke-dasharray: var(--dash, 700);
+    stroke-dashoffset: var(--dash, 700);
+    animation: collage-draw var(--draw-time, 1.1s) cubic-bezier(0.6, 0, 0.2, 1) forwards;
+  }
+  .anim-check {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: collage-draw 0.35s ease-out forwards;
+  }
+  .anim-in {
+    animation: collage-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .anim-reveal {
+    animation: collage-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+  @supports not (animation-timeline: view()) {
+    .anim-reveal {
+      animation: collage-reveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+  }
+  .anim-bar {
+    animation: collage-bar 0.5s cubic-bezier(0.2, 1.2, 0.3, 1) both;
+  }
+  .anim-sheet {
+    animation: collage-sheet 0.5s cubic-bezier(0.2, 1.1, 0.3, 1) 0.2s both;
+  }
+  .anim-page {
+    transform: rotate(-1deg);
+    animation: collage-page 0.8s cubic-bezier(0.2, 1.1, 0.3, 1) both;
+  }
+  .anim-stamp {
+    transform: rotate(-12deg);
+    animation: collage-stamp 0.55s cubic-bezier(0.2, 1.2, 0.3, 1) 0.1s both;
+  }
+  .anim-spin {
+    animation: collage-spin 0.8s linear infinite;
+  }
+  .anim-bump {
+    animation: collage-bump 0.45s cubic-bezier(0.2, 1.4, 0.3, 1);
+  }
+  .plus-one {
+    animation: collage-plus 0.7s ease-out both;
+  }
+  .splash-screen {
+    animation: collage-splash 2s ease both;
+  }
+  .splash-sticker {
+    transform: rotate(-6deg);
+    animation: collage-splash-stick 0.8s cubic-bezier(0.2, 1.2, 0.3, 1) 0.15s both;
+  }
+
+  [dir='rtl'] .rtl-flip {
+    transform: scaleX(-1);
+  }
+}
+
+@keyframes collage-stick {
+  0% { opacity: 0; transform: translateY(-40px) rotate(var(--r, 0deg)) scale(1.3); }
+  70% { opacity: 1; transform: rotate(var(--r, 0deg)) scale(0.96); }
+  100% { opacity: 1; transform: rotate(var(--r, 0deg)); }
+}
+@keyframes collage-wobble {
+  0%, 100% { transform: rotate(var(--r, 0deg)); }
+  50% { transform: rotate(calc(var(--r, 0deg) * -1)); }
+}
+@keyframes collage-drop {
+  0% { opacity: 0; transform: translateY(-50px) scale(1.1); }
+  70% { opacity: 1; transform: scale(0.97); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes collage-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes collage-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes collage-reveal {
+  from { opacity: 0; transform: translateY(50px) rotate(-2deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes collage-bar {
+  from { transform: translateY(140%) rotate(-2deg); }
+  to { transform: none; }
+}
+@keyframes collage-sheet {
+  from { transform: translateY(110%); }
+  to { transform: none; }
+}
+@keyframes collage-page {
+  from { opacity: 0; transform: translateY(40px) rotate(-3deg); }
+  to { opacity: 1; transform: rotate(-1deg); }
+}
+@keyframes collage-stamp {
+  0% { opacity: 0; transform: rotate(-12deg) scale(2); }
+  70% { opacity: 1; transform: rotate(-12deg) scale(0.94); }
+  100% { opacity: 1; transform: rotate(-12deg); }
+}
+@keyframes collage-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes collage-bump {
+  40% { transform: rotate(-8deg) scale(1.25); }
+}
+@keyframes collage-plus {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-34px); }
+}
+@keyframes collage-splash {
+  0%, 72% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+@keyframes collage-splash-stick {
+  0% { opacity: 0; transform: scale(2) rotate(-30deg); }
+  55% { opacity: 1; transform: scale(0.9) rotate(-6deg); }
+  75% { transform: scale(1.05) rotate(-6deg); }
+  100% { transform: rotate(-6deg); }
+}
+
+/* All motion is off for reduced motion. Static end states stay: tilts, drawn strokes, the stamp. */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
+  }
+  .anim-draw,
+  .anim-check {
+    stroke-dashoffset: 0 !important;
+  }
+  .btn-tilt:hover,
+  .btn-tilt:active,
+  .chip-tilt:hover,
+  .chip-tilt:active {
+    transform: none !important;
+  }
+  .card-tilt:hover,
+  .card-tilt:focus-visible,
+  .card-tilt:active {
+    transform: rotate(var(--tilt, 0deg)) !important;
+  }
+  .plus-one,
+  .splash-screen {
+    display: none !important;
   }
 }
 
@@ -166,11 +454,8 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(18, 59, 53, 0.2);
+  background: rgba(30, 30, 30, 0.25);
   border-radius: 9999px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(184, 217, 107, 0.2);
 }
 
 /* Responsive Product Grid conforming strictly to desktop and mobile layout constraints */
@@ -264,4 +549,3 @@ html, body, #root {
   animation: courierTransit 7s ease-in-out infinite;
   will-change: transform, opacity;
 }
-

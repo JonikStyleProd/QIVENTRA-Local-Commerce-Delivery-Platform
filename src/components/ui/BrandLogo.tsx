@@ -27,12 +27,10 @@ export interface BrandLogoProps {
 const preloadedUrls = new Set<string>();
 
 if (typeof window !== 'undefined') {
-  // Preload all 3 official Supabase assets eagerly to eliminate layout shift & latency
-  [BRAND_ASSETS.mark, BRAND_ASSETS.darkLockup, BRAND_ASSETS.lightLockup].forEach((url) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = () => preloadedUrls.add(url);
-  });
+  // The header only uses the mark: preload it, not the 4K lockups.
+  const img = new Image();
+  img.src = BRAND_ASSETS.mark;
+  img.onload = () => preloadedUrls.add(BRAND_ASSETS.mark);
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
@@ -187,7 +185,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             setIsMarkFallback(true);
           } else {
             // Local fallback verified mark
-            setCurrentSrc('/brand/qiventra-mark.png');
+            setCurrentSrc('/brand/mark.png');
             setIsMarkFallback(true);
           }
           setIsLoaded(true);
