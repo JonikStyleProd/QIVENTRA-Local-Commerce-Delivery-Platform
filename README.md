@@ -38,7 +38,7 @@ The following matrix distinguishes between features running in active client-sid
 
 | Feature Area | Implementation Status | Description |
 | :--- | :--- | :--- |
-| **Catalog & Discovery** | **Production-Ready UI / Client Logic** | Multi-category filtering, real-time query search, dietary badges (Organic, Farm, Eco, Kosher), price and rating sorting, and structured store detail pages. |
+| **Catalog & Discovery** | **Production-Ready UI / Client Logic** | Multi-category filtering, real-time query search, dietary badges (Organic, Farm, Eco, Kosher), delivery-time and minimum-order sorting, and structured store detail pages. |
 | **Localization & RTL** | **Production-Ready UI / Client Logic** | Full trilingual translation engine (English, Russian, Hebrew), automatic bidirectional layout adaptation (`dir="rtl"`), and localized currency formatting. |
 | **Cart & Delivery Math** | **Client Implementation** | Dynamic free delivery calculation threshold (₪100 SLA), delivery fee calculation (₪15), localStorage state persistence, and corrupt state auto-recovery. |
 | **Checkout & Payments** | **Prototype / Simulation** | Multi-step simulated checkout (address selection, delivery time slots, payment method choice). *Payment gateways (e.g., Tranzila, Stripe) are planned.* |
@@ -166,7 +166,7 @@ The interface is engineered across an 8-point spatial grid and supports viewport
   - 2-column balanced grid for stores and product cards.
   - Floating action controls and collapsible utility menus.
 - **Desktop Viewports (1024px – 1440px+):**
-  - Fixed 76px three-zone header (`DesktopHeader`): Brand identity and navigation with search and portals (start), address, language, chat, cart and profile utilities (end).
+  - Fixed 76px three-zone header (`DesktopHeader`): Brand identity and navigation with search and portals (start), address, language, theme, chat, cart and profile utilities (end).
   - 3-to-4 column responsive catalog grids.
   - Slide-out panels fixed to standard 400px–420px widths with darkened backdrop blur.
 
@@ -347,7 +347,7 @@ The application architecture adheres to modern web application security practice
 | :--- | :--- | :--- |
 | **Storefront & Hero (Hebrew RTL)** | Desktop view showcasing localized Hebrew typography, hero delivery animation, and category pills. | `docs/screenshots/01-desktop-home-he.png` |
 | **Product Discovery & Badges** | Multi-category grid with dietary, eco, and top-seller badges. | `docs/screenshots/02-catalog-grid-en.png` |
-| **Interactive Cart & Delivery SLA** | Cart drawer illustrating dynamic free delivery progress bar and price calculation. | `docs/screenshots/03-cart-drawer-ru.png` |
+| **Interactive Cart & Delivery SLA** | Cart and delivery window with each shop's own fee, its minimum order and the price calculation. | `docs/screenshots/03-cart-drawer-ru.png` |
 | **Courier Portal Cockpit** | Mobile courier dispatch view with route checkpoints and delivery proof. | `docs/screenshots/04-courier-portal.png` |
 | **Brand Assets Admin Console** | Admin asset management console with SHA-256 hash validation and version rollback. | `docs/screenshots/05-admin-brand-manager.png` |
 
@@ -357,7 +357,7 @@ The application architecture adheres to modern web application security practice
 
 ## Roadmap
 
-- [x] **Milestone 1 — Frontend Foundation:** Responsive design system, Tailwind v4 integration, 8-point spatial grid. The current Collage design is light-only.
+- [x] **Milestone 1 — Frontend Foundation:** Responsive design system, Tailwind v4 integration, 8-point spatial grid, and light and dark Collage themes.
 - [x] **Milestone 2 — Localization & RTL:** Hebrew, English, and Russian translation system with full bidirectional layout support.
 - [x] **Milestone 3 — Discovery & Commerce Engine:** Category catalogs, store menus, localized pricing, dynamic delivery tiers, and localStorage cart.
 - [x] **Milestone 4 — Brand Governance & Supabase Storage:** Official brand asset hosting, Web Crypto SHA-256 integrity auditing, and administrative versioning.

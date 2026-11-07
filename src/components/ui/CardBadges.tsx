@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Clock, MapPin } from 'lucide-react';
+import { Clock, MapPin } from 'lucide-react';
 
 /**
  * 2. DeliveryTimeBadge

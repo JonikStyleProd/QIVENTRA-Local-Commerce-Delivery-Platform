@@ -115,6 +115,7 @@ export interface OrderItem {
   names?: LocalizedText;
   quantity: number;
   price: number;
+  productId?: string;
   storeId?: string;
   imageUrl?: string;
 }

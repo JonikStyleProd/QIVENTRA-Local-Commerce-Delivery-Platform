@@ -31,7 +31,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden bg-tint-pets ${aspectRatio} ${containerClassName}`}
+      className={`${containerClassName.includes('absolute') ? '' : 'relative'} overflow-hidden bg-tint-pets ${aspectRatio} ${containerClassName}`}
       onClick={onClick}
     >
       {/* Loading Skeleton Shimmer */}

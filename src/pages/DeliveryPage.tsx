@@ -104,7 +104,7 @@ export const DeliveryPage: React.FC = () => {
         quantity: item.quantity,
         lineTotal: item.price * item.quantity,
         imageUrl: item.imageUrl,
-        label: item.names?.[language] || item.name,
+        label: (item.productId && t.collage.productLabels[item.productId]) || item.names?.[language] || item.name,
         storeId: item.storeId ?? '',
       }))
     : cart.map((line) => ({

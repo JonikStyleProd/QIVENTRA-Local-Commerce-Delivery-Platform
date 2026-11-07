@@ -373,6 +373,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       storeNames: { ru: namesIn('ru'), en: namesIn('en'), he: namesIn('he') },
       storeId: orderStores[0]?.store.id ?? '',
       items: cart.map((line) => ({
+        productId: line.product.id,
         name: line.product.name,
         names: line.product.names,
         quantity: line.quantity,
