@@ -11,7 +11,6 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/layout/Navbar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Footer } from './components/layout/Footer';
-import { CartDrawer } from './components/modals/CartDrawer';
 import { ChatDrawer } from './components/chat/ChatDrawer';
 import { AddressModal } from './components/modals/AddressModal';
 import { AuthModal } from './components/modals/AuthModal';
@@ -100,7 +99,6 @@ const AppContent: React.FC = () => {
       <MobileBottomNav />
 
       {/* Global Drawers & Modals */}
-      <CartDrawer />
       <ChatDrawer
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}

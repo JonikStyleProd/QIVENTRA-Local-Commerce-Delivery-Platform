@@ -12,7 +12,7 @@ import { AddressButton, CartCountBadge } from '../collage/HeaderControls';
 import { ProfileMenu } from './ProfileMenu';
 
 export const DesktopHeader: React.FC = () => {
-  const { currentRoute, navigateTo, cartTotalCount, setIsCartDrawerOpen } = useApp();
+  const { currentRoute, navigateTo, cartTotalCount } = useApp();
   const { t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
 
@@ -79,10 +79,7 @@ export const DesktopHeader: React.FC = () => {
         />
 
         <IconButton
-          onClick={() => {
-            setIsCartDrawerOpen(false);
-            navigateTo('cart');
-          }}
+          onClick={() => navigateTo('cart')}
           aria-label={`${t.collage.common.cartItems} ${cartTotalCount}`}
           title={t.collage.tabs.cart}
           icon={

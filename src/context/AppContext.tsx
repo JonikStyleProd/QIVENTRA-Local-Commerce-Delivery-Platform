@@ -43,10 +43,6 @@ interface AppContextType {
   setCartDiscount: (amount: number) => void;
   deliveryFee: number;
   totalAmount: number;
-  isCartDrawerOpen: boolean;
-  setIsCartDrawerOpen: (open: boolean) => void;
-  isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
 
   // Modals & Drawers
   isAuthModalOpen: boolean;
@@ -211,7 +207,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [promoDiscount, setCartDiscount] = useState(0);
   const cartDiscount = cart.length > 0 ? promoDiscount : 0;
 
-  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -427,10 +422,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setCartDiscount,
         deliveryFee,
         totalAmount,
-        isCartDrawerOpen,
-        setIsCartDrawerOpen,
-        isCartOpen: isCartDrawerOpen,
-        setIsCartOpen: setIsCartDrawerOpen,
         isAuthModalOpen,
         setIsAuthModalOpen,
         isAddressModalOpen,

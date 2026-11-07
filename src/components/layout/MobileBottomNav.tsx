@@ -6,7 +6,7 @@ import { AppRoute } from '../../types';
 import { CartCountBadge } from '../collage/HeaderControls';
 
 export const MobileBottomNav: React.FC = () => {
-  const { currentRoute, navigateTo, cartTotalCount, setIsCartDrawerOpen } = useApp();
+  const { currentRoute, navigateTo, cartTotalCount } = useApp();
   const { t } = useLanguage();
 
   // The delivery window has its own yellow sheet at the bottom of the phone screen instead.
@@ -43,10 +43,7 @@ export const MobileBottomNav: React.FC = () => {
           <button
             key={item.route}
             type="button"
-            onClick={() => {
-              setIsCartDrawerOpen(false);
-              navigateTo(item.route);
-            }}
+            onClick={() => navigateTo(item.route)}
             aria-label={item.aria}
             aria-current={isActive ? 'page' : undefined}
             className={`flex flex-col items-center gap-0.5 min-w-0 min-h-[54px] py-1.5 text-[11px] font-bold cursor-pointer ${
