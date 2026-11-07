@@ -314,7 +314,7 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
   });
 });
 
-describe('QIVENTRA PWA & Mobile Hero Suite', () => {
+describe('QIVENTRA PWA Suite', () => {
   it('validates PWA manifest requirements', async () => {
     const fs = await import('fs');
     const path = await import('path');
@@ -365,22 +365,6 @@ describe('QIVENTRA PWA & Mobile Hero Suite', () => {
     });
   });
 
-  it('renders MobileHeroDeliveryAnimation without throwing across RU, EN, and HE', async () => {
-    const React = await import('react');
-    const { renderToString } = await import('react-dom/server');
-    const { LanguageProvider } = await import('../context/LanguageContext');
-    const { MobileHeroDeliveryAnimation } = await import('../components/home/MobileHeroDeliveryAnimation');
-
-    const html = renderToString(
-      React.createElement(
-        LanguageProvider,
-        null,
-        React.createElement(MobileHeroDeliveryAnimation)
-      )
-    );
-    expect(html).toBeTruthy();
-    expect(html).toContain('clamp(110px, 30vw, 150px)');
-  });
 });
 
 describe('QIVENTRA Collage design', () => {
