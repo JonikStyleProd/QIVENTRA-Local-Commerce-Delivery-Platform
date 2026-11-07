@@ -1,5 +1,4 @@
 import React from 'react';
-import { PackageOpen } from 'lucide-react';
 import { Button } from './Button';
 
 interface EmptyStateProps {
@@ -11,6 +10,7 @@ interface EmptyStateProps {
   className?: string;
 }
 
+/** Sticky note with a short handwritten title, a plain explanation and one way out. */
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
   title,
@@ -21,17 +21,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-3xl bg-surface border border-theme ${className}`}
+      className={`anim-in max-w-[520px] mx-auto px-[18px] py-7 desk:px-7 desk:py-10 text-center bg-card border-[3px] border-ink rounded-[20px] desk:rounded-3xl shadow-hard-5 desk:shadow-hard-6 ${className}`}
+      style={{ rotate: '-1deg' }}
     >
-      <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-surface-elevated text-secondary mb-4 border border-theme">
-        {icon || <PackageOpen className="w-8 h-8 text-muted" />}
-      </div>
-      <h3 className="text-lg font-bold text-primary mb-1.5">{title}</h3>
-      <p className="text-sm text-secondary max-w-sm mb-6 leading-relaxed">
-        {description}
-      </p>
+      {icon && <div className="flex justify-center mb-2 text-ink-3">{icon}</div>}
+      <h2 className="hand mb-1 text-[34px] desk:text-[40px] leading-tight text-action">{title}</h2>
+      <p className="mb-4 desk:mb-5 font-bold">{description}</p>
       {actionText && onAction && (
-        <Button variant="primary" size="md" onClick={onAction}>
+        <Button variant="secondary" size="md" onClick={onAction}>
           {actionText}
         </Button>
       )}

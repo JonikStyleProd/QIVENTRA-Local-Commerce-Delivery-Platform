@@ -1,6 +1,13 @@
+import { CollageStrings, collageTranslations } from './collage';
+import { ScreenStrings, screenTranslations } from './screens';
+import { PromotionStrings, promotionTranslations } from './promotions';
+
 export type Language = 'ru' | 'en' | 'he';
 
 export interface Translations {
+  collage: CollageStrings;
+  screens: ScreenStrings;
+  promotions: PromotionStrings;
   nav: {
     home: string;
     catalog: string;
@@ -137,10 +144,8 @@ export interface Translations {
     filterFreeDelivery: string;
     sortBy: string;
     sortLabel: string;
-    sortRating: string;
     sortDeliverySpeed: string;
     sortMinOrder: string;
-    byRating: string;
     byDeliveryTime: string;
     byMinOrder: string;
     noStoresTitle: string;
@@ -241,8 +246,6 @@ export interface Translations {
     checkoutButton: string;
     securePaymentNote: string;
     paymentConfirmationNote: string;
-    freeDeliveryProgress: string;
-    freeDeliveryUnlocked: string;
     drawerTitle: string;
     itemWord1: string;
     itemWordFew: string;
@@ -288,7 +291,6 @@ export interface Translations {
     ecoCertified: string;
     shareStore: string;
     linkCopied: string;
-    ratingLabel: string;
     courierDeliveryLabel: string;
     deliveryCostLabel: string;
     minOrderPrefix: string;
@@ -309,8 +311,6 @@ export interface Translations {
     avgPrepTime: string;
     avgTicket: string;
     optRange: string;
-    ratingLabel: string;
-    posReviews: string;
     liveOrdersQueue: string;
     autoRefresh: string;
     statusAssembling: string;
@@ -419,8 +419,6 @@ export interface Translations {
     inCart: string;
     decrease: string;
     increase: string;
-    topBadge: string;
-    newBadge: string;
   };
   storeCard: {
     eco: string;
@@ -494,6 +492,9 @@ export interface Translations {
 
 export const translations: Record<Language, Translations> = {
   he: {
+    collage: collageTranslations.he,
+    screens: screenTranslations.he,
+    promotions: promotionTranslations.he,
     nav: {
       home: 'בית',
       catalog: 'קטלוג',
@@ -630,10 +631,8 @@ export const translations: Record<Language, Translations> = {
       filterFreeDelivery: 'משלוח חינם',
       sortBy: 'מיון:',
       sortLabel: 'מיון',
-      sortRating: 'לפי דירוג',
       sortDeliverySpeed: 'לפי מהירות',
       sortMinOrder: 'לפי מינימום הזמנה',
-      byRating: 'לפי דירוג',
       byDeliveryTime: 'לפי מהירות',
       byMinOrder: 'לפי מינימום הזמנה',
       noStoresTitle: 'לא נמצאו חנויות',
@@ -734,8 +733,6 @@ export const translations: Record<Language, Translations> = {
       checkoutButton: 'ביצוע הזמנה',
       securePaymentNote: 'תשלום מאובטח באמצעות Bit, Apple Pay או כרטיס אשראי',
       paymentConfirmationNote: 'חיוב מתבצע לאחר אישור בית העסק',
-      freeDeliveryProgress: 'למשלוח חינם:',
-      freeDeliveryUnlocked: 'זכאי למשלוח חינם!',
       drawerTitle: 'סל קניות',
       itemWord1: 'פריט',
       itemWordFew: 'פריטים',
@@ -781,7 +778,6 @@ export const translations: Record<Language, Translations> = {
       ecoCertified: 'מוסמך אקו וירוק',
       shareStore: 'שתף חנות',
       linkCopied: 'הקישור הועתק ללוח',
-      ratingLabel: 'דירוג',
       courierDeliveryLabel: 'משלוח שליחים',
       deliveryCostLabel: 'עלות משלוח',
       minOrderPrefix: 'מינימום הזמנה',
@@ -802,8 +798,6 @@ export const translations: Record<Language, Translations> = {
       avgPrepTime: 'ממוצע 2.8 דק׳ להכנה',
       avgTicket: 'סל ממוצע',
       optRange: 'טווח אופטימלי',
-      ratingLabel: 'דירוג בית עסק',
-      posReviews: 'ביקורות חיוביות',
       liveOrdersQueue: 'תור הזמנות פעיל',
       autoRefresh: 'עדכון אוטומטי כל 15 שניות',
       statusAssembling: 'באריזה',
@@ -912,8 +906,6 @@ export const translations: Record<Language, Translations> = {
       inCart: 'בסל',
       decrease: 'הפחת כמות',
       increase: 'הגדל כמות',
-      topBadge: 'מוביל',
-      newBadge: 'חדש',
     },
     storeCard: {
       eco: 'ירוק',
@@ -985,6 +977,9 @@ export const translations: Record<Language, Translations> = {
     },
   },
   en: {
+    collage: collageTranslations.en,
+    screens: screenTranslations.en,
+    promotions: promotionTranslations.en,
     nav: {
       home: 'Home',
       catalog: 'Catalog',
@@ -1121,10 +1116,8 @@ export const translations: Record<Language, Translations> = {
       filterFreeDelivery: 'Free Delivery',
       sortBy: 'Sort by:',
       sortLabel: 'Sort',
-      sortRating: 'By Rating',
       sortDeliverySpeed: 'By Speed',
       sortMinOrder: 'By Min Order',
-      byRating: 'By Rating',
       byDeliveryTime: 'By Speed',
       byMinOrder: 'By Min Order',
       noStoresTitle: 'No stores found',
@@ -1225,8 +1218,6 @@ export const translations: Record<Language, Translations> = {
       checkoutButton: 'Place Order',
       securePaymentNote: 'Pay with Bit, Apple Pay, or Credit Card after confirmation',
       paymentConfirmationNote: 'Payment processed after merchant confirmation',
-      freeDeliveryProgress: 'For free delivery:',
-      freeDeliveryUnlocked: 'Free delivery unlocked!',
       drawerTitle: 'Shopping Cart',
       itemWord1: 'item',
       itemWordFew: 'items',
@@ -1272,7 +1263,6 @@ export const translations: Record<Language, Translations> = {
       ecoCertified: 'Eco-certified',
       shareStore: 'Share store',
       linkCopied: 'Link copied',
-      ratingLabel: 'Rating',
       courierDeliveryLabel: 'Courier delivery',
       deliveryCostLabel: 'Delivery fee',
       minOrderPrefix: 'Min order',
@@ -1293,8 +1283,6 @@ export const translations: Record<Language, Translations> = {
       avgPrepTime: 'Avg. 2.8 min preparation',
       avgTicket: 'Average Order',
       optRange: 'Optimal range',
-      ratingLabel: 'Merchant Rating',
-      posReviews: 'positive reviews',
       liveOrdersQueue: 'Live Store Order Queue',
       autoRefresh: 'Auto updates every 15s',
       statusAssembling: 'Assembling',
@@ -1403,8 +1391,6 @@ export const translations: Record<Language, Translations> = {
       inCart: 'In cart',
       decrease: 'Decrease quantity',
       increase: 'Increase quantity',
-      topBadge: 'Top',
-      newBadge: 'New',
     },
     storeCard: {
       eco: 'Eco',
@@ -1476,6 +1462,9 @@ export const translations: Record<Language, Translations> = {
     },
   },
   ru: {
+    collage: collageTranslations.ru,
+    screens: screenTranslations.ru,
+    promotions: promotionTranslations.ru,
     nav: {
       home: 'Главная',
       catalog: 'Каталог',
@@ -1612,10 +1601,8 @@ export const translations: Record<Language, Translations> = {
       filterFreeDelivery: 'Бесплатная доставка',
       sortBy: 'Сортировка:',
       sortLabel: 'Сортировка',
-      sortRating: 'По рейтингу',
       sortDeliverySpeed: 'По скорости',
       sortMinOrder: 'По мин. заказу',
-      byRating: 'По рейтингу',
       byDeliveryTime: 'По скорости доставки',
       byMinOrder: 'По минимальному чеку',
       noStoresTitle: 'Магазины не найдены',
@@ -1716,8 +1703,6 @@ export const translations: Record<Language, Translations> = {
       checkoutButton: 'Оформить заказ',
       securePaymentNote: 'Оплата Bit, Apple Pay или картой после подтверждения',
       paymentConfirmationNote: 'Оплата после подтверждения мерчантами',
-      freeDeliveryProgress: 'До бесплатной доставки:',
-      freeDeliveryUnlocked: 'Бесплатная доставка активна!',
       drawerTitle: 'Корзина покупок',
       itemWord1: 'товар',
       itemWordFew: 'товара',
@@ -1763,7 +1748,6 @@ export const translations: Record<Language, Translations> = {
       ecoCertified: 'Эко-сертифицирован',
       shareStore: 'Поделиться магазином',
       linkCopied: 'Ссылка скопирована',
-      ratingLabel: 'Рейтинг',
       courierDeliveryLabel: 'Доставка курьером',
       deliveryCostLabel: 'Стоимость доставки',
       minOrderPrefix: 'Минимальный заказ',
@@ -1784,8 +1768,6 @@ export const translations: Record<Language, Translations> = {
       avgPrepTime: 'В среднем 2.8 мин на сборку',
       avgTicket: 'Средний чек',
       optRange: 'Оптимальный диапазон',
-      ratingLabel: 'Рейтинг мерчанта',
-      posReviews: 'положительных отзывов',
       liveOrdersQueue: 'Очередь текущих заказов точки',
       autoRefresh: 'Автоматическое обновление каждые 15 сек',
       statusAssembling: 'В сборке',
@@ -1894,8 +1876,6 @@ export const translations: Record<Language, Translations> = {
       inCart: 'В корзине',
       decrease: 'Уменьшить количество',
       increase: 'Увеличить количество',
-      topBadge: 'Хит',
-      newBadge: 'Новинка',
     },
     storeCard: {
       eco: 'Эко',

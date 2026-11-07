@@ -10,66 +10,50 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'qiventra-theme';
+/** Browser bar colour: the paper of each theme. */
+const THEME_COLOR = { light: '#FFF8EC', dark: '#1B1A17' };
+
+const systemTheme = (): 'light' | 'dark' =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     try {
-      const saved = localStorage.getItem('qiventra-theme') as ThemeMode;
+      const saved = localStorage.getItem(STORAGE_KEY) as ThemeMode;
       return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'light';
     } catch {
       return 'light';
     }
   });
+  const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>(systemTheme);
 
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const resolvedTheme = theme === 'system' ? systemPreference : theme;
 
   useEffect(() => {
-    const root = document.documentElement;
-    let effective: 'light' | 'dark' = 'light';
+    if (theme !== 'system') return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const listener = (e: MediaQueryListEvent) => setSystemPreference(e.matches ? 'dark' : 'light');
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, [theme]);
 
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      effective = mediaQuery.matches ? 'dark' : 'light';
-
-      const listener = (e: MediaQueryListEvent) => {
-        const newTheme = e.matches ? 'dark' : 'light';
-        setResolvedTheme(newTheme);
-        if (newTheme === 'dark') {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-      };
-
-      mediaQuery.addEventListener('change', listener);
-      return () => mediaQuery.removeEventListener('change', listener);
-    } else {
-      effective = theme;
-    }
-
-    setResolvedTheme(effective);
-    if (effective === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[resolvedTheme]);
     try {
-      localStorage.setItem('qiventra-theme', theme);
+      localStorage.setItem(STORAGE_KEY, theme);
     } catch {
       // ignore
     }
-  }, [theme]);
-
-  const setTheme = (newTheme: ThemeMode) => {
-    setThemeState(newTheme);
-  };
+  }, [theme, resolvedTheme]);
 
   const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setThemeState(resolvedTheme === 'dark' ? 'light' : 'dark');
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme: setThemeState, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

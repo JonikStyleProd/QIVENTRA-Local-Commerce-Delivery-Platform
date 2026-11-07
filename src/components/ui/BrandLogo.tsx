@@ -26,13 +26,14 @@ export interface BrandLogoProps {
 // Module-level cache to track which URLs have already loaded into browser memory
 const preloadedUrls = new Set<string>();
 
+const LOCAL_MARK = '/brand/mark.webp';
+const LOCAL_MARK_PNG = '/brand/mark.png';
+
 if (typeof window !== 'undefined') {
-  // Preload all 3 official Supabase assets eagerly to eliminate layout shift & latency
-  [BRAND_ASSETS.mark, BRAND_ASSETS.darkLockup, BRAND_ASSETS.lightLockup].forEach((url) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = () => preloadedUrls.add(url);
-  });
+  // The header only uses the mark: preload it, not the 4K lockups.
+  const img = new Image();
+  img.src = BRAND_ASSETS.mark;
+  img.onload = () => preloadedUrls.add(BRAND_ASSETS.mark);
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
@@ -70,7 +71,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   // - compact mark -> official mark (2k transparent)
   const targetLockupUrl =
     isDesktopHeader || effectiveTheme === 'dark' ? BRAND_ASSETS.lightLockup : BRAND_ASSETS.darkLockup;
-  const initialUrl = isMarkVariant ? BRAND_ASSETS.mark : targetLockupUrl;
+  // The official mark is dark green, which disappears on dark paper.
+  const targetMarkUrl = effectiveTheme === 'dark' ? '/brand/mark-light.webp' : BRAND_ASSETS.mark;
+  const initialUrl = isMarkVariant ? targetMarkUrl : targetLockupUrl;
 
   const [currentSrc, setCurrentSrc] = useState<string>(initialUrl);
   const [isLoaded, setIsLoaded] = useState<boolean>(() => preloadedUrls.has(initialUrl));
@@ -80,7 +83,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   // Keep src in sync with theme and variant
   useEffect(() => {
-    const nextUrl = isMarkVariant ? BRAND_ASSETS.mark : targetLockupUrl;
+    const nextUrl = isMarkVariant ? targetMarkUrl : targetLockupUrl;
     setCurrentSrc(`${nextUrl}${cacheBuster ? `?v=${cacheBuster}` : ''}`);
     setIsMarkFallback(isMarkVariant);
     if (preloadedUrls.has(nextUrl)) {
@@ -91,7 +94,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     } else {
       setIsLoaded(false);
     }
-  }, [isMarkVariant, targetLockupUrl, cacheBuster]);
+  }, [isMarkVariant, targetLockupUrl, targetMarkUrl, cacheBuster]);
 
   // Subscribe to live admin brand asset updates
   useEffect(() => {
@@ -182,14 +185,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         }}
         onError={() => {
           // Strict error state: Fallback to official compact mark, NEVER text or AI-generated
-          if (currentSrc !== BRAND_ASSETS.mark) {
+          if (currentSrc === LOCAL_MARK) {
+            setCurrentSrc(LOCAL_MARK_PNG);
+          } else if (currentSrc === BRAND_ASSETS.mark) {
+            setCurrentSrc(LOCAL_MARK);
+          } else if (currentSrc !== LOCAL_MARK_PNG) {
             setCurrentSrc(BRAND_ASSETS.mark);
-            setIsMarkFallback(true);
-          } else {
-            // Local fallback verified mark
-            setCurrentSrc('/brand/qiventra-mark.png');
-            setIsMarkFallback(true);
           }
+          setIsMarkFallback(true);
           setIsLoaded(true);
         }}
         loading="eager"

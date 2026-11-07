@@ -3,21 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
-import { ToastProvider, useToast } from './context/ToastContext';
+import { ToastProvider } from './context/ToastContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/layout/Navbar';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Footer } from './components/layout/Footer';
-import { CartDrawer } from './components/modals/CartDrawer';
 import { ChatDrawer } from './components/chat/ChatDrawer';
 import { AddressModal } from './components/modals/AddressModal';
 import { AuthModal } from './components/modals/AuthModal';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
-import { Toast } from './components/ui/Toast';
+import { PwaSplash } from './components/pwa/PwaSplash';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { focusPageHeading } from './components/collage/focusHeading';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -25,6 +25,7 @@ import { CatalogPage } from './pages/CatalogPage';
 import { SearchPage } from './pages/SearchPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { CartPage } from './pages/CartPage';
+import { DeliveryPage } from './pages/DeliveryPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { StoreDetailPage } from './pages/StoreDetailPage';
 import { VendorPortalPage } from './pages/VendorPortalPage';
@@ -33,8 +34,15 @@ import { AdminPortalPage } from './pages/AdminPortalPage';
 
 const AppContent: React.FC = () => {
   const { currentRoute, isChatOpen, setIsChatOpen, chatParticipant } = useApp();
-  const { toasts, removeToast } = useToast();
-  const { isRTL } = useLanguage();
+  const { t } = useLanguage();
+
+  // There are no URLs to announce a screen change, so focus moves to the new page's heading.
+  const previousRoute = useRef(currentRoute);
+  useEffect(() => {
+    if (previousRoute.current === currentRoute) return;
+    previousRoute.current = currentRoute;
+    focusPageHeading();
+  }, [currentRoute]);
 
   const renderRoute = () => {
     switch (currentRoute) {
@@ -48,6 +56,8 @@ const AppContent: React.FC = () => {
         return <OrdersPage />;
       case 'cart':
         return <CartPage />;
+      case 'delivery':
+        return <DeliveryPage />;
       case 'profile':
         return <ProfilePage />;
       case 'store':
@@ -64,12 +74,21 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-app text-primary transition-colors duration-200 overflow-x-hidden selection:bg-[#B8D96B] selection:text-[#151817] ${isRTL ? 'text-right' : 'text-left'}`}>
+    <div className="min-h-screen flex flex-col bg-paper text-ink text-start selection:bg-accent selection:text-ink">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-[60] focus:px-4 focus:py-3 focus:bg-card focus:border-2 focus:border-ink focus:rounded-xl focus:font-extrabold"
+      >
+        {t.collage.common.skipToContent}
+      </a>
+
+      <PwaSplash />
+
       {/* Desktop & Mobile Header */}
       <Navbar />
 
       {/* Main Routed Content */}
-      <main className="flex-1 w-full pb-24 md:pb-0" id="main-content">
+      <main className="flex-1 w-full" id="main-content">
         {renderRoute()}
       </main>
 
@@ -80,7 +99,6 @@ const AppContent: React.FC = () => {
       <MobileBottomNav />
 
       {/* Global Drawers & Modals */}
-      <CartDrawer />
       <ChatDrawer
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
@@ -89,18 +107,6 @@ const AppContent: React.FC = () => {
       <AddressModal />
       <AuthModal />
       <OfflineIndicator />
-
-      {/* Floating Toast Notification Container */}
-      <div
-        className="fixed top-20 end-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"
-        aria-live="polite"
-      >
-        {toasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto">
-            <Toast toast={toast} onClose={() => removeToast(toast.id)} />
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

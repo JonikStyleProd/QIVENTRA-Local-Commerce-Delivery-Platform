@@ -1,9 +1,25 @@
 <!doctype html>
-<html lang="he" dir="rtl">
+<html lang="ru" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>QIVENTRA — פלטפורמת מסחר מקומי ומשלוחים מהירים בישראל</title>
+    <title>QIVENTRA</title>
+    <meta name="author" content="JonikStyle Production" />
+    <meta name="copyright" content="© JonikStyle Production" />
+    <script>
+      // Set language, direction and theme before first paint; the contexts keep them in sync afterwards.
+      try {
+        var savedLang = localStorage.getItem('qiventra_language');
+        if (savedLang === 'ru' || savedLang === 'en' || savedLang === 'he') {
+          document.documentElement.lang = savedLang;
+          document.documentElement.dir = savedLang === 'he' ? 'rtl' : 'ltr';
+        }
+        var savedTheme = localStorage.getItem('qiventra-theme');
+        if (savedTheme === 'dark' || (savedTheme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    </script>
     <meta name="description" content="קיוונטרה: פלטפורמת מסחר שכונתית ומשלוחים מהירים בישראל. שווקים מקומיים, מעדניות, מאפיות, פארם וטכנולוגיה." />
     <meta property="og:title" content="QIVENTRA — Local Commerce & Fast Delivery Platform" />
     <meta property="og:description" content="Hyperlocal commerce and rapid delivery platform in Israel. Fresh markets, bakeries, artisan groceries, and home goods." />
@@ -12,28 +28,24 @@
     
     <!-- PWA & Apple Meta Tags with Official QIVENTRA Brand Mark -->
     <meta name="application-name" content="QIVENTRA" />
-    <meta name="theme-color" content="#123B35" />
+    <meta name="theme-color" content="#FFF8EC" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="QIVENTRA" />
-    <link rel="manifest" href="/manifest.webmanifest?v=2" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/qiventra-apple-touch-v2-180.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/qiventra-favicon-v2-32.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/qiventra-icon-v2-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/qiventra-apple-touch-v3-180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/qiventra-favicon-v3-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/qiventra-icon-v3-192.png" />
 
-    <!-- Preload Official QIVENTRA Brand Assets for Instant Zero-Shift Render -->
-    <link rel="preload" as="image" href="/icons/qiventra-icon-v2-192.png" />
+    <!-- Preload the official mark so the header logo renders without a layout shift -->
     <link rel="preload" as="image" href="https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-mark-transparent-2k.png" />
-    <link rel="preload" as="image" href="https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-lockup-dark-transparent-4k.png" />
-    <link rel="preload" as="image" href="https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-lockup-light-transparent-4k.png" />
-    
-    <!-- Preconnect Fonts: Plus Jakarta Sans & Rubik / Heebo for optimal Hebrew & English rendering -->
+
+    <!-- Collage fonts: Nunito + Rubik (text, Hebrew), Caveat + Amatic SC (handwriting, Hebrew) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Rubik:wght@600;700;800;900&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" rel="stylesheet" />
   </head>
-  <body class="bg-app text-primary min-h-screen antialiased selection:bg-brand-accent selection:text-brand-dark font-sans">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

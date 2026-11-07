@@ -1,3 +1,4 @@
+import { formatShekels } from '../i18n/format';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language, Translations, translations } from '../i18n/translations';
 
@@ -11,6 +12,8 @@ interface LanguageContextType {
   formatCurrency: (amount: number) => string;
   formatMinutes: (minutes: number) => string;
   formatDistance: (km: number) => string;
+  /** "15–25 мин": the range is isolated so RTL text does not reverse it to "25–15". */
+  formatTimeRange: (min: number, max: number) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -41,6 +44,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Apply root attributes
     document.documentElement.lang = language;
     document.documentElement.dir = direction;
+    document.title = (translations[language] || translations.ru).collage.meta.title;
 
     if (isRTL) {
       document.documentElement.classList.add('rtl');
@@ -56,11 +60,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const currentTranslations = translations[language] || translations.ru;
 
   const formatCurrency = (amount: number): string => {
-    // Israeli standard currency representation with non-breaking space
-    if (language === 'he') {
-      return `₪\u00A0${amount}`;
-    }
-    return `${amount}\u00A0₪`;
+    return formatShekels(amount, language);
   };
 
   const formatMinutes = (minutes: number): string => {
@@ -80,7 +80,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (language === 'en') {
       return `${km} km`;
     }
-    return `${km} км`;
+    return `${String(km).replace('.', ',')} км`;
+  };
+
+  const formatTimeRange = (min: number, max: number): string => {
+    const unit = language === 'he' ? 'דק׳' : language === 'en' ? 'min' : 'мин';
+    return `⁦${min}–${max}⁩ ${unit}`;
   };
 
   return (
@@ -95,6 +100,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         formatCurrency,
         formatMinutes,
         formatDistance,
+        formatTimeRange,
       }}
     >
       {children}

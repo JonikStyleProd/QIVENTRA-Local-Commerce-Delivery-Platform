@@ -1,48 +1,38 @@
-import React, { useState, useMemo } from 'react';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Star,
-  Clock,
-  MapPin,
-  CheckCircle,
-  Leaf,
-  Sparkles,
-  Share2,
-  MessageSquare,
-} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ChevronLeft, Leaf, MapPin, MessageSquare, Share2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { usePromotions } from '../context/PromotionsContext';
 import { useToast } from '../context/ToastContext';
-import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
+import { FACT_LABELS, ProductLabel, filterProductsByLabels, isLive, visiblePromotions } from '../data/promotions';
+import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
+import { GROUP_TINT_CLASS, groupOfCategoryName, tiltFor } from '../data/collageCatalog';
+import { CollageGroupId } from '../i18n/collage';
 import { ProductCard } from '../components/ui/ProductCard';
-import { Badge } from '../components/ui/Badge';
-import { SafeImage } from '../components/ui/SafeImage';
-import { ChatDrawer } from '../components/chat/ChatDrawer';
+import { Button } from '../components/ui/Button';
+import { IconButton } from '../components/ui/IconButton';
+import { BottomPanel } from '../components/collage/BottomPanel';
+import { CategoryChip } from '../components/collage/CategoryChip';
+import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
+import { EmptyState } from '../components/ui/EmptyState';
+import { PageShell, SectionHeading } from '../components/collage/Page';
+import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
+import { PromotionSticker } from '../components/collage/PromotionSticker';
+import { Stamp } from '../components/collage/Stamp';
+import { Tape } from '../components/collage/Tape';
+
+const FACT = 'min-w-0 px-3 py-2 border-2 border-ink rounded-xl';
 
 export const StoreDetailPage: React.FC = () => {
-  const {
-    selectedStoreId,
-    navigateTo,
-    addToCart,
-    updateCartQuantity,
-    cart,
-  } = useApp();
-
-  const { language, t, formatCurrency, isRTL } = useLanguage();
+  const { selectedStoreId, navigateTo, addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
+  const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const { showToast } = useToast();
+  const { promotions, now, labelsFor } = usePromotions();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [requiredLabels, setRequiredLabels] = useState<ProductLabel[]>([]);
 
-  const store = useMemo(() => {
-    return (
-      MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0]
-    );
-  }, [selectedStoreId]);
-
-  const storeProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((p) => p.storeId === store.id);
-  }, [store.id]);
+  const store = useMemo(() => MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0], [selectedStoreId]);
+  const storeProducts = useMemo(() => MOCK_PRODUCTS.filter((p) => p.storeId === store.id), [store.id]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -51,26 +41,34 @@ export const StoreDetailPage: React.FC = () => {
   }, [storeProducts]);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'all') return storeProducts;
-    return storeProducts.filter((p) => p.category === selectedCategory);
-  }, [storeProducts, selectedCategory]);
+    const inCategory =
+      selectedCategory === 'all' ? storeProducts : storeProducts.filter((p) => p.category === selectedCategory);
+    return filterProductsByLabels(inCategory, requiredLabels, labelsFor);
+  }, [storeProducts, selectedCategory, requiredLabels, labelsFor]);
 
-  const getInCartQuantity = (productId: string) => {
-    const item = cart.find((i) => i.product.id === productId);
-    return item ? item.quantity : 0;
-  };
+  const toggleRequiredLabel = (label: ProductLabel) =>
+    setRequiredLabels((prev) => (prev.includes(label) ? prev.filter((entry) => entry !== label) : [...prev, label]));
 
-  const displayName = store.names?.[language] || store.name;
+  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
+
+  const copy = t.collage.storeCopy[store.id];
+  const displayName = copy?.name || store.names?.[language] || store.name;
+  const displayKind = copy?.kind || store.categories?.[language] || store.category;
   const displayAddress = store.addresses?.[language] || store.address;
-  const displayPromo = store.promoTexts?.[language] || store.promoText;
+  const shownPromotions = visiblePromotions(promotions, store.id, now);
+
+  const categoryLabel = (name: string) =>
+    MOCK_CATEGORIES.find((c) => c.name === name)?.names?.[language] || name;
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: displayName,
-        text: `QIVENTRA: ${displayName}`,
-        url: window.location.href,
-      }).catch(() => {});
+      navigator
+        .share({
+          title: displayName,
+          text: `QIVENTRA: ${displayName}`,
+          url: window.location.href,
+        })
+        .catch(() => {});
     } else {
       showToast({
         type: 'success',
@@ -80,177 +78,152 @@ export const StoreDetailPage: React.FC = () => {
     }
   };
 
-  const formatDeliveryTime = (min: number, max: number) => {
-    if (language === 'he') return `${min}–${max} דק'`;
-    if (language === 'en') return `${min}–${max} min`;
-    return `${min}–${max} мин`;
-  };
+  const openStoreChat = () =>
+    openChatWithParticipant({
+      type: 'store',
+      id: store.id,
+      name: displayName,
+      avatarUrl: store.logoUrl,
+      storeId: store.id,
+    });
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12 py-6 space-y-8">
-      
-      {/* Back button */}
+    <PageShell>
       <button
         type="button"
         onClick={() => navigateTo('catalog')}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary transition"
+        className="inline-flex items-center gap-1 min-h-11 -ms-1 px-1 font-extrabold cursor-pointer hover:underline"
       >
-        {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
-        <span>{t.store.backToCatalog}</span>
+        <ChevronLeft aria-hidden="true" className="w-5 h-5 rtl-flip" />
+        {t.store.backToCatalog}
       </button>
 
-      {/* Store Hero Banner & Details */}
-      <div className="rounded-3xl bg-surface border border-theme overflow-hidden shadow-sm">
-        
-        {/* Banner with real cover image and high-contrast overlay */}
-        <div className="relative h-48 sm:h-60 w-full p-6 sm:p-8 flex flex-col justify-between text-white overflow-hidden">
-          <SafeImage
-            src={store.coverUrl}
-            alt={displayName}
-            className="w-full h-full object-cover"
-            containerClassName="absolute inset-0 w-full h-full"
-            fallbackText={displayName}
+      <section className="grid desk:grid-cols-[minmax(0,420px)_minmax(0,1fr)] gap-6 desk:gap-12 items-center mt-3 mb-9 desk:mb-14">
+        <div
+          className="anim-drop relative w-full max-w-[420px] mx-auto bg-card p-3 pb-5 shadow-polaroid"
+          style={{ rotate: tiltFor(store.id) }}
+        >
+          <Tape tone="yellow" />
+          <PolaroidPhoto src={store.coverUrl} alt={displayName} aspectClassName="aspect-[4/3]" eager />
+          <p className="hand mt-2.5 text-[30px] leading-none">{displayKind}</p>
+        </div>
+
+        <div className="min-w-0">
+          <p className="hand anim-in inline-block text-[26px] desk:text-[30px] leading-tight text-action -rotate-2">
+            {t.screens.store.note}
+          </p>
+          <h1 className="anim-in font-black tracking-[-0.03em] leading-[1.02] text-[clamp(32px,4.6vw,60px)] break-words">
+            <bdi>{displayName}</bdi>
+          </h1>
+          <p className="flex items-start gap-1.5 mt-2 font-bold text-ink-2">
+            <MapPin aria-hidden="true" className="w-4 h-4 mt-1 shrink-0" />
+            <span>{displayAddress}</span>
+          </p>
+
+          {store.isEco && (
+            <div className="mt-3">
+              <Stamp tone="success">
+                <Leaf aria-hidden="true" className="inline w-3.5 h-3.5 me-1 -mt-0.5" />
+                {t.storeCard.eco}
+              </Stamp>
+            </div>
+          )}
+
+          <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
+            <div className={`${FACT} bg-tint-health`}>
+              <dt className="text-xs font-bold text-ink-2">{t.store.courierDeliveryLabel}</dt>
+              <dd className="font-black tabular-nums">{formatTimeRange(store.deliveryTimeMin, store.deliveryTimeMax)}</dd>
+            </div>
+            <div className={`${FACT} bg-tint-food`}>
+              <dt className="text-xs font-bold text-ink-2">{t.store.deliveryCostLabel}</dt>
+              <dd className="font-black tabular-nums">{formatCurrency(store.deliveryFee)}</dd>
+            </div>
+            <div className={`${FACT} bg-tint-pets`}>
+              <dt className="text-xs font-bold text-ink-2">{t.store.minOrderPrefix}</dt>
+              <dd className="font-black tabular-nums">{formatCurrency(store.minOrder)}</dd>
+            </div>
+            <div className={`${FACT} bg-tint-gift`}>
+              <dt className="text-xs font-bold text-ink-2">{t.screens.store.distance}</dt>
+              <dd className="font-black tabular-nums">{formatDistance(store.distanceKm)}</dd>
+            </div>
+          </dl>
+
+          <div className="flex flex-wrap items-center gap-2.5 mt-4">
+            <Button
+              variant="outline"
+              leftIcon={<MessageSquare aria-hidden="true" className="w-4 h-4" />}
+              onClick={openStoreChat}
+            >
+              {t.chat.withStore}
+            </Button>
+            <IconButton
+              onClick={handleShare}
+              aria-label={t.store.shareStore}
+              title={t.store.shareStore}
+              icon={<Share2 aria-hidden="true" className="w-4 h-4" />}
+            />
+          </div>
+        </div>
+      </section>
+
+      {shownPromotions.length > 0 && (
+        <section className="mb-9 desk:mb-14">
+          <SectionHeading note={t.promotions.shop.note} title={t.promotions.shop.title} />
+          <ul className="grid sm:grid-cols-2 desk:grid-cols-3 gap-4 pt-2">
+            {shownPromotions.map((promotion) => (
+              <li key={promotion.id}>
+                <PromotionSticker promotion={promotion} isRunningNow={isLive(promotion, now)} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <SectionHeading title={`${t.store.storeAssortment} (${filteredProducts.length})`} />
+
+      {categories.length > 2 && (
+        <div
+          role="group"
+          aria-label={t.store.storeAssortment}
+          className="scroll-row flex desk:flex-wrap gap-2 -mx-4 px-4 desk:mx-0 desk:px-0 pb-4 overflow-x-auto desk:overflow-visible"
+        >
+          {categories.map((cat) => (
+            <CategoryChip
+              key={cat}
+              label={cat === 'all' ? t.catalog.allProducts : categoryLabel(cat)}
+              isActive={selectedCategory === cat}
+              tintClassName={GROUP_TINT_CLASS[(groupOfCategoryName(cat) as CollageGroupId) ?? 'all'] ?? 'bg-card'}
+              onClick={() => setSelectedCategory(cat)}
+            />
+          ))}
+        </div>
+      )}
+
+      <div
+        role="group"
+        aria-label={t.promotions.filters.label}
+        className="scroll-row flex desk:flex-wrap gap-2 -mx-4 px-4 desk:mx-0 desk:px-0 pb-4 overflow-x-auto desk:overflow-visible"
+      >
+        {FACT_LABELS.map((label) => (
+          <CategoryChip
+            key={label}
+            label={t.promotions.labels[label]}
+            icon={FACT_LABEL_ICON[label]}
+            isActive={requiredLabels.includes(label)}
+            onClick={() => toggleRequiredLabel(label)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/60 pointer-events-none" />
-
-          <div className="relative z-10 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {store.isEco && (
-                <Badge variant="pistachio" size="sm">
-                  <Leaf className="w-3 h-3 me-1 inline" />
-                  {t.store.ecoCertified}
-                </Badge>
-              )}
-              {store.isPromo && displayPromo && (
-                <Badge variant="mineral" size="sm">
-                  <Sparkles className="w-3 h-3 me-1 inline text-[#B8D96B]" />
-                  {displayPromo}
-                </Badge>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsChatOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/45 backdrop-blur-xs hover:bg-black/65 transition text-xs font-semibold text-white border border-white/20"
-                aria-label="Chat with store"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-[#B8D96B]" />
-                <span className="hidden sm:inline">
-                  {language === 'he' ? 'צ\'אט עם החנות' : language === 'ru' ? 'Чат с магазином' : 'Chat with Store'}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShare}
-                className="p-2 rounded-xl bg-black/30 backdrop-blur-xs hover:bg-black/50 transition text-white border border-white/20"
-                aria-label={t.store.shareStore}
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-end justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                  {displayName}
-                </h1>
-                {store.isVerified && (
-                  <CheckCircle className="w-5 h-5 text-[#B8D96B] shrink-0" />
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-white/90 mt-1 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 shrink-0" />
-                <span>{displayAddress}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Store Metrics Bar */}
-        <div className="p-4 sm:p-6 bg-surface grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs divide-y sm:divide-y-0 sm:divide-x divide-theme/60 rtl:divide-x-reverse">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#123B35]/10 dark:bg-[#B8D96B]/10 text-[#123B35] dark:text-[#B8D96B] flex items-center justify-center shrink-0">
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-            <div>
-              <span className="text-[10px] text-secondary block">{t.store.ratingLabel}</span>
-              <span className="font-bold text-primary text-sm tabular-nums">
-                {store.rating.toFixed(2)} <span className="text-muted font-normal text-xs">({store.reviewsCount})</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 pt-2 sm:pt-0 sm:ps-4">
-            <div className="w-9 h-9 rounded-xl bg-[#123B35]/10 dark:bg-[#B8D96B]/10 text-[#123B35] dark:text-[#B8D96B] flex items-center justify-center shrink-0">
-              <Clock className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] text-secondary block">{t.store.courierDeliveryLabel}</span>
-              <span className="font-bold text-primary text-sm tabular-nums">
-                {formatDeliveryTime(store.deliveryTimeMin, store.deliveryTimeMax)}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 pt-2 sm:pt-0 sm:ps-4">
-            <div>
-              <span className="text-[10px] text-secondary block">{t.store.deliveryCostLabel}</span>
-              <span className="font-bold text-primary text-sm tabular-nums">
-                {store.deliveryFee === 0 ? t.cart.free : formatCurrency(store.deliveryFee)}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 pt-2 sm:pt-0 sm:ps-4">
-            <div>
-              <span className="text-[10px] text-secondary block">{t.store.minOrderPrefix}</span>
-              <span className="font-bold text-primary text-sm tabular-nums">
-                {formatCurrency(store.minOrder)}
-              </span>
-            </div>
-          </div>
-        </div>
-
+        ))}
       </div>
 
-      {/* Store Products Section */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-primary">
-            {t.store.storeAssortment} ({filteredProducts.length})
-          </h2>
-        </div>
-
-        {/* Categories inside store */}
-        {categories.length > 2 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`
-                  px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition border
-                  ${
-                    selectedCategory === cat
-                      ? 'bg-[#123B35] text-[#F3F1EA] border-[#123B35]'
-                      : 'bg-surface text-secondary hover:text-primary border-theme'
-                  }
-                `}
-              >
-                {cat === 'all' ? t.catalog.allProducts : cat}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Product Grid */}
-        <div className="product-grid">
+      {filteredProducts.length === 0 ? (
+        <EmptyState
+          title={t.promotions.filters.emptyTitle}
+          description={t.promotions.filters.emptyDesc}
+          actionText={t.promotions.filters.reset}
+          onAction={() => setRequiredLabels([])}
+        />
+      ) : (
+        <div className="product-grid pt-2">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -261,20 +234,22 @@ export const StoreDetailPage: React.FC = () => {
             />
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Direct Chat with this Store */}
-      <ChatDrawer
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        initialParticipant={{
-          type: 'store',
-          id: store.id,
-          name: displayName,
-          avatarUrl: store.logoUrl,
-          storeId: store.id,
-        }}
-      />
-    </div>
+      {cartTotalCount > 0 && (
+        <BottomPanel
+          note={t.screens.store.inBasket}
+          title={
+            <span className="tabular-nums">
+              {cartTotalCount} · {formatCurrency(cartSubtotal)}
+            </span>
+          }
+        >
+          <Button size="lg" onClick={() => navigateTo('cart')} className="whitespace-nowrap px-3.5 desk:px-6">
+            {t.screens.store.toBasket}
+          </Button>
+        </BottomPanel>
+      )}
+    </PageShell>
   );
 };

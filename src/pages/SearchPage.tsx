@@ -1,30 +1,28 @@
 import React, { useMemo, useState } from 'react';
-import { Search, Store as StoreIcon, Package } from 'lucide-react';
+import { Leaf, Search } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/mockData';
+import { GROUP_TINT_CLASS, groupOfCategoryName } from '../data/collageCatalog';
+import { CollageGroupId } from '../i18n/collage';
 import { SearchBar } from '../components/ui/SearchBar';
 import { StoreCard } from '../components/ui/StoreCard';
 import { ProductCard } from '../components/ui/ProductCard';
 import { EmptyState } from '../components/ui/EmptyState';
+import { CategoryChip } from '../components/collage/CategoryChip';
+import { PageHeading, PageShell, SectionHeading } from '../components/collage/Page';
 
 export const SearchPage: React.FC = () => {
-  const {
-    searchQuery,
-    setSearchQuery,
-    navigateTo,
-    addToCart,
-    updateCartQuantity,
-    cart,
-  } = useApp();
-
+  const { searchQuery, setSearchQuery, navigateTo, addToCart, updateCartQuantity, cart } = useApp();
   const { language, t } = useLanguage();
+  const copy = t.screens.search;
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [onlyEco, setOnlyEco] = useState<boolean>(false);
-  const [sortBy] = useState<'rating' | 'price' | 'delivery'>('rating');
 
   const query = searchQuery.trim().toLowerCase();
+  // Shops and products keep their category by name, while the chips carry its slug.
+  const categoryName = MOCK_CATEGORIES.find((c) => c.slug === selectedCategory)?.name;
 
   const matchedStores = useMemo(() => {
     let stores = MOCK_STORES;
@@ -36,14 +34,14 @@ export const SearchPage: React.FC = () => {
         return nameMatch || catMatch || tagMatch;
       });
     }
-    if (selectedCategory !== 'all') {
-      stores = stores.filter((s) => s.category.toLowerCase().includes(selectedCategory.toLowerCase()));
+    if (categoryName) {
+      stores = stores.filter((s) => s.category === categoryName);
     }
     if (onlyEco) {
       stores = stores.filter((s) => s.isEco);
     }
     return stores;
-  }, [query, selectedCategory, onlyEco]);
+  }, [query, categoryName, onlyEco]);
 
   const matchedProducts = useMemo(() => {
     let products = MOCK_PRODUCTS;
@@ -56,193 +54,129 @@ export const SearchPage: React.FC = () => {
         return nameMatch || descMatch || storeMatch || catMatch;
       });
     }
-    if (selectedCategory !== 'all') {
-      products = products.filter((p) => p.category.toLowerCase().includes(selectedCategory.toLowerCase()));
-    }
-    if (sortBy === 'price') {
-      products = [...products].sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'rating') {
-      products = [...products].sort((a, b) => b.rating - a.rating);
+    if (categoryName) {
+      products = products.filter((p) => p.category === categoryName);
     }
     return products;
-  }, [query, selectedCategory, sortBy]);
+  }, [query, categoryName]);
 
-  const getInCartQuantity = (productId: string) => {
-    const item = cart.find((i) => i.product.id === productId);
-    return item ? item.quantity : 0;
+  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
+
+  const sampleQueries =
+    language === 'he'
+      ? ['אבוקדו האס', 'חלת שבת', 'גבינת עיזים', 'שמן זית', 'אוזניות TWS', 'פירות יער']
+      : language === 'en'
+      ? ['Hass Avocado', 'Fresh Challah', 'Goat Cheese', 'Olive Oil', 'TWS Earbuds', 'Fresh Berries']
+      : ['Авокадо Hass', 'Свежая хала', 'Козий сыр', 'Оливковое масло', 'TWS наушники', 'Свежие ягоды'];
+
+  const resetFilters = () => {
+    setSelectedCategory('all');
+    setOnlyEco(false);
   };
 
-  const sampleQueries = language === 'he'
-    ? ['אבוקדו האס', 'חלת שבת', 'גבינת עיזים', 'שמן זית', 'אוזניות TWS', 'פירות יער']
-    : language === 'en'
-    ? ['Hass Avocado', 'Fresh Challah', 'Goat Cheese', 'Olive Oil', 'TWS Earbuds', 'Fresh Berries']
-    : ['Авокадо Hass', 'Свежая хала', 'Козий сыр', 'Оливковое масло', 'TWS наушники', 'Свежие ягоды'];
+  const hasFilters = selectedCategory !== 'all' || onlyEco;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12 py-6 space-y-6">
-      
-      {/* Search Header */}
-      <div className="max-w-2xl mx-auto text-center space-y-3">
-        <h1 className="text-xl sm:text-2xl font-extrabold text-primary tracking-tight">
-          {t.search.title}
-        </h1>
-        <p className="text-xs sm:text-sm text-secondary">
-          {t.search.subtitle}
-        </p>
+    <PageShell>
+      <PageHeading note={copy.note} title={t.search.title} lead={t.search.subtitle} className="max-w-[900px]" />
 
-        {/* Search Input without autofocus */}
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder={t.home.searchPlaceholder}
+      <SearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        label={t.nav.search}
+        placeholder={t.home.searchPlaceholder}
+        className="max-w-[720px] mt-5"
+      />
+
+      <div className="flex flex-wrap items-center gap-2 mt-4">
+        <span className="text-sm font-extrabold text-ink-2">{copy.examples}:</span>
+        {sampleQueries.map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setSearchQuery(item)}
+            className="chip-tilt min-h-11 px-3 bg-card border-2 border-ink rounded-xl text-sm font-bold cursor-pointer"
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      <div
+        role="group"
+        aria-label={t.catalog.allCategories}
+        className="scroll-row flex desk:flex-wrap gap-2 -mx-4 px-4 desk:mx-0 desk:px-0 mt-4 pb-1 overflow-x-auto desk:overflow-visible"
+      >
+        <CategoryChip
+          label={t.catalog.allCategories}
+          isActive={selectedCategory === 'all'}
+          onClick={() => setSelectedCategory('all')}
         />
-
-        {/* Quick Sample Queries */}
-        <div className="flex items-center justify-center gap-1.5 flex-wrap text-xs pt-1">
-          <span className="text-muted text-[11px]">{t.search.trendingSearch}:</span>
-          {sampleQueries.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setSearchQuery(item)}
-              className="px-2.5 py-1 rounded-xl bg-surface-elevated hover:bg-surface border border-theme text-secondary hover:text-primary text-xs transition select-none active:scale-95"
-            >
-              {item}
-            </button>
-          ))}
-        </div>
+        {MOCK_CATEGORIES.map((cat) => (
+          <CategoryChip
+            key={cat.id}
+            label={cat.names?.[language] || cat.name}
+            isActive={selectedCategory === cat.slug}
+            tintClassName={GROUP_TINT_CLASS[groupOfCategoryName(cat.name) as CollageGroupId] ?? 'bg-card'}
+            onClick={() => setSelectedCategory(cat.slug)}
+          />
+        ))}
+        <CategoryChip
+          label={t.catalog.filterEco}
+          isActive={onlyEco}
+          icon={<Leaf aria-hidden="true" className="w-4 h-4" />}
+          onClick={() => setOnlyEco(!onlyEco)}
+        />
       </div>
 
-      {/* Internal Filter Chips Container */}
-      <div className="flex items-center justify-between gap-3 border-y border-theme/60 py-3 overflow-x-auto scrollbar-none px-4 sm:px-0 -mx-4 sm:mx-0">
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setSelectedCategory('all')}
-            className={`
-              px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
-              ${
-                selectedCategory === 'all'
-                  ? 'bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817]'
-                  : 'bg-surface-elevated text-secondary hover:text-primary border border-theme'
-              }
-            `}
-          >
-            {t.catalog.allCategories}
-          </button>
-          {MOCK_CATEGORIES.map((cat) => {
-            const catName = cat.names?.[language] || cat.name;
-            const isSelected = selectedCategory === cat.slug;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.slug)}
-                className={`
-                  px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
-                  ${
-                    isSelected
-                      ? 'bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817]'
-                      : 'bg-surface-elevated text-secondary hover:text-primary border border-theme'
-                  }
-                `}
-              >
-                {catName}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-8 desk:mt-10">
+        {!query && !hasFilters ? (
+          <EmptyState
+            icon={<Search aria-hidden="true" className="w-8 h-8" />}
+            title={copy.start}
+            description={t.search.startTypingSubtitle}
+          />
+        ) : matchedStores.length === 0 && matchedProducts.length === 0 ? (
+          <EmptyState
+            title={copy.nothing}
+            description={`${query ? `${t.search.noResultsTitle}: «${searchQuery.trim()}». ` : ''}${t.search.noResultsSubtitle}`}
+            actionText={hasFilters ? copy.clearFilters : t.search.openCatalog}
+            onAction={hasFilters ? resetFilters : () => navigateTo('catalog')}
+          />
+        ) : (
+          <div className="space-y-10">
+            {matchedStores.length > 0 && (
+              <section>
+                <SectionHeading title={`${t.catalog.tabStores} (${matchedStores.length})`} />
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] pt-2 desk:gap-x-[34px] desk:gap-y-[46px] desk:grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))]">
+                  {matchedStores.map((store, index) => (
+                    <li key={store.id} className="anim-drop" style={{ animationDelay: `${(index * 0.08).toFixed(2)}s` }}>
+                      <StoreCard store={store} onClick={() => navigateTo('store', { storeId: store.id })} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setOnlyEco(!onlyEco)}
-            className={`
-              px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
-              ${
-                onlyEco
-                  ? 'bg-[#E8F5EE] dark:bg-[#132E20] text-[#1E824C] dark:text-[#48BB78] border border-[#1E824C]/30'
-                  : 'bg-surface-elevated text-secondary border border-theme'
-              }
-            `}
-          >
-            🍃 {t.catalog.filterEco}
-          </button>
-        </div>
-      </div>
-
-      {/* Results or Empty State */}
-      {!query && selectedCategory === 'all' && !onlyEco ? (
-        <div className="pt-4">
-          <div className="text-center max-w-md mx-auto p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface border border-theme">
-            <div className="w-12 h-12 rounded-2xl bg-surface-elevated text-secondary flex items-center justify-center mx-auto mb-3 border border-theme">
-              <Search className="w-6 h-6 text-[#123B35] dark:text-[#B8D96B]" />
-            </div>
-            <h3 className="text-sm sm:text-base font-bold text-primary mb-1">
-              {t.search.startTypingTitle}
-            </h3>
-            <p className="text-xs text-secondary leading-relaxed">
-              {t.search.startTypingSubtitle}
-            </p>
+            {matchedProducts.length > 0 && (
+              <section>
+                <SectionHeading title={`${t.catalog.tabProducts} (${matchedProducts.length})`} />
+                <div className="product-grid pt-2">
+                  {matchedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      inCartQuantity={getInCartQuantity(product.id)}
+                      onAddToCart={addToCart}
+                      onUpdateQuantity={updateCartQuantity}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
-        </div>
-      ) : matchedStores.length === 0 && matchedProducts.length === 0 ? (
-        <EmptyState
-          title={`${t.search.noResultsTitle} «${searchQuery}»`}
-          description={t.search.noResultsSubtitle}
-          actionText={t.search.openCatalog}
-          onAction={() => navigateTo('catalog')}
-        />
-      ) : (
-        <div className="space-y-8">
-          
-          {/* Matched Stores */}
-          {matchedStores.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <StoreIcon className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
-                <h2 className="text-base font-bold text-primary">
-                  {t.catalog.tabStores} ({matchedStores.length})
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {matchedStores.map((store) => (
-                  <StoreCard
-                    key={store.id}
-                    store={store}
-                    onClick={() => navigateTo('store', { storeId: store.id })}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Matched Products */}
-          {matchedProducts.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Package className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
-                <h2 className="text-base font-bold text-primary">
-                  {t.catalog.tabProducts} ({matchedProducts.length})
-                </h2>
-              </div>
-              <div className="product-grid">
-                {matchedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    inCartQuantity={getInCartQuantity(product.id)}
-                    onAddToCart={addToCart}
-                    onUpdateQuantity={updateCartQuantity}
-                    onClick={() => navigateTo('store', { storeId: product.storeId })}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </PageShell>
   );
 };

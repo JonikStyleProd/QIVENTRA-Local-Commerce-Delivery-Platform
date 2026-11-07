@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  X,
-  Send,
-  Image as ImageIcon,
-  ArrowLeft,
-  Check,
-  CheckCheck,
-  Store,
-  Bike,
-  Smile,
-  ShieldCheck,
-} from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Send, Image as ImageIcon, ArrowLeft, Check, CheckCheck, Store, Bike } from 'lucide-react';
 import { chatService } from '../../services/ChatService';
 import { ChatMessage, Conversation } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { PhotoUploadModal } from '../media/PhotoUploadModal';
+import { IconButton } from '../ui/IconButton';
+import { useDialogFocus } from '../collage/useDialogFocus';
 
 export interface ChatDrawerProps {
   isOpen: boolean;
@@ -30,13 +22,29 @@ export interface ChatDrawerProps {
   };
 }
 
-export const ChatDrawer: React.FC<ChatDrawerProps> = ({
-  isOpen,
-  onClose,
-  initialConversationId,
-  initialParticipant,
-}) => {
-  const { t, isRTL, language } = useLanguage();
+/** Square avatar: the participant's picture, or their kind as an icon when there is none. */
+const ParticipantAvatar: React.FC<{ conversation: Conversation; alt: string; size: string }> = ({
+  conversation,
+  alt,
+  size,
+}) => (
+  <span className={`relative grid place-items-center shrink-0 bg-tint-pets border-2 border-ink rounded-xl overflow-hidden ${size}`}>
+    {conversation.participantAvatar ? (
+      <img src={conversation.participantAvatar} alt={alt} className="w-full h-full object-cover" />
+    ) : conversation.type === 'courier' ? (
+      <Bike aria-hidden="true" className="w-5 h-5" />
+    ) : (
+      <Store aria-hidden="true" className="w-5 h-5" />
+    )}
+    {conversation.isOnline && (
+      <span aria-hidden="true" className="absolute bottom-0.5 end-0.5 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-card" />
+    )}
+  </span>
+);
+
+export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen, onClose, initialConversationId, initialParticipant }) => {
+  const { t, language } = useLanguage();
+  const copy = t.screens.chat;
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -45,8 +53,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
+  const panelRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useDialogFocus(panelRef, isOpen);
 
   // Load conversations
   useEffect(() => {
@@ -139,12 +150,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
     setInputText('');
 
     try {
-      const msg = await chatService.sendMessage(
-        activeConversation.id,
-        text,
-        undefined,
-        activeConversation.orderId
-      );
+      const msg = await chatService.sendMessage(activeConversation.id, text, undefined, activeConversation.orderId);
       setMessages((prev) => [...prev, msg]);
 
       // Show typing indicator after user message
@@ -160,12 +166,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
   const handleSendImage = async (dataUrl: string) => {
     if (!activeConversation) return;
     try {
-      const msg = await chatService.sendMessage(
-        activeConversation.id,
-        '',
-        dataUrl,
-        activeConversation.orderId
-      );
+      const msg = await chatService.sendMessage(activeConversation.id, '', dataUrl, activeConversation.orderId);
       setMessages((prev) => [...prev, msg]);
     } catch (e) {
       console.error(e);
@@ -182,317 +183,203 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
     }
   };
 
-  return (
+  const nameOf = (conv: Conversation) => conv.participantNames?.[language] || conv.participantName;
+  const roleOf = (conv: Conversation) => (conv.type === 'courier' ? copy.courier : copy.store);
+
+  return createPortal(
     <>
-      {/* Backdrop: desktop shows dark overlay, mobile covers screen */}
-      <div
-        id="chat-drawer-backdrop"
-        className={`fixed inset-0 z-50 flex ${isRTL ? 'justify-start' : 'justify-end'} bg-black/45 backdrop-blur-2xs transition-opacity`}
-        onClick={onClose}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t.chat?.title || 'Chat'}
-      >
+      <div className="fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 bg-[rgba(30,30,30,0.6)]" onClick={onClose} aria-hidden="true" />
+
         <div
-          id="chat-drawer-panel"
-          className={`w-full md:w-[400px] lg:w-[420px] h-[100dvh] max-h-screen bg-surface shadow-2xl flex flex-col border-s border-theme select-none transition-transform ${
-            isRTL ? 'text-right' : 'text-left'
-          }`}
-          onClick={(e) => e.stopPropagation()}
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t.chat.title}
+          tabIndex={-1}
+          className="anim-in relative ms-auto flex flex-col w-full desk:w-[420px] h-[100dvh] paper-dots bg-paper text-ink desk:border-s-[3px] border-ink"
         >
-          {/* HEADER */}
-          <div className="h-16 px-4 border-b border-theme flex items-center justify-between bg-surface-elevated shrink-0">
+          {/* ---------- Header ---------- */}
+          <div
+            className="flex items-center gap-2.5 px-3 py-2.5 bg-card border-b-[3px] border-ink shrink-0"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 10px)' }}
+          >
             {activeConversation ? (
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <button
-                  type="button"
+              <>
+                <IconButton
                   onClick={() => setActiveConversation(null)}
-                  className="p-1.5 -ms-1 rounded-xl text-secondary hover:text-primary hover:bg-surface transition shrink-0"
-                  aria-label={language === 'he' ? 'חזרה לשיחות' : language === 'ru' ? 'Назад к диалогам' : 'Back to conversations'}
-                >
-                  <ArrowLeft className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Avatar (not mirrored in RTL) */}
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-[#EDE9DE] dark:bg-[#1A2220] border border-theme shrink-0 flex items-center justify-center">
-                  {activeConversation.participantAvatar ? (
-                    <img
-                      src={activeConversation.participantAvatar}
-                      alt={activeConversation.participantNames?.[language] || activeConversation.participantName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : activeConversation.type === 'courier' ? (
-                    <Bike className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
-                  ) : (
-                    <Store className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
-                  )}
-                  {activeConversation.isOnline && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#1E824C] ring-2 ring-white dark:ring-stone-900" />
-                  )}
+                  aria-label={t.chat.backToList}
+                  icon={<ArrowLeft aria-hidden="true" className="w-5 h-5 rtl-flip" />}
+                />
+                <ParticipantAvatar conversation={activeConversation} alt="" size="w-11 h-11" />
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-black leading-tight truncate">
+                    <bdi>{nameOf(activeConversation)}</bdi>
+                  </h2>
+                  <p className="text-[13px] font-bold text-ink-2 truncate">
+                    {roleOf(activeConversation)} ·{' '}
+                    {activeConversation.orderId ? (
+                      <>
+                        {copy.order} <bdi>#{activeConversation.orderId}</bdi>
+                      </>
+                    ) : (
+                      t.chat.online
+                    )}
+                  </p>
                 </div>
-
-                {/* Info */}
-                <div className="truncate flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="text-xs sm:text-sm font-bold text-primary truncate leading-tight">
-                      {activeConversation.participantNames?.[language] || activeConversation.participantName}
-                    </h4>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#123B35]/10 dark:bg-[#B8D96B]/15 text-[#123B35] dark:text-[#B8D96B] font-semibold shrink-0">
-                      {activeConversation.type === 'courier'
-                        ? (language === 'he' ? 'שליח' : language === 'ru' ? 'Курьер' : 'Courier')
-                        : (language === 'he' ? 'חנות' : language === 'ru' ? 'Магазин' : 'Store')}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-muted block truncate">
-                    {activeConversation.orderId
-                      ? `${language === 'he' ? 'הזמנה' : language === 'ru' ? 'Заказ' : 'Order'} #${activeConversation.orderId}`
-                      : (language === 'he' ? 'מחובר' : language === 'ru' ? 'В сети' : 'Online')}
-                  </span>
-                </div>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
-                <h3 className="text-sm font-bold text-primary">
-                  {language === 'he' ? 'הודעות וצ\'אט' : language === 'ru' ? 'Сообщения & Чат' : 'Messages & Chat'}
-                </h3>
+              <div className="flex-1 min-w-0">
+                <p className="hand text-2xl leading-none text-action">{copy.note}</p>
+                <h2 className="text-xl font-black leading-tight">{t.screens.menu.messages}</h2>
               </div>
             )}
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-xl text-muted hover:text-primary hover:bg-surface transition shrink-0 ms-2"
-              aria-label={language === 'he' ? 'סגור צ\'אט' : language === 'ru' ? 'Закрыть чат' : 'Close chat'}
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <IconButton onClick={onClose} aria-label={copy.close} icon={<X aria-hidden="true" className="w-5 h-5" />} />
           </div>
 
-          {/* BODY */}
+          {/* ---------- Body ---------- */}
           {activeConversation ? (
-            /* ACTIVE CHAT THREAD */
-            <div className="flex-1 flex flex-col min-h-0 bg-app overflow-hidden">
-              {/* Message List */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 overscroll-contain">
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3">
+                {messages.length === 0 && !isTyping && (
+                  <p className="hand pt-10 text-center text-[28px] leading-tight text-link-text">{copy.start}</p>
+                )}
                 {messages.map((msg) => {
                   const isMe = msg.senderRole === 'customer';
-                  const displayMessageText = msg.texts?.[language] || msg.text;
+                  const text = msg.texts?.[language] || msg.text;
                   return (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
-                    >
+                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                       <div
-                        className={`max-w-[85%] rounded-2xl p-3 text-xs shadow-2xs leading-relaxed break-words ${
-                          isMe
-                            ? 'bg-[#123B35] text-[#F3F1EA] rounded-br-xs'
-                            : 'bg-surface text-primary border border-theme rounded-bl-xs'
+                        className={`max-w-[85%] p-3 border-2 border-ink rounded-2xl shadow-hard-2 break-words ${
+                          isMe ? 'bg-accent text-ink rounded-ee-sm' : 'bg-card rounded-es-sm'
                         }`}
                       >
-                        {/* Attached Image if any */}
                         {msg.imageUrl && (
-                          <div className="rounded-xl overflow-hidden mb-2 max-h-56 bg-black/10">
-                            <img
-                              src={msg.imageUrl}
-                              alt="Attachment"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                          <img
+                            src={msg.imageUrl}
+                            alt={copy.attachment}
+                            className="w-full max-h-56 mb-2 object-cover rounded-lg"
+                          />
                         )}
-
-                        {displayMessageText && <p>{displayMessageText}</p>}
-
-                        {/* Timestamp and ticks */}
-                        <div
-                          className={`flex items-center justify-end gap-1 mt-1 text-[9px] font-mono tabular-nums ${
-                            isMe ? 'text-[#F3F1EA]/70' : 'text-muted'
-                          }`}
-                        >
+                        {text && <p className="font-bold leading-snug">{text}</p>}
+                        <div className="flex items-center justify-end gap-1 mt-1 text-xs font-bold text-ink-2 tabular-nums">
                           <span>{formatTimestamp(msg.timestamp)}</span>
-                          {isMe && (
-                            <span>
-                              {msg.status === 'read' ? (
-                                <CheckCheck className="w-3 h-3 text-[#B8D96B]" />
-                              ) : (
-                                <Check className="w-3 h-3 text-white/60" />
-                              )}
-                            </span>
-                          )}
+                          {isMe &&
+                            (msg.status === 'read' ? (
+                              <CheckCheck aria-hidden="true" className="w-3.5 h-3.5" />
+                            ) : (
+                              <Check aria-hidden="true" className="w-3.5 h-3.5" />
+                            ))}
                         </div>
                       </div>
                     </div>
                   );
                 })}
 
-                {/* Typing Indicator */}
                 {isTyping && (
-                  <div className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-surface border border-theme text-muted text-xs max-w-[120px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce delay-100" />
-                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce delay-200" />
-                    <span className="text-[10px] ms-1">
-                      {language === 'he' ? 'מקליד...' : language === 'ru' ? 'Печатает...' : 'Typing...'}
-                    </span>
-                  </div>
+                  <p role="status" className="hand inline-block text-2xl leading-none text-link-text">
+                    {t.chat.typing}
+                  </p>
                 )}
 
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input Bar (stays firmly at the bottom) */}
-              <div
-                className="p-3 bg-surface border-t border-theme shrink-0"
-                style={{
-                  paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))',
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage();
                 }}
+                className="flex items-center gap-2 p-3 bg-card border-t-[3px] border-ink shrink-0"
+                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
               >
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }}
-                  className="flex items-center gap-2"
+                <IconButton
+                  onClick={() => setIsPhotoModalOpen(true)}
+                  aria-label={t.chat.attachPhoto}
+                  title={t.chat.attachPhoto}
+                  icon={<ImageIcon aria-hidden="true" className="w-5 h-5" />}
+                />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  maxLength={1000}
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  aria-label={t.chat.typeMessage}
+                  placeholder={t.chat.typeMessage}
+                  className="flex-1 min-w-0 min-h-11 px-3 bg-card text-ink border-2 border-ink rounded-xl font-bold placeholder:text-ink-3 placeholder:font-semibold"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputText.trim()}
+                  aria-label={t.chat.send}
+                  className="chip-tilt grid place-items-center w-11 h-11 shrink-0 bg-link text-white border-2 border-ink rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setIsPhotoModalOpen(true)}
-                    className="p-2 rounded-xl text-secondary hover:text-primary hover:bg-surface-elevated transition shrink-0"
-                    aria-label={language === 'he' ? 'צרף תמונה' : language === 'ru' ? 'Прикрепить фото' : 'Attach photo'}
-                  >
-                    <ImageIcon className="w-5 h-5" />
-                  </button>
-
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    maxLength={1000}
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder={
-                      language === 'he'
-                        ? 'כתוב הודעה...'
-                        : language === 'ru'
-                        ? 'Напишите сообщение...'
-                        : 'Type a message...'
-                    }
-                    className="flex-1 bg-surface-elevated border border-theme rounded-xl px-3 py-2 text-xs sm:text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#123B35] dark:focus:ring-[#B8D96B]"
-                  />
-
-                  <button
-                    type="submit"
-                    disabled={!inputText.trim()}
-                    className="p-2.5 rounded-xl bg-[#123B35] text-[#F3F1EA] hover:bg-[#0E2E29] disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0 dark:bg-[#B8D96B] dark:text-[#151817] dark:hover:bg-[#A6C958]"
-                    aria-label={language === 'he' ? 'שלח הודעה' : language === 'ru' ? 'Отправить' : 'Send message'}
-                  >
-                    <Send className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
-                  </button>
-                </form>
-              </div>
+                  <Send aria-hidden="true" className="w-4 h-4 rtl-flip" />
+                </button>
+              </form>
             </div>
+          ) : conversations.length === 0 ? (
+            <p className="p-8 text-center font-bold text-ink-2">{t.chat.emptyConversations}</p>
           ) : (
-            /* CONVERSATIONS LIST */
-            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-app overscroll-contain">
-              {conversations.length === 0 ? (
-                <div className="p-8 text-center text-muted text-xs">
-                  {language === 'he'
-                    ? 'אין שיחות פעילות כרגע'
-                    : language === 'ru'
-                    ? 'Нет активных переписок'
-                    : 'No active conversations'}
-                </div>
-              ) : (
-                conversations.map((conv) => {
-                  const participantName = conv.participantNames?.[language] || conv.participantName;
-                  const roleLabel = conv.type === 'courier'
-                    ? (language === 'he' ? 'שליח' : language === 'ru' ? 'Курьер' : 'Courier')
-                    : (language === 'he' ? 'חנות' : language === 'ru' ? 'Магазин' : 'Store');
-                  const storeOrOrder = conv.orderId
-                    ? `${language === 'he' ? 'הזמנה' : language === 'ru' ? 'Заказ' : 'Order'} #${conv.orderId}`
-                    : conv.storeId ? conv.storeId : '';
-                  const lastMsg = conv.lastMessages?.[language] || conv.lastMessage || (language === 'he' ? 'התחל שיחה...' : language === 'ru' ? 'Начните диалог...' : 'Start a conversation...');
-
-                  return (
-                    <div
-                      key={conv.id}
+            <ul className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-2.5">
+              {conversations.map((conv) => {
+                const lastMessage = conv.lastMessages?.[language] || conv.lastMessage || copy.start;
+                return (
+                  <li key={conv.id}>
+                    <button
+                      type="button"
                       onClick={() => setActiveConversation(conv)}
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-surface border border-theme hover:border-secondary cursor-pointer transition shadow-2xs group select-none"
+                      className="chip-tilt flex items-center gap-3 w-full p-3 text-start bg-card border-2 border-ink rounded-2xl shadow-hard-3 cursor-pointer"
                     >
-                      {/* Avatar (not mirrored in RTL) */}
-                      <div className="relative w-11 h-11 rounded-2xl overflow-hidden bg-[#EDE9DE] dark:bg-[#1A2220] border border-theme shrink-0 flex items-center justify-center">
-                        {conv.participantAvatar ? (
-                          <img
-                            src={conv.participantAvatar}
-                            alt={participantName}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : conv.type === 'courier' ? (
-                          <Bike className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
-                        ) : (
-                          <Store className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
-                        )}
-                        {conv.isOnline && (
-                          <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-[#1E824C] ring-2 ring-white dark:ring-stone-900" />
-                        )}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        {/* Top: Name, Role badge, and Time */}
-                        <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
-                          <div className="flex items-center gap-1.5 min-w-0 truncate">
-                            <h4 className="text-xs font-bold text-primary truncate group-hover:text-[#123B35] dark:group-hover:text-[#B8D96B]">
-                              {participantName}
-                            </h4>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-[#123B35]/10 dark:bg-[#B8D96B]/15 text-[#123B35] dark:text-[#B8D96B] shrink-0">
-                              {roleLabel}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-muted shrink-0 tabular-nums">
+                      <ParticipantAvatar conversation={conv} alt="" size="w-12 h-12" />
+                      <span className="flex-1 min-w-0">
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="font-black truncate">
+                            <bdi>{nameOf(conv)}</bdi>
+                          </span>
+                          <span className="text-xs font-bold text-ink-3 shrink-0 tabular-nums">
                             {formatTimestamp(conv.lastMessageTimestamp)}
                           </span>
-                        </div>
-
-                        {/* Middle: Store / Order tag */}
-                        {storeOrOrder && (
-                          <div className="text-[10px] text-muted truncate mb-0.5 font-medium">
-                            {storeOrOrder}
-                          </div>
-                        )}
-
-                        {/* Bottom: Last message and unread badge */}
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-[11px] text-secondary truncate flex-1 min-w-0">
-                            {lastMsg}
-                          </p>
+                        </span>
+                        <span className="block text-xs font-bold text-ink-2 truncate">
+                          {roleOf(conv)}
+                          {conv.orderId && (
+                            <>
+                              {' · '}
+                              {copy.order} <bdi>#{conv.orderId}</bdi>
+                            </>
+                          )}
+                        </span>
+                        <span className="flex items-center justify-between gap-2 mt-0.5">
+                          <span className="text-sm font-bold text-ink-2 truncate">{lastMessage}</span>
                           {conv.unreadCount > 0 && (
-                            <span className="min-w-[18px] h-4 px-1 rounded-full bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817] text-[10px] font-black flex items-center justify-center shrink-0 tabular-nums">
+                            <span className="grid place-items-center shrink-0 min-w-[22px] h-[22px] px-1 bg-accent text-ink border-2 border-ink rounded-full text-[11px] font-black tabular-nums">
                               {conv.unreadCount}
                             </span>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </div>
       </div>
 
-      {/* Attach Photo Modal */}
       <PhotoUploadModal
         isOpen={isPhotoModalOpen}
         onClose={() => setIsPhotoModalOpen(false)}
         category="chat"
-        title={language === 'he' ? 'צרף תמונה' : language === 'ru' ? 'Прикрепить фото' : 'Attach Photo'}
+        title={t.chat.attachPhoto}
         onSuccess={(dataUrl) => {
           handleSendImage(dataUrl);
           setIsPhotoModalOpen(false);
         }}
       />
-    </>
+    </>,
+    document.body
   );
 };

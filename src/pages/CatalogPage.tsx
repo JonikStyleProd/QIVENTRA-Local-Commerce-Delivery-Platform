@@ -1,257 +1,224 @@
-import React, { useState, useMemo } from 'react';
-import { Leaf, Zap, ArrowUpDown } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Leaf, Zap, Search, Store as StoreIcon } from 'lucide-react';
+import { usePromotions } from '../context/PromotionsContext';
+import { ProductLabel, filterProductsByLabels } from '../data/promotions';
+import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { MOCK_CATEGORIES, MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
+import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
+import { COLLAGE_GROUPS, GROUP_TINT_CLASS, groupFromSlug, groupOfCategoryName } from '../data/collageCatalog';
 import { StoreCard } from '../components/ui/StoreCard';
 import { ProductCard } from '../components/ui/ProductCard';
-import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
+import { Button } from '../components/ui/Button';
+import { BottomPanel } from '../components/collage/BottomPanel';
+import { CategoryChip } from '../components/collage/CategoryChip';
+import { StepHeader } from '../components/collage/StepHeader';
 
+type SortKey = 'deliveryTime' | 'minOrder';
+
+/** Step 1 of the path: shop picker (N9-Stores / M9-Stores) with the existing filters and products tab. */
 export const CatalogPage: React.FC = () => {
   const {
     selectedCategorySlug,
     setSelectedCategorySlug,
+    selectedStoreId,
+    pickStore,
     navigateTo,
     addToCart,
     updateCartQuantity,
     cart,
   } = useApp();
 
-  const { language, t } = useLanguage();
+  const { language, t, formatTimeRange } = useLanguage();
+  const { labelsFor } = usePromotions();
+  const copy = t.collage.stores;
 
   const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
   const [filterEcoOnly, setFilterEcoOnly] = useState(false);
   const [filterFreeDeliveryOnly, setFilterFreeDeliveryOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<'rating' | 'deliveryTime' | 'minOrder'>('rating');
+  const [filterKosher, setFilterKosher] = useState(false);
+  const [filterVegan, setFilterVegan] = useState(false);
+  const [sortBy, setSortBy] = useState<SortKey>('deliveryTime');
 
-  const selectedCategory = useMemo(() => {
-    if (!selectedCategorySlug) return null;
-    return MOCK_CATEGORIES.find((c) => c.slug === selectedCategorySlug);
-  }, [selectedCategorySlug]);
+  const activeGroup = groupFromSlug(selectedCategorySlug);
 
   const filteredStores = useMemo(() => {
     let list = [...MOCK_STORES];
 
-    if (selectedCategory) {
-      list = list.filter((s) => s.category.toLowerCase().includes(selectedCategory.slug.toLowerCase()) || (s.categories && Object.values(s.categories).some(v => typeof v === 'string' && v.toLowerCase().includes(selectedCategory.slug.toLowerCase()))));
+    if (activeGroup !== 'all') {
+      list = list.filter((s) => groupOfCategoryName(s.category) === activeGroup);
     }
-
     if (filterEcoOnly) {
       list = list.filter((s) => s.isEco);
     }
-
     if (filterFreeDeliveryOnly) {
       list = list.filter((s) => s.deliveryFee === 0);
     }
 
-    if (sortBy === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === 'deliveryTime') {
+    if (sortBy === 'deliveryTime') {
       list.sort((a, b) => a.deliveryTimeMin - b.deliveryTimeMin);
     } else if (sortBy === 'minOrder') {
       list.sort((a, b) => a.minOrder - b.minOrder);
     }
 
     return list;
-  }, [selectedCategory, filterEcoOnly, filterFreeDeliveryOnly, sortBy]);
+  }, [activeGroup, filterEcoOnly, filterFreeDeliveryOnly, sortBy]);
+
+  const requiredLabels = useMemo(() => {
+    const required: ProductLabel[] = [];
+    if (filterEcoOnly) required.push('eco');
+    if (filterKosher) required.push('kosher');
+    if (filterVegan) required.push('vegan');
+    return required;
+  }, [filterEcoOnly, filterKosher, filterVegan]);
 
   const filteredProducts = useMemo(() => {
-    let list = [...MOCK_PRODUCTS];
+    const inGroup =
+      activeGroup === 'all' ? MOCK_PRODUCTS : MOCK_PRODUCTS.filter((p) => groupOfCategoryName(p.category) === activeGroup);
+    return filterProductsByLabels(inGroup, requiredLabels, labelsFor);
+  }, [activeGroup, requiredLabels, labelsFor]);
 
-    if (selectedCategory) {
-      list = list.filter((p) => p.category.toLowerCase().includes(selectedCategory.slug.toLowerCase()));
-    }
+  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
-    return list;
-  }, [selectedCategory]);
-
-  const getInCartQuantity = (productId: string) => {
-    const item = cart.find((i) => i.product.id === productId);
-    return item ? item.quantity : 0;
+  const resetFilters = () => {
+    setSelectedCategorySlug(null);
+    setFilterEcoOnly(false);
+    setFilterFreeDeliveryOnly(false);
+    setFilterKosher(false);
+    setFilterVegan(false);
   };
 
-  const getPlacesLabel = (count: number) => {
-    if (language === 'he') {
-      return `${count} ${t.catalog.allPlaces}`;
-    }
-    if (language === 'en') {
-      return `${count} ${t.catalog.allPlaces}`;
-    }
-    return `${count} ${t.catalog.allPlaces}`;
-  };
+  // The panel follows the mockups: it shows only while the picked shop is on screen.
+  const pickedStore = filteredStores.find((s) => s.id === selectedStoreId);
+  const pickedName = pickedStore
+    ? t.collage.storeCopy[pickedStore.id]?.name || pickedStore.names?.[language] || pickedStore.name
+    : '';
 
   return (
-    <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12 py-8 space-y-8">
-      
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
-              {selectedCategory ? (selectedCategory.names?.[language] || selectedCategory.name) : t.catalog.title}
-            </h1>
-            <Badge variant="pistachio" size="sm">
-              {getPlacesLabel(filteredStores.length)}
-            </Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-secondary">
-            {selectedCategory
-              ? (selectedCategory.descriptions?.[language] || selectedCategory.description)
-              : t.catalog.defaultSubtitle}
-          </p>
+    <div className="paper-dots min-h-screen pb-10">
+      <StepHeader
+        step={copy.step}
+        title={copy.titleMobile}
+        backLabel={copy.back}
+        onBack={() => navigateTo('home')}
+      />
+
+      <section className="max-w-[1360px] mx-auto desk:px-10 desk:pt-2.5 pb-3 desk:pb-[30px]">
+        <div className="hidden desk:block mb-6">
+          <p className="hand anim-in inline-block text-[30px] text-action -rotate-2">{copy.step}</p>
+          <h1 className="anim-in font-black tracking-[-0.03em] leading-none text-[clamp(46px,5.6vw,88px)]">{copy.title}</h1>
         </div>
 
-        {/* View Toggle Tabs (Stores vs Products) */}
-        <div className="flex items-center bg-surface-elevated p-1 rounded-2xl border border-theme self-start">
-          <button
-            type="button"
-            onClick={() => setActiveTab('stores')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition select-none ${
-              activeTab === 'stores'
-                ? 'bg-[#123B35] text-[#F3F1EA] shadow-xs'
-                : 'text-secondary hover:text-primary'
-            }`}
-          >
-            {t.catalog.tabStores} ({filteredStores.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('products')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition select-none ${
-              activeTab === 'products'
-                ? 'bg-[#123B35] text-[#F3F1EA] shadow-xs'
-                : 'text-secondary hover:text-primary'
-            }`}
-          >
-            {t.catalog.tabProducts} ({filteredProducts.length})
-          </button>
-        </div>
-      </div>
-
-      {/* Categories Horizontal Pills Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 px-4 sm:px-0 -mx-4 sm:mx-0 scrollbar-none">
-        <button
-          type="button"
-          onClick={() => setSelectedCategorySlug(null)}
-          className={`
-            px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition border select-none
-            ${
-              selectedCategorySlug === null
-                ? 'bg-[#123B35] text-[#F3F1EA] border-[#123B35]'
-                : 'bg-surface text-secondary hover:text-primary border-theme'
-            }
-          `}
+        <div
+          role="group"
+          aria-label={copy.catLabel}
+          className="scroll-row flex desk:flex-wrap gap-2 desk:gap-2.5 overflow-x-auto desk:overflow-visible px-4 desk:px-0 pt-3 pb-2 desk:py-0"
         >
-          {t.catalog.allCategories}
-        </button>
-
-        {MOCK_CATEGORIES.map((cat) => {
-          const isSelected = selectedCategorySlug === cat.slug;
-          const catName = cat.names?.[language] || cat.name;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategorySlug(cat.slug)}
-              className={`
-                px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition border select-none
-                ${
-                  isSelected
-                    ? 'bg-[#123B35] text-[#F3F1EA] border-[#123B35]'
-                    : 'bg-surface text-secondary hover:text-primary border-theme'
-                }
-              `}
-            >
-              {catName}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Quick Filters & Sorting Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 pb-2 border-y border-theme">
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setFilterFreeDeliveryOnly(!filterFreeDeliveryOnly)}
-            className={`
-              inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition select-none
-              ${
-                filterFreeDeliveryOnly
-                  ? 'bg-[#123B35] text-[#F3F1EA] border-[#123B35]'
-                  : 'bg-surface text-secondary hover:text-primary border-theme'
-              }
-            `}
-          >
-            <Zap className="w-3.5 h-3.5" />
-            <span>{t.catalog.filterFreeDelivery}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setFilterEcoOnly(!filterEcoOnly)}
-            className={`
-              inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition select-none
-              ${
-                filterEcoOnly
-                  ? 'bg-[#123B35] text-[#F3F1EA] border-[#123B35]'
-                  : 'bg-surface text-secondary hover:text-primary border-theme'
-              }
-            `}
-          >
-            <Leaf className="w-3.5 h-3.5" />
-            <span>{t.catalog.filterEco}</span>
-          </button>
+          {COLLAGE_GROUPS.map((group) => (
+            <CategoryChip
+              key={group}
+              label={t.collage.groups[group]}
+              tintClassName={GROUP_TINT_CLASS[group]}
+              isActive={activeGroup === group}
+              onClick={() => setSelectedCategorySlug(group === 'all' ? null : group)}
+            />
+          ))}
         </div>
 
-        {/* Sort selector */}
-        <div className="flex items-center gap-2 text-xs text-secondary">
-          <ArrowUpDown className="w-3.5 h-3.5 text-muted" />
-          <span className="hidden sm:inline">{t.catalog.sortLabel}:</span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-surface border border-theme text-primary text-xs rounded-xl px-2.5 py-1.5 focus:outline-none cursor-pointer"
-          >
-            <option value="rating">{t.catalog.sortRating}</option>
-            <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
-            <option value="minOrder">{t.catalog.sortMinOrder}</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Content View: Stores or Products */}
-      {activeTab === 'stores' ? (
-        filteredStores.length === 0 ? (
-          <EmptyState
-            title={t.catalog.emptyStoresTitle}
-            description={t.catalog.emptyStoresDesc}
-            actionText={t.catalog.resetFilters}
-            onAction={() => {
-              setSelectedCategorySlug(null);
-              setFilterEcoOnly(false);
-              setFilterFreeDeliveryOnly(false);
-            }}
-          />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStores.map((store) => (
-              <StoreCard
-                key={store.id}
-                store={store}
-                onClick={() => navigateTo('store', { storeId: store.id })}
-              />
+        {/* Existing catalog controls that the mockups do not show but the product keeps. */}
+        <div className="scroll-row flex desk:flex-wrap items-center gap-2 mt-1 desk:mt-4 px-4 desk:px-0 pb-1 overflow-x-auto desk:overflow-visible">
+          <div className="seg-group inline-flex shrink-0 bg-card border-2 border-ink rounded-xl overflow-hidden">
+            {(['stores', 'products'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                aria-pressed={activeTab === tab}
+                className={`min-h-11 px-3 text-sm font-extrabold cursor-pointer ${
+                  activeTab === tab ? 'bg-ink text-paper' : 'bg-card text-ink'
+                }`}
+              >
+                {tab === 'stores' ? t.collage.tabs.shops : t.catalog.tabProducts}
+              </button>
             ))}
           </div>
-        )
-      ) : (
-        filteredProducts.length === 0 ? (
+          {/* A delivery fee belongs to a shop, so this filter has no meaning on the products tab. */}
+          {activeTab === 'stores' && (
+            <CategoryChip
+              label={t.catalog.filterFreeDelivery}
+              isActive={filterFreeDeliveryOnly}
+              onClick={() => setFilterFreeDeliveryOnly(!filterFreeDeliveryOnly)}
+              icon={<Zap aria-hidden="true" className="w-4 h-4" />}
+            />
+          )}
+          <CategoryChip
+            label={t.catalog.filterEco}
+            isActive={filterEcoOnly}
+            onClick={() => setFilterEcoOnly(!filterEcoOnly)}
+            icon={<Leaf aria-hidden="true" className="w-4 h-4" />}
+          />
+          {activeTab === 'products' && (
+            <>
+              <CategoryChip
+                label={t.promotions.labels.kosher}
+                isActive={filterKosher}
+                onClick={() => setFilterKosher(!filterKosher)}
+                icon={FACT_LABEL_ICON.kosher}
+              />
+              <CategoryChip
+                label={t.promotions.labels.vegan}
+                isActive={filterVegan}
+                onClick={() => setFilterVegan(!filterVegan)}
+                icon={FACT_LABEL_ICON.vegan}
+              />
+            </>
+          )}
+          <label className="inline-flex items-center gap-1.5 shrink-0 text-sm font-extrabold whitespace-nowrap">
+            <span>{t.catalog.sortLabel}:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortKey)}
+              className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
+            >
+              <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
+              <option value="minOrder">{t.catalog.sortMinOrder}</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => navigateTo('search')}
+            className="desk:hidden inline-flex items-center gap-1.5 shrink-0 min-h-11 px-2 text-sm font-extrabold underline cursor-pointer"
+          >
+            <Search aria-hidden="true" className="w-4 h-4" />
+            {t.nav.search}
+          </button>
+        </div>
+      </section>
+
+      <section className="max-w-[1360px] mx-auto px-4 desk:px-10 pt-2.5 desk:pt-[30px]">
+        {activeTab === 'stores' ? (
+          filteredStores.length === 0 ? (
+            <EmptyState title={copy.emptyT} description={copy.emptyD} actionText={copy.showAll} onAction={resetFilters} />
+          ) : (
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] desk:gap-x-[34px] desk:gap-y-[46px] desk:grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))]">
+              {filteredStores.map((store, index) => (
+                <li key={store.id} className="anim-drop" style={{ animationDelay: `${(index * 0.08).toFixed(2)}s` }}>
+                  <StoreCard
+                    store={store}
+                    isSelected={store.id === selectedStoreId}
+                    onClick={() => pickStore(store.id)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )
+        ) : filteredProducts.length === 0 ? (
           <EmptyState
-            title={t.catalog.emptyProductsTitle}
-            description={t.catalog.emptyProductsDesc}
-            actionText={t.catalog.allProducts}
-            onAction={() => setSelectedCategorySlug(null)}
+            title={requiredLabels.length > 0 ? t.promotions.filters.emptyTitle : copy.emptyT}
+            description={requiredLabels.length > 0 ? t.promotions.filters.emptyDesc : t.catalog.emptyProductsDesc}
+            actionText={requiredLabels.length > 0 ? t.promotions.filters.reset : copy.showAll}
+            onAction={resetFilters}
           />
         ) : (
           <div className="product-grid">
@@ -262,11 +229,42 @@ export const CatalogPage: React.FC = () => {
                 inCartQuantity={getInCartQuantity(product.id)}
                 onAddToCart={addToCart}
                 onUpdateQuantity={updateCartQuantity}
-                onClick={() => navigateTo('store', { storeId: product.storeId })}
               />
             ))}
           </div>
-        )
+        )}
+      </section>
+
+      {pickedStore && (
+        <BottomPanel
+          note={copy.chosen}
+          title={
+            <>
+              <bdi>{pickedName}</bdi> · {formatTimeRange(pickedStore.deliveryTimeMin, pickedStore.deliveryTimeMax)}
+            </>
+          }
+        >
+          <button
+            type="button"
+            onClick={() => navigateTo('store', { storeId: pickedStore.id })}
+            aria-label={`${copy.openStore}: ${pickedName}`}
+            className="chip-tilt inline-flex items-center justify-center gap-1.5 min-w-11 min-h-[52px] px-2.5 desk:px-4 bg-card border-2 border-ink rounded-[14px] font-extrabold cursor-pointer"
+          >
+            <StoreIcon aria-hidden="true" className="w-5 h-5 shrink-0" />
+            <span className="hidden desk:inline whitespace-nowrap">{copy.openStore}</span>
+          </button>
+          <Button
+            size="lg"
+            onClick={() => {
+              pickStore(pickedStore.id);
+              navigateTo('delivery');
+            }}
+            className="whitespace-nowrap px-3.5 desk:px-6"
+          >
+            <span className="desk:hidden">{copy.nextMobile}</span>
+            <span className="hidden desk:inline">{copy.next}</span>
+          </Button>
+        </BottomPanel>
       )}
     </div>
   );

@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Camera, RefreshCw, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Upload, Camera, RefreshCw, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { mediaService } from '../../services/MediaService';
 import { MediaItem } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
 
 export interface PhotoUploadModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
   onSuccess,
   onDelete,
 }) => {
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,8 +39,6 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  if (!isOpen) return null;
-
   const handleFileSelect = async (file: File) => {
     setErrorMessage(null);
     setIsSuccess(false);
@@ -48,10 +47,10 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
     if (!validation.valid) {
       const msg =
         validation.errorKey === 'media.fileTooLarge'
-          ? (t.media?.fileTooLarge || 'File size exceeds 8MB limit')
+          ? t.media.fileTooLarge
           : validation.errorKey === 'media.invalidSignature'
-          ? (t.media?.invalidSignature || 'Corrupted or unsupported image file. Only JPG, PNG and WebP allowed.')
-          : (t.media?.invalidType || 'Only JPG, PNG and WebP formats supported');
+          ? t.media.invalidSignature
+          : t.media.invalidType;
       setErrorMessage(msg);
       return;
     }
@@ -89,12 +88,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
 
     try {
       setProgress(10);
-      const mediaItem = await mediaService.uploadFile(
-        selectedFile,
-        category,
-        entityId,
-        (pct) => setProgress(pct)
-      );
+      const mediaItem = await mediaService.uploadFile(selectedFile, category, entityId, (pct) => setProgress(pct));
 
       setIsSuccess(true);
       setTimeout(() => {
@@ -103,7 +97,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
       }, 500);
     } catch (err: any) {
       setProgress(null);
-      setErrorMessage(err.message || 'Upload failed');
+      setErrorMessage(err.message || t.media.invalidType);
     }
   };
 
@@ -115,191 +109,147 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div
-        className={`relative w-full max-w-md rounded-2xl bg-surface p-5 sm:p-6 shadow-2xl border border-theme text-primary transition-all select-none ${
-          isRTL ? 'text-right' : 'text-left'
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-theme">
-          <h3 className="text-base font-bold text-primary">{title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-muted hover:text-primary hover:bg-surface-elevated transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="md">
+      <div className="space-y-4">
+        {errorMessage && (
+          <p role="alert" className="flex items-center gap-2 p-3 bg-danger-bg text-danger border-2 border-danger rounded-xl text-sm font-bold">
+            <AlertCircle aria-hidden="true" className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </p>
+        )}
 
-        {/* Content Body */}
-        <div className="mt-4 space-y-4">
-          {/* Error Banner */}
-          {errorMessage && (
-            <div className="p-3 rounded-xl bg-[#FDECEB] dark:bg-[#3D1919] border border-[#C53030]/30 text-[#C53030] dark:text-[#FC8181] text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
+        {isSuccess && (
+          <p role="status" className="flex items-center gap-2 p-3 bg-success-bg text-success border-2 border-success rounded-xl text-sm font-bold">
+            <CheckCircle2 aria-hidden="true" className="w-4 h-4 shrink-0" />
+            <span>{t.media.uploadSuccess}</span>
+          </p>
+        )}
 
-          {/* Success Banner */}
-          {isSuccess && (
-            <div className="p-3 rounded-xl bg-[#E8F5EE] dark:bg-[#132E20] border border-[#1E824C]/30 text-[#1E824C] dark:text-[#48BB78] text-xs flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
-              <span>{t.media?.uploadSuccess || 'Image saved successfully!'}</span>
-            </div>
-          )}
-
-          {/* Image Preview & Crop Area */}
-          {previewUrl ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden border-2 border-theme bg-[#EDE9DE] dark:bg-[#1A2220] shadow-inner">
+        {previewUrl ? (
+          <div className="flex flex-col items-center gap-3">
+            <div className="bg-card p-2 pb-3 -rotate-2 shadow-polaroid">
+              <div className="w-44 h-44 desk:w-52 desk:h-52 overflow-hidden bg-tint-pets">
                 <img
                   src={previewUrl}
-                  alt="Preview"
+                  alt=""
                   style={{ transform: `scale(${zoom})` }}
-                  className="w-full h-full object-cover transition-transform duration-100"
+                  className="w-full h-full object-cover"
                 />
               </div>
+            </div>
 
-              {/* Zoom & Adjust */}
-              <div className="w-full px-4 flex items-center gap-3 text-xs text-secondary">
-                <span>{t.media?.zoom || 'Scale:'}</span>
-                <input
-                  type="range"
-                  min="1"
-                  max="2.5"
-                  step="0.05"
-                  value={zoom}
-                  onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="w-full accent-[#123B35] dark:accent-[#B8D96B]"
-                />
-                <span className="tabular-nums font-mono text-[11px]">{Math.round(zoom * 100)}%</span>
-              </div>
+            <label className="flex items-center gap-3 w-full text-sm font-bold">
+              <span className="shrink-0">{t.media.zoom}</span>
+              <input
+                type="range"
+                min="1"
+                max="2.5"
+                step="0.05"
+                value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="flex-1 min-w-0 accent-action"
+              />
+              <span className="shrink-0 tabular-nums">{Math.round(zoom * 100)}%</span>
+            </label>
 
-              {/* Action Buttons for current image */}
-              <div className="flex items-center gap-2 w-full pt-1">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-surface-elevated hover:bg-[#EDE9DE] dark:hover:bg-[#252E2B] border border-theme text-xs font-semibold text-primary transition"
+            <div className="flex flex-wrap gap-2 w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<RefreshCw aria-hidden="true" className="w-4 h-4" />}
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1"
+              >
+                {t.media.replace}
+              </Button>
+              {currentImageUrl && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Trash2 aria-hidden="true" className="w-4 h-4" />}
+                  onClick={handleDelete}
                 >
-                  <RefreshCw className="w-3.5 h-3.5 text-secondary" />
-                  <span>{t.media?.replace || 'Replace'}</span>
-                </button>
-                {currentImageUrl && (
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#FDECEB] dark:bg-[#3D1919] hover:bg-red-200 dark:hover:bg-red-900/40 text-xs font-semibold text-[#C53030] dark:text-[#FC8181] transition"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>{t.media?.delete || 'Delete'}</span>
-                  </button>
-                )}
-              </div>
+                  {t.media.delete}
+                </Button>
+              )}
             </div>
-          ) : (
-            /* Drag & Drop Dropzone */
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`p-6 sm:p-8 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition ${
-                isDragging
-                  ? 'border-[#123B35] dark:border-[#B8D96B] bg-[#123B35]/5 dark:bg-[#B8D96B]/10'
-                  : 'border-theme hover:border-secondary bg-surface-elevated'
-              }`}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#252E2B] shadow-xs flex items-center justify-center text-[#123B35] dark:text-[#B8D96B] mb-3">
-                <Upload className="w-6 h-6" />
-              </div>
-              <h4 className="text-xs sm:text-sm font-bold text-primary mb-1">
-                {t.media?.dropzoneTitle || 'Drag and drop image here or click to browse'}
-              </h4>
-              <p className="text-[11px] text-muted max-w-xs mb-3">
-                {t.media?.allowedFormats || 'Supports JPG, PNG, WebP up to 8MB'}
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1.5 rounded-lg bg-surface border border-theme text-xs font-semibold text-primary">
-                  {t.media?.browse || 'Choose File'}
-                </span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    cameraInputRef.current?.click();
-                  }}
-                  className="sm:hidden flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface border border-theme text-xs font-semibold text-primary"
-                >
-                  <Camera className="w-3.5 h-3.5 text-secondary" />
-                  <span>{t.media?.camera || 'Camera'}</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Progress Bar */}
-          {progress !== null && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-[10px] text-muted font-semibold">
-                <span>{t.media?.uploading || 'Saving...'}</span>
-                <span>{progress}%</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-surface-elevated overflow-hidden border border-theme">
-                <div
-                  className="h-full bg-[#123B35] dark:bg-[#B8D96B] transition-all duration-200"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Hidden Inputs */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                handleFileSelect(e.target.files[0]);
-              }
-            }}
-          />
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                handleFileSelect(e.target.files[0]);
-              }
-            }}
-          />
-        </div>
-
-        {/* Footer actions */}
-        <div className="mt-5 pt-3 border-t border-theme flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={progress !== null}>
-            {t.common?.cancel || 'Cancel'}
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            disabled={!selectedFile || progress !== null}
-            isLoading={progress !== null}
+          </div>
+        ) : (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`flex flex-col items-center justify-center gap-3 p-5 text-center border-2 border-dashed border-ink rounded-2xl ${
+              isDragging ? 'bg-tint-gift' : 'bg-tint-pets'
+            }`}
           >
-            {t.common?.save || 'Save Photo'}
+            <Upload aria-hidden="true" className="w-7 h-7" />
+            <div>
+              <p className="font-black">{t.media.dropzoneTitle}</p>
+              <p className="mt-0.5 text-sm font-bold text-ink-2">{t.media.allowedFormats}</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                {t.media.browse}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Camera aria-hidden="true" className="w-4 h-4" />}
+                onClick={() => cameraInputRef.current?.click()}
+                className="desk:hidden"
+              >
+                {t.media.camera}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {progress !== null && (
+          <div role="status">
+            <div className="flex justify-between mb-1 text-sm font-bold">
+              <span>{t.media.uploading}</span>
+              <span className="tabular-nums">{progress}%</span>
+            </div>
+            <div className="w-full h-3 bg-card border-2 border-ink rounded-full overflow-hidden">
+              <div className="h-full bg-accent" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleFileSelect(e.target.files[0]);
+            }
+          }}
+        />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleFileSelect(e.target.files[0]);
+            }
+          }}
+        />
+
+        <div className="flex flex-wrap justify-end gap-2 pt-1">
+          <Button variant="outline" size="sm" onClick={onClose} disabled={progress !== null}>
+            {t.common.cancel}
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={!selectedFile || progress !== null} isLoading={progress !== null}>
+            {t.common.save}
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };

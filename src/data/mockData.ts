@@ -175,7 +175,7 @@ export const MOCK_STORES: Store[] = [
     reviewsCount: 420,
     deliveryTimeMin: 20,
     deliveryTimeMax: 35,
-    deliveryFee: 0,
+    deliveryFee: 15,
     minOrder: 50,
     address: 'Тель-Авив, ул. Ха-Кармель, 18',
     addresses: {
@@ -187,12 +187,10 @@ export const MOCK_STORES: Store[] = [
     isVerified: true,
     isEco: true,
     isFeatured: true,
-    isPromo: true,
-    promoText: 'Бесплатная доставка от 80 ₪',
     tags: ['Фермерское', 'Эко-упаковка', 'Кошер Органик'],
     bannerGradient: 'from-[#123B35] to-[#1D5E54]',
-    logoUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-carmel-market.webp',
+    coverUrl: '/photos/store-carmel-market.webp',
   },
   {
     id: 'store-2',
@@ -228,7 +226,6 @@ export const MOCK_STORES: Store[] = [
     tags: ['Официальный импорт', 'Экспресс', 'Гарантия'],
     bannerGradient: 'from-[#151817] to-[#2B3532]',
     logoUrl: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'store-3',
@@ -261,12 +258,10 @@ export const MOCK_STORES: Store[] = [
     isVerified: true,
     isEco: true,
     isFeatured: true,
-    isPromo: true,
-    promoText: 'Спешелти кофе в подарок к выпечке до 11:30',
     tags: ['Свежая хала', 'Спешелти кофе', 'На закваске'],
     bannerGradient: 'from-[#382613] to-[#5C3E20]',
-    logoUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-levinsky-bakery.webp',
+    coverUrl: '/photos/store-levinsky-bakery.webp',
   },
   {
     id: 'store-4',
@@ -300,8 +295,8 @@ export const MOCK_STORES: Store[] = [
     isEco: true,
     tags: ['Авторские букеты', 'Оливковые деревья', 'Открытка в подарок'],
     bannerGradient: 'from-[#1B4332] to-[#2D6A4F]',
-    logoUrl: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-jaffa-flowers.webp',
+    coverUrl: '/photos/store-jaffa-flowers.webp',
   },
   {
     id: 'store-5',
@@ -335,8 +330,8 @@ export const MOCK_STORES: Store[] = [
     isEco: true,
     tags: ['Ручная работа', 'Натуральные ткани', 'Керамика'],
     bannerGradient: 'from-[#29322E] to-[#404E48]',
-    logoUrl: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-neve-tzedek-home.webp',
+    coverUrl: '/photos/store-neve-tzedek-home.webp',
   },
   {
     id: 'store-6',
@@ -370,8 +365,8 @@ export const MOCK_STORES: Store[] = [
     isEco: true,
     tags: ['Витамины', 'Сертификат GMP', '24/7 Экспресс'],
     bannerGradient: 'from-[#103B38] to-[#1F6E67]',
-    logoUrl: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=300&q=80',
-    coverUrl: 'https://images.unsplash.com/photo-1576602976047-174e57a47881?auto=format&fit=crop&w=1200&q=80',
+    logoUrl: '/photos/store-galilee-pharmacy.webp',
+    coverUrl: '/photos/store-galilee-pharmacy.webp',
   },
 ];
 
@@ -399,7 +394,6 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'לאבנה עשירה וקרמית מחלב עיזים גלילי עם שמן זית בכבישה קרה וזעתר בר',
     },
     price: 24,
-    oldPrice: 29,
     unit: '250 г',
     units: {
       ru: '250 г',
@@ -410,21 +404,13 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.96,
     reviewsCount: 148,
     inStock: true,
-    isBestSeller: true,
     origin: 'Ферма в Верхней Галилее',
     origins: {
       ru: 'Ферма в Верхней Галилее',
       en: 'Upper Galilee Boutique Farm',
       he: 'משק בוטיק בגליל העליון',
     },
-    badge: 'Хит продаж',
-    badges: {
-      ru: 'Хит продаж',
-      en: 'Best Seller',
-      he: 'רב מכר',
-    },
-    tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?auto=format&fit=crop&w=600&q=80',
+    imageUrl: '/photos/labneh.webp',
   },
   {
     id: 'prod-2',
@@ -449,7 +435,6 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'מרקם עשיר וחמאתי, מושלם לטוסט ארוחת בוקר, סלטים וגוואקמולי',
     },
     price: 18,
-    oldPrice: 22,
     unit: '2 шт',
     units: {
       ru: '2 шт',
@@ -460,9 +445,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.92,
     reviewsCount: 95,
     inStock: true,
-    badge: '-18%',
-    tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/avocado.webp'
   },
   {
     id: 'prod-3',
@@ -497,16 +480,8 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.99,
     reviewsCount: 112,
     inStock: true,
-    isBestSeller: true,
     origin: 'Оливковые рощи Галилеи',
-    badge: 'Органик',
-    badges: {
-      ru: 'Органик',
-      en: 'Organic',
-      he: 'אורגני',
-    },
-    tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/olive-oil.webp'
   },
   {
     id: 'prod-4',
@@ -541,15 +516,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 310,
     inStock: true,
-    isBestSeller: true,
-    badge: 'С пылу с жару',
-    badges: {
-      ru: 'С пылу с жару',
-      en: 'Freshly Baked',
-      he: 'חם מהתנור',
-    },
-    tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/challah.webp'
   },
   {
     id: 'prod-5',
@@ -584,15 +551,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.97,
     reviewsCount: 220,
     inStock: true,
-    isNew: true,
-    badge: 'Топ выбор',
-    badges: {
-      ru: 'Топ выбор',
-      en: 'Top Pick',
-      he: 'בחירה מובילה',
-    },
-    tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/almond-croissant.webp'
   },
   {
     id: 'prod-6',
@@ -627,7 +586,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.91,
     reviewsCount: 88,
     inStock: true,
-    imageUrl: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/cold-brew.webp'
   },
   {
     id: 'prod-7',
@@ -652,7 +611,6 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'סינון רעשים אקטיבי היברידי 45dB, מצב שקיפות, עמידות למים בתקן IPX5 ועד 38 שעות סוללה',
     },
     price: 289,
-    oldPrice: 349,
     unit: '1 компл',
     units: {
       ru: '1 компл',
@@ -663,10 +621,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.93,
     reviewsCount: 104,
     inStock: true,
-    isBestSeller: true,
-    badge: '-17%',
-    tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/earbuds.webp'
   },
   {
     id: 'prod-8',
@@ -701,14 +656,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.95,
     reviewsCount: 62,
     inStock: true,
-    badge: 'Хит',
-    badges: {
-      ru: 'Хит',
-      en: 'Top Tech',
-      he: 'להיט',
-    },
-    tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/charger.webp'
   },
   {
     id: 'prod-9',
@@ -743,15 +691,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.98,
     reviewsCount: 118,
     inStock: true,
-    isBestSeller: true,
-    badge: 'Эко-состав',
-    badges: {
-      ru: 'Эко-состав',
-      en: 'Eco Clean',
-      he: '100% טבעי',
-    },
-    tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b8?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/candle-fig.webp'
   },
   {
     id: 'prod-10',
@@ -786,14 +726,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.94,
     reviewsCount: 54,
     inStock: true,
-    badge: 'Ручная работа',
-    badges: {
-      ru: 'Ручная работа',
-      en: 'Handmade',
-      he: 'עבודת יד',
-    },
-    tagColor: 'neutral',
-    imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/mug-seafoam.webp'
   },
   {
     id: 'prod-11',
@@ -828,14 +761,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.99,
     reviewsCount: 92,
     inStock: true,
-    badge: 'Премиум',
-    badges: {
-      ru: 'Премиум',
-      en: 'Premium',
-      he: 'פרימיום',
-    },
-    tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/bouquet.webp'
   },
   {
     id: 'prod-12',
@@ -870,14 +796,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.97,
     reviewsCount: 175,
     inStock: true,
-    badge: 'Кошер & Веган',
-    badges: {
-      ru: 'Кошер & Веган',
-      en: 'Kosher & Vegan',
-      he: 'כשר וטבעוני',
-    },
-    tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/supplement.webp'
   },
 ];
 
@@ -941,6 +860,11 @@ export const MOCK_ACTIVE_ORDER: Order = {
   etaMinutes: 14,
   courier: {
     name: 'Томер Леви (תומר לוי)',
+    names: {
+      ru: 'Томер Леви',
+      en: 'Tomer Levi',
+      he: 'תומר לוי',
+    },
     id: 'courier-1',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     phone: '+972 50 312 8840',
@@ -981,6 +905,7 @@ export const MOCK_PAST_ORDERS: Order[] = [
     storeId: 'store-3',
     items: [
       {
+        productId: 'prod-4',
         name: 'Праздничная сдобная хала с кунжутом',
         names: {
           ru: 'Праздничная сдобная хала с кунжутом',
@@ -991,6 +916,7 @@ export const MOCK_PAST_ORDERS: Order[] = [
         price: 16,
       },
       {
+        productId: 'prod-5',
         name: 'Французский миндальный круассан',
         names: {
           ru: 'Французский миндальный круассан',
@@ -1030,6 +956,7 @@ export const MOCK_PAST_ORDERS: Order[] = [
     storeId: 'store-2',
     items: [
       {
+        productId: 'prod-8',
         name: 'Сетевое GaN зарядное устройство 65W Ultra',
         names: {
           ru: 'Сетевое GaN зарядное устройство 65W Ultra',
@@ -1055,6 +982,11 @@ export const MOCK_PAST_ORDERS: Order[] = [
 export const MOCK_USER: UserProfile = {
   id: 'usr-1',
   name: 'Майя Коэн (Maya Cohen / מאיה כהן)',
+  names: {
+    ru: 'Майя Коэн',
+    en: 'Maya Cohen',
+    he: 'מאיה כהן',
+  },
   phone: '+972 54 745 1289',
   email: 'maya.cohen@qiventra.il',
   savedAddresses: [

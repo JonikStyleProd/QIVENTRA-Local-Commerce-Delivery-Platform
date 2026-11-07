@@ -1,9 +1,13 @@
+import { PromotionText, PromotionType } from './data/promotions';
+import type { DeliveryWindow } from './data/deliverySlots';
+
 export type AppRoute =
   | 'home'
   | 'catalog'
   | 'search'
   | 'orders'
   | 'cart'
+  | 'delivery'
   | 'profile'
   | 'auth'
   | 'store'
@@ -52,9 +56,6 @@ export interface Store {
   isVerified: boolean;
   isEco: boolean;
   isFeatured?: boolean;
-  isPromo?: boolean;
-  promoText?: string;
-  promoTexts?: LocalizedText;
   logoSvgBg?: string;
   accentColor?: string;
   tags: string[];
@@ -75,21 +76,15 @@ export interface Product {
   description: string;
   descriptions?: LocalizedText;
   price: number;
-  oldPrice?: number;
   unit: string; // e.g. "1 pc", "500 g", "1 pack"
   units?: LocalizedText;
   category: string;
   rating: number;
   reviewsCount: number;
   inStock: boolean;
-  isNew?: boolean;
-  isBestSeller?: boolean;
   calories?: number;
   origin?: string;
   origins?: LocalizedText;
-  badge?: string;
-  badges?: LocalizedText;
-  tagColor?: 'pistachio' | 'mineral' | 'warning' | 'neutral';
   imageUrl?: string;
   imageGallery?: string[];
   imageAlt?: LocalizedText;
@@ -112,6 +107,19 @@ export interface OrderItem {
   names?: LocalizedText;
   quantity: number;
   price: number;
+  productId?: string;
+  storeId?: string;
+  imageUrl?: string;
+}
+
+/** A promotion as it was applied to an order, kept with the order so its sums never change. */
+export interface OrderPromotionLine {
+  promotionId: string;
+  storeId: string;
+  type: PromotionType;
+  title: PromotionText;
+  saving: number;
+  giftName?: PromotionText;
 }
 
 export interface Order {
@@ -129,6 +137,16 @@ export interface Order {
   address: string;
   addresses?: LocalizedText;
   etaMinutes: number;
+  /** Set on orders placed in the app; the seed orders in mockData do not have these. */
+  placedAt?: string;
+  deliveryWindow?: DeliveryWindow;
+  note?: string;
+  subtotal?: number;
+  /** The promo code's discount, if it beat the shop promotions. */
+  discount?: number;
+  /** Each shop's regular fee; free delivery is taken off as a promotion line. */
+  feeLines?: { storeId: string; fee: number }[];
+  promotionLines?: OrderPromotionLine[];
   courier?: {
     id?: string;
     name: string;
