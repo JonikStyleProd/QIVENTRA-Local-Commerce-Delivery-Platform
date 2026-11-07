@@ -7,7 +7,8 @@ import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
-import { COLLAGE_GROUPS, GROUP_TINT_CLASS, groupFromSlug, groupOfCategoryName } from '../data/collageCatalog';
+import { GROUP_TINT_CLASS, groupFromSlug, groupOfCategoryName, visibleGroups } from '../data/collageCatalog';
+import { ComingSoon } from '../components/collage/ComingSoon';
 import { StoreCard } from '../components/ui/StoreCard';
 import { ProductCard } from '../components/ui/ProductCard';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -58,6 +59,7 @@ export const CatalogPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortKey>('deliveryTime');
 
   const activeGroup = groupFromSlug(selectedCategorySlug);
+  const isComingSoon = activeGroup !== 'all' && !visibleGroups.includes(activeGroup as (typeof visibleGroups)[number]);
 
   const filteredStores = useMemo(() => {
     let list = [...MOCK_STORES];
@@ -131,7 +133,7 @@ export const CatalogPage: React.FC = () => {
           aria-label={copy.catLabel}
           className="scroll-row flex desk:flex-wrap gap-2 desk:gap-2.5 overflow-x-auto desk:overflow-visible px-4 desk:px-0 pt-3 pb-2 desk:py-0"
         >
-          {COLLAGE_GROUPS.map((group) => (
+          {visibleGroups.map((group) => (
             <CategoryChip
               key={group}
               label={t.collage.groups[group]}
@@ -190,17 +192,19 @@ export const CatalogPage: React.FC = () => {
               />
             </>
           )}
-          <label className="inline-flex items-center gap-1.5 shrink-0 text-sm font-extrabold whitespace-nowrap">
-            <span>{t.catalog.sortLabel}:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortKey)}
-              className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
-            >
-              <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
-              <option value="minOrder">{t.catalog.sortMinOrder}</option>
-            </select>
-          </label>
+          {activeTab === 'stores' && (
+            <label className="inline-flex items-center gap-1.5 shrink-0 text-sm font-extrabold whitespace-nowrap">
+              <span>{t.catalog.sortLabel}:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortKey)}
+                className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
+              >
+                <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
+                <option value="minOrder">{t.catalog.sortMinOrder}</option>
+              </select>
+            </label>
+          )}
           <Link
             to={pathFor('search')}
             className="desk:hidden inline-flex items-center gap-1.5 shrink-0 min-h-11 px-2 text-sm font-extrabold underline cursor-pointer"
@@ -212,9 +216,15 @@ export const CatalogPage: React.FC = () => {
       </section>
 
       <section className="max-w-[1360px] mx-auto px-4 desk:px-10 pt-2.5 desk:pt-[30px]">
+        <ComingSoon className="mb-4" />
         {activeTab === 'stores' ? (
           filteredStores.length === 0 ? (
-            <EmptyState title={copy.emptyT} description={copy.emptyD} actionText={copy.showAll} onAction={resetFilters} />
+            <EmptyState
+              title={isComingSoon ? t.demo.coming.emptyTitle : copy.emptyT}
+              description={isComingSoon ? t.demo.coming.emptyDesc : copy.emptyD}
+              actionText={copy.showAll}
+              onAction={resetFilters}
+            />
           ) : (
             <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] desk:gap-x-[34px] desk:gap-y-[46px] desk:grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))]">
               {filteredStores.map((store, index) => (

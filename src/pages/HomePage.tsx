@@ -9,6 +9,7 @@ import { StoreCard } from '../components/ui/StoreCard';
 import { Tape } from '../components/collage/Tape';
 import { HandArrow, HandUnderline } from '../components/collage/HandMarks';
 import { ProductSticker } from '../components/collage/ProductSticker';
+import { ComingSoon } from '../components/collage/ComingSoon';
 
 /** Decorative collage around the desktop hero. `caption` indexes t.collage.landing.caps. */
 const HERO_STICKERS: {
@@ -145,6 +146,7 @@ export const HomePage: React.FC = () => {
             <p className="hand text-2xl text-action">{phone.howT}</p>
             <p className="mt-1 font-bold leading-normal">{phone.howD}</p>
           </div>
+          <ComingSoon className="mt-4" />
         </section>
 
         <section className="px-4 pt-7">
@@ -256,6 +258,7 @@ export const HomePage: React.FC = () => {
                 </li>
               ))}
             </ul>
+            <ComingSoon className="mt-10 text-ink" />
           </div>
         </section>
 

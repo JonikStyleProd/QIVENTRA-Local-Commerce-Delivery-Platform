@@ -3,8 +3,12 @@ import { useSearchParams } from 'react-router';
 import { Leaf, Search } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { MOCK_STORES, MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/mockData';
-import { GROUP_TINT_CLASS, groupOfCategoryName } from '../data/collageCatalog';
+import { MOCK_CATEGORIES } from '../data/mockData';
+import { GROUP_TINT_CLASS, categoriesWithStores, groupOfCategoryName } from '../data/collageCatalog';
+import { filterProductsByLabels } from '../data/promotions';
+import { buildSearchSuggestions, searchCatalog } from '../data/search';
+import { usePromotions } from '../context/PromotionsContext';
+import { ComingSoon } from '../components/collage/ComingSoon';
 import { CollageGroupId } from '../i18n/collage';
 import { pathFor } from '../router/paths';
 import { SearchBar } from '../components/ui/SearchBar';
@@ -21,59 +25,32 @@ export const SearchPage: React.FC = () => {
   const setSearchQuery = (next: string) =>
     setSearchParams(next ? { q: next } : {}, { replace: true, preventScrollReset: true });
   const { language, t } = useLanguage();
+  const { labelsFor } = usePromotions();
   const copy = t.screens.search;
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [onlyEco, setOnlyEco] = useState<boolean>(false);
 
-  const query = searchQuery.trim().toLowerCase();
+  const query = searchQuery.trim();
   // Shops and products keep their category by name, while the chips carry its slug.
   const categoryName = MOCK_CATEGORIES.find((c) => c.slug === selectedCategory)?.name;
 
-  const matchedStores = useMemo(() => {
-    let stores = MOCK_STORES;
-    if (query) {
-      stores = stores.filter((s) => {
-        const nameMatch = s.name.toLowerCase().includes(query) || (s.names && Object.values(s.names).some(n => typeof n === 'string' && n.toLowerCase().includes(query)));
-        const catMatch = s.category.toLowerCase().includes(query) || (s.categories && Object.values(s.categories).some(c => typeof c === 'string' && c.toLowerCase().includes(query)));
-        const tagMatch = s.tags.some((tg) => tg.toLowerCase().includes(query));
-        return nameMatch || catMatch || tagMatch;
-      });
-    }
-    if (categoryName) {
-      stores = stores.filter((s) => s.category === categoryName);
-    }
-    if (onlyEco) {
-      stores = stores.filter((s) => s.isEco);
-    }
-    return stores;
-  }, [query, categoryName, onlyEco]);
-
-  const matchedProducts = useMemo(() => {
-    let products = MOCK_PRODUCTS;
-    if (query) {
-      products = products.filter((p) => {
-        const nameMatch = p.name.toLowerCase().includes(query) || (p.names && Object.values(p.names).some(n => typeof n === 'string' && n.toLowerCase().includes(query)));
-        const descMatch = p.description.toLowerCase().includes(query) || (p.descriptions && Object.values(p.descriptions).some(d => typeof d === 'string' && d.toLowerCase().includes(query)));
-        const storeMatch = p.storeName.toLowerCase().includes(query) || (p.storeNames && Object.values(p.storeNames).some(sn => typeof sn === 'string' && sn.toLowerCase().includes(query)));
-        const catMatch = p.category.toLowerCase().includes(query);
-        return nameMatch || descMatch || storeMatch || catMatch;
-      });
-    }
-    if (categoryName) {
-      products = products.filter((p) => p.category === categoryName);
-    }
-    return products;
-  }, [query, categoryName]);
+  const { matchedStores, matchedProducts } = useMemo(() => {
+    const found = searchCatalog(query);
+    const stores = found.stores.filter(
+      (store) => (!categoryName || store.category === categoryName) && (!onlyEco || store.isEco)
+    );
+    const products = filterProductsByLabels(
+      found.products.filter((product) => !categoryName || product.category === categoryName),
+      onlyEco ? ['eco'] : [],
+      labelsFor
+    );
+    return { matchedStores: stores, matchedProducts: products };
+  }, [query, categoryName, onlyEco, labelsFor]);
 
   const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
-  const sampleQueries =
-    language === 'he'
-      ? ['אבוקדו האס', 'חלת שבת', 'גבינת עיזים', 'שמן זית', 'אוזניות TWS', 'פירות יער']
-      : language === 'en'
-      ? ['Hass Avocado', 'Fresh Challah', 'Goat Cheese', 'Olive Oil', 'TWS Earbuds', 'Fresh Berries']
-      : ['Авокадо Hass', 'Свежая хала', 'Козий сыр', 'Оливковое масло', 'TWS наушники', 'Свежие ягоды'];
+  const sampleQueries = useMemo(() => buildSearchSuggestions(language), [language]);
 
   const resetFilters = () => {
     setSelectedCategory('all');
@@ -118,7 +95,7 @@ export const SearchPage: React.FC = () => {
           isActive={selectedCategory === 'all'}
           onClick={() => setSelectedCategory('all')}
         />
-        {MOCK_CATEGORIES.map((cat) => (
+        {categoriesWithStores.map((cat) => (
           <CategoryChip
             key={cat.id}
             label={cat.names?.[language] || cat.name}
@@ -134,6 +111,8 @@ export const SearchPage: React.FC = () => {
           onClick={() => setOnlyEco(!onlyEco)}
         />
       </div>
+
+      <ComingSoon className="mt-3" />
 
       <div className="mt-8 desk:mt-10">
         {!query && !hasFilters ? (

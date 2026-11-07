@@ -36,7 +36,6 @@ export interface Category {
   icon: string;
   description: string;
   descriptions?: LocalizedText;
-  storesCount: number;
   popularItems: string[];
   imageUrl?: string;
   imageAlt?: LocalizedText;
@@ -71,6 +70,15 @@ export interface Store {
   imageAlt?: LocalizedText;
 }
 
+/** A choice inside one product: weight, volume, size or color, each with its own price. */
+export interface ProductVariant {
+  id: string;
+  labels: LocalizedText;
+  price: number;
+}
+
+export type VariantKind = 'weight' | 'volume' | 'size' | 'color';
+
 export interface Product {
   id: string;
   storeId: string;
@@ -93,11 +101,15 @@ export interface Product {
   imageUrl?: string;
   imageGallery?: string[];
   imageAlt?: LocalizedText;
+  /** The first variant matches `price` and `unit`. A product without variants has no choice to make. */
+  variants?: ProductVariant[];
+  variantKind?: VariantKind;
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  variantId?: string;
 }
 
 export type OrderStatus =
@@ -115,6 +127,8 @@ export interface OrderItem {
   productId?: string;
   storeId?: string;
   imageUrl?: string;
+  variantId?: string;
+  variantLabels?: LocalizedText;
 }
 
 /** A promotion as it was applied to an order, kept with the order so its sums never change. */
@@ -142,6 +156,8 @@ export interface Order {
   address: string;
   addresses?: LocalizedText;
   etaMinutes: number;
+  /** The whole promised time, so the estimate can shrink step by step. */
+  etaTotalMinutes?: number;
   /** Set on orders placed in the app; the seed orders in mockData do not have these. */
   placedAt?: string;
   deliveryWindow?: DeliveryWindow;

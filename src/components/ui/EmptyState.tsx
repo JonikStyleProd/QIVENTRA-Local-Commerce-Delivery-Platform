@@ -8,6 +8,8 @@ interface EmptyStateProps {
   actionText?: string;
   onAction?: () => void;
   className?: string;
+  /** The way out when it is a link rather than a button. */
+  children?: React.ReactNode;
 }
 
 /** Sticky note with a short handwritten title, a plain explanation and one way out. */
@@ -18,6 +20,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   actionText,
   onAction,
   className = '',
+  children,
 }) => {
   return (
     <div
@@ -32,6 +35,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           {actionText}
         </Button>
       )}
+      {children}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { CollageGroupId } from '../i18n/collage';
-import { MOCK_CATEGORIES } from './mockData';
+import { MOCK_CATEGORIES, MOCK_STORES } from './mockData';
 
 /** Chip order on the shop picker. "all" means no category filter. */
 export const COLLAGE_GROUPS: CollageGroupId[] = ['all', 'food', 'health', 'gift', 'tech', 'pets'];
@@ -36,6 +36,17 @@ export const groupOfCategoryName = (categoryName: string): string | undefined =>
   const category = MOCK_CATEGORIES.find((c) => c.name === categoryName);
   return category ? SLUG_TO_GROUP[category.slug] : undefined;
 };
+
+const hasStores = (name: string): boolean => MOCK_STORES.some((store) => store.category === name);
+
+/** Categories a shop can be found in. The rest are named as "coming soon" and lead nowhere. */
+export const categoriesWithStores = MOCK_CATEGORIES.filter((category) => hasStores(category.name));
+export const comingSoonCategories = MOCK_CATEGORIES.filter((category) => !hasStores(category.name));
+
+/** Chips with at least one shop behind them. */
+export const visibleGroups: CollageGroupId[] = COLLAGE_GROUPS.filter(
+  (group) => group === 'all' || MOCK_STORES.some((store) => groupOfCategoryName(store.category) === group)
+);
 
 const STICKER_TILTS = ['-3deg', '2deg', '-1.5deg', '3deg', '-2deg', '1.5deg'];
 

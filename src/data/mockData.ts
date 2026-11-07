@@ -17,7 +17,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Fresh organic produce, boutique cheeses, olives and seasonal fruits from local farms',
       he: 'תוצרת אורגנית טרייה, גבינות בוטיק, זיתים ופירות העונה ממשקים מקומיים',
     },
-    storesCount: 28,
     popularItems: ['Авокадо Hass', 'Оливковое масло', 'Козий сыр', 'Свежие финики'],
   },
   {
@@ -36,7 +35,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Freshly baked challah, sourdough breads, almond croissants and specialty roast coffee',
       he: 'חלות טריות לשבת, לחמי מחמצת, קרואסונים חמים וקפה ספיישלטי מובחר',
     },
-    storesCount: 34,
     popularItems: ['Свежая хала', 'Миндальный круассан', 'Колдбрю кофе', 'Бабка с шоколадом'],
   },
   {
@@ -55,7 +53,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Wireless headphones, fast GaN chargers, smart home tech and daily accessories',
       he: 'אוזניות אלחוטיות, מטעני GaN מהירים, בית חכם ואביזרים במשלוח מהיר',
     },
-    storesCount: 16,
     popularItems: ['TWS наушники', 'Быстрая GaN зарядка 65W', 'Умная розетка', 'Магнитный кабель'],
   },
   {
@@ -74,7 +71,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Scented soy candles, handmade ceramics, diffusers and eco-friendly home living',
       he: 'נרות סויה ריחניים, קרמיקה בעבודת יד, מפיצי ריח ומוצרים ירוקים לבית',
     },
-    storesCount: 21,
     popularItems: ['Соевые свечи', 'Керамическая чашка', 'Льняной текстиль', 'Аромадиффузор'],
   },
   {
@@ -93,7 +89,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Vitamins, supplements, Dead Sea mineral skincare and wellness essentials',
       he: 'ויטמינים, תוספי תזונה, מוצרי ים המלח וטיפוח טבעי',
     },
-    storesCount: 18,
     popularItems: ['Магний Хелат', 'Витамин D3', 'Крем Мёртвого моря', 'Электролиты'],
   },
   {
@@ -112,7 +107,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Fresh designer bouquets, indoor plants, artisanal vases and gift hampers',
       he: 'זרי פרחים שזורים, צמחי בית וסוקולנטים, אגרטלים ומארזי שי',
     },
-    storesCount: 14,
     popularItems: ['Букет эвкалипт и розы', 'Оливковое дерево в кашпо', 'Пионы', 'Открытка'],
   },
   {
@@ -131,7 +125,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Premium holistic pet food, healthy treats and sustainable accessories',
       he: 'מזון הוליסטי איכותי לכלבים וחתולים, חטיפים טבעיים וצעצועים',
     },
-    storesCount: 12,
     popularItems: ['Холистик лосось', 'Органические лакомства', 'Эко-наполнитель', 'Шлейка'],
   },
   {
@@ -150,7 +143,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Isotonics, plant protein snacks, premium yoga mats and beach fitness gear',
       he: 'איזוטוניק, חטיפי חלבון, מזרני יוגה וציוד לספורט ימי וחוף',
     },
-    storesCount: 10,
     popularItems: ['Протеин растительный', 'Коврик для йоги', 'Изотоник цитрус', 'Бутылка стальная'],
   },
 ];
@@ -849,8 +841,24 @@ export const MOCK_ACTIVE_ORDER: Order = {
       price: 48,
     },
   ],
+  subtotal: 114,
+  // Carmel charges 15 ₪, and its free delivery promotion takes that off from 80 ₪.
+  feeLines: [{ storeId: 'store-1', fee: 15 }],
+  promotionLines: [
+    {
+      promotionId: 'demo-carmel-delivery',
+      storeId: 'store-1',
+      type: 'freeDelivery',
+      saving: 15,
+      title: {
+        ru: 'Бесплатная доставка от 80 ₪',
+        en: 'Free delivery from 80 ₪',
+        he: 'משלוח חינם מ-80 ₪',
+      },
+    },
+  ],
   totalAmount: 114,
-  deliveryFee: 0,
+  deliveryFee: 15,
   address: 'Тель-Авив, бул. Ротшильд, 42, кв. 14',
   addresses: {
     ru: 'Тель-Авив, бул. Ротшильд, 42, кв. 14',
@@ -866,7 +874,6 @@ export const MOCK_ACTIVE_ORDER: Order = {
       he: 'תומר לוי',
     },
     id: 'courier-1',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     phone: '+972 50 312 8840',
     vehicle: 'электровелосипед',
     vehicleName: {
@@ -1025,5 +1032,4 @@ export const MOCK_USER: UserProfile = {
   ],
   favoriteStoreIds: ['store-1', 'store-3'],
   role: 'customer',
-  avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
 };
