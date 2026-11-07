@@ -1,6 +1,7 @@
-import { formatShekels } from '../i18n/format';
+import { formatKm, formatMinutesIn, formatMinutesRange, formatShekels } from '../i18n/format';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language, Translations, translations } from '../i18n/translations';
+import { LANGUAGE_KEY, detectLanguage } from '../i18n/detectLanguage';
 
 interface LanguageContextType {
   language: Language;
@@ -19,32 +20,15 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    try {
-      const saved = localStorage.getItem('qiventra_language');
-      if (saved === 'ru' || saved === 'en' || saved === 'he') {
-        return saved;
-      }
-    } catch {
-      // fallback
-    }
-    return 'ru';
-  });
+  const [language, setLanguageState] = useState<Language>(detectLanguage);
 
   const direction: 'ltr' | 'rtl' = language === 'he' ? 'rtl' : 'ltr';
   const isRTL = direction === 'rtl';
 
   useEffect(() => {
-    try {
-      localStorage.setItem('qiventra_language', language);
-    } catch {
-      // ignore
-    }
-
-    // Apply root attributes
+    // index.html has already set these before the first paint; this keeps them in step with a switch.
     document.documentElement.lang = language;
     document.documentElement.dir = direction;
-    document.title = (translations[language] || translations.ru).collage.meta.title;
 
     if (isRTL) {
       document.documentElement.classList.add('rtl');
@@ -53,7 +37,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [language, direction, isRTL]);
 
+  // Only a choice the user made is saved: until then the browser's language keeps deciding.
   const setLanguage = (lang: Language) => {
+    try {
+      localStorage.setItem(LANGUAGE_KEY, lang);
+    } catch {
+      // Without storage the choice lasts until the page closes.
+    }
     setLanguageState(lang);
   };
 
@@ -63,30 +53,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return formatShekels(amount, language);
   };
 
-  const formatMinutes = (minutes: number): string => {
-    if (language === 'he') {
-      return `${minutes} דק'`;
-    }
-    if (language === 'en') {
-      return `${minutes} min`;
-    }
-    return `${minutes} мин`;
-  };
-
-  const formatDistance = (km: number): string => {
-    if (language === 'he') {
-      return `${km} ק״מ`;
-    }
-    if (language === 'en') {
-      return `${km} km`;
-    }
-    return `${String(km).replace('.', ',')} км`;
-  };
-
-  const formatTimeRange = (min: number, max: number): string => {
-    const unit = language === 'he' ? 'דק׳' : language === 'en' ? 'min' : 'мин';
-    return `⁦${min}–${max}⁩ ${unit}`;
-  };
+  const formatMinutes = (minutes: number): string => formatMinutesIn(minutes, language);
+  const formatDistance = (km: number): string => formatKm(km, language);
+  const formatTimeRange = (min: number, max: number): string => formatMinutesRange(min, max, language);
 
   return (
     <LanguageContext.Provider

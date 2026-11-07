@@ -57,6 +57,10 @@ export const formatMinutesRange = (min: number, max: number, language: Language)
   return `⁦${min}–${max}⁩ ${unit}`;
 };
 
+/** "5 мин. назад", "5 min. ago", in the language's own grammar. */
+export const formatMinutesAgo = (minutes: number, language: Language): string =>
+  new Intl.RelativeTimeFormat(LOCALES[language], { style: 'short' }).format(-minutes, 'minute');
+
 export type PluralForms = Partial<Record<Intl.LDMLPluralRule, string>> & { other: string };
 
 const pluralRules = new Map<Language, Intl.PluralRules>();

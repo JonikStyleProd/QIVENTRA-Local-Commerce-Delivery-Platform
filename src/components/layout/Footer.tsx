@@ -80,6 +80,14 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
+        <nav aria-label={t.demo.legal.links} className="flex flex-wrap gap-x-5 pt-3">
+          {(['privacy', 'terms', 'accessibility'] as const).map((route) => (
+            <Link key={route} to={pathFor(route)} className={FOOTER_LINK}>
+              {t.demo.titles[route]}
+            </Link>
+          ))}
+        </nav>
+
         <MadeBy className="pt-4" />
       </div>
     </footer>

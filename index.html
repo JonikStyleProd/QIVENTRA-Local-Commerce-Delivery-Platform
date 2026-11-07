@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" dir="ltr">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -8,21 +8,33 @@
     <meta name="copyright" content="© JonikStyle Production" />
     <script>
       // Set language, direction and theme before first paint; the contexts keep them in sync afterwards.
+      // The language rule is the same as pickLanguage in src/i18n/detectLanguage.ts.
       try {
-        var savedLang = localStorage.getItem('qiventra_language');
-        if (savedLang === 'ru' || savedLang === 'en' || savedLang === 'he') {
-          document.documentElement.lang = savedLang;
-          document.documentElement.dir = savedLang === 'he' ? 'rtl' : 'ltr';
+        var lang = localStorage.getItem('qiventra_language');
+        if (lang !== 'ru' && lang !== 'en' && lang !== 'he') {
+          var tags = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+          lang = 'en';
+          for (var i = 0; i < tags.length; i++) {
+            var code = String(tags[i]).toLowerCase().split('-')[0];
+            if (code === 'iw') code = 'he';
+            if (code === 'ru' || code === 'en' || code === 'he') {
+              lang = code;
+              break;
+            }
+          }
         }
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+        if (lang === 'he') document.documentElement.classList.add('rtl');
         var savedTheme = localStorage.getItem('qiventra-theme');
         if (savedTheme === 'dark' || (savedTheme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
           document.documentElement.classList.add('dark');
         }
       } catch (e) {}
     </script>
-    <meta name="description" content="קיוונטרה: פלטפורמת מסחר שכונתית ומשלוחים מהירים בישראל. שווקים מקומיים, מעדניות, מאפיות, פארם וטכנולוגיה." />
-    <meta property="og:title" content="QIVENTRA — Local Commerce & Fast Delivery Platform" />
-    <meta property="og:description" content="Hyperlocal commerce and rapid delivery platform in Israel. Fresh markets, bakeries, artisan groceries, and home goods." />
+    <meta name="description" content="QIVENTRA: a portfolio demo of neighborhood commerce and delivery in Tel Aviv, in Hebrew, English and Russian. No payment is taken." />
+    <meta property="og:title" content="QIVENTRA — neighborhood shops and delivery (portfolio demo)" />
+    <meta property="og:description" content="A portfolio demo of neighborhood commerce and delivery in Tel Aviv. No payment is taken." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     
