@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { ProductPrice } from './ProductPrice';
 import { Tape } from './Tape';
 
 interface ProductStickerProps {
@@ -14,7 +15,7 @@ interface ProductStickerProps {
 
 /** Product sticker from the phone home screen: taped photo, short name, price and one add button. */
 export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart, tilt, tape, delay, onAdd }) => {
-  const { t, formatCurrency, language } = useLanguage();
+  const { t, language } = useLanguage();
   const [flash, setFlash] = useState(0);
 
   const label = t.collage.productLabels[product.id] || product.names?.[language] || product.name;
@@ -36,7 +37,7 @@ export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart,
         />
         <p className="hand mt-1.5 text-[22px] leading-none">{label}</p>
         <div className="relative flex items-center justify-between mt-1">
-          <span className="font-black">{formatCurrency(product.price)}</span>
+          <ProductPrice product={product} />
           <button
             type="button"
             onClick={() => {

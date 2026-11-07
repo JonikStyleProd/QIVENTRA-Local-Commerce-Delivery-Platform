@@ -3,10 +3,12 @@ import { Plus } from 'lucide-react';
 import { Product } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { usePromotions } from '../../context/PromotionsContext';
 import { tiltFor } from '../../data/collageCatalog';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { PolaroidPhoto } from './PolaroidPhoto';
+import { ProductPrice } from './ProductPrice';
 import { QuantityStepper } from './QuantityStepper';
 import { Tape } from './Tape';
 
@@ -22,7 +24,8 @@ interface ProductSheetProps {
  */
 export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onClose }) => {
   const { cart, addToCart, updateCartQuantity, navigateTo, currentRoute, selectedStoreId } = useApp();
-  const { language, t, formatCurrency } = useLanguage();
+  const { language, t } = useLanguage();
+  const { labelsFor } = usePromotions();
   const copy = t.screens.product;
 
   const name = product.names?.[language] || product.name;
@@ -47,6 +50,15 @@ export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onC
         </div>
 
         <div className="min-w-0">
+          {labelsFor(product.id).length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-2">
+              {labelsFor(product.id).map((label) => (
+                <span key={label} className="px-2 py-0.5 bg-accent border-2 border-ink rounded-lg text-xs font-black">
+                  {t.promotions.labels[label]}
+                </span>
+              ))}
+            </div>
+          )}
           <p className="font-bold text-ink-2">{description}</p>
           <dl className="mt-3 space-y-1 text-sm">
             <div className="flex flex-wrap gap-x-2">
@@ -61,11 +73,8 @@ export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onC
             )}
           </dl>
 
-          <p className="mt-3 flex items-baseline gap-2">
-            <span className="text-[30px] font-black leading-none">{formatCurrency(product.price)}</span>
-            {product.oldPrice && (
-              <span className="font-bold text-ink-3 line-through">{formatCurrency(product.oldPrice)}</span>
-            )}
+          <p className="mt-3">
+            <ProductPrice product={product} priceClassName="text-[30px] font-black leading-none" oldPriceClassName="font-bold" />
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-4">

@@ -9,6 +9,7 @@ import { Order } from '../types';
 import { formatWindow } from '../data/deliverySlots';
 import { Button } from '../components/ui/Button';
 import { NotebookPage, NotebookStep, NotebookSteps } from '../components/collage/NotebookPage';
+import { PromotionRows } from '../components/collage/OrderPromotions';
 import { PageHeading, PageShell, SectionHeading } from '../components/collage/Page';
 import { Panel } from '../components/collage/Panel';
 import { Stamp } from '../components/collage/Stamp';
@@ -154,6 +155,18 @@ export const OrdersPage: React.FC = () => {
                 value={formatCurrency(item.price * item.quantity)}
               />
             ))}
+            {activeOrder.placedAt && (
+              <>
+                <PromotionRows
+                  lines={activeOrder.promotionLines ?? []}
+                  showStore={(activeOrder.feeLines?.length ?? 0) > 1}
+                />
+                {(activeOrder.discount ?? 0) > 0 && (
+                  <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(activeOrder.discount ?? 0)}`} />
+                )}
+                <SummaryRow label={t.collage.delivery.deliveryLabel} value={formatCurrency(activeOrder.deliveryFee)} />
+              </>
+            )}
             <SummaryRow isTotal label={t.collage.delivery.total} value={formatCurrency(activeOrder.totalAmount)} />
 
             <Button

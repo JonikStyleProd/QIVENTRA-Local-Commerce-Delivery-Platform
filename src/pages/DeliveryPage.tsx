@@ -6,6 +6,8 @@ import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfD
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HandCheck } from '../components/collage/HandMarks';
+import { DiscountChoiceNote, PromotionHints, PromotionRows } from '../components/collage/OrderPromotions';
+import { SummaryRow } from '../components/collage/SummaryRow';
 import { NotebookPage } from '../components/collage/NotebookPage';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { StepHeader } from '../components/collage/StepHeader';
@@ -20,8 +22,7 @@ const SENDING_TIME_MS = 1200;
 export const DeliveryPage: React.FC = () => {
   const {
     cart,
-    cartSubtotal,
-    cartDiscount,
+    order,
     deliveryFee,
     totalAmount,
     currentAddress,
@@ -73,7 +74,7 @@ export const DeliveryPage: React.FC = () => {
   const isDone = phase === 'done';
   const isBusy = phase === 'busy';
 
-  const feeLines = placedOrder?.feeLines ?? orderStores.map((line) => ({ storeId: line.store.id, fee: line.fee }));
+  const feeLines = placedOrder?.feeLines ?? orderStores.map((line) => ({ storeId: line.store.id, fee: line.baseFee }));
   const orderStoreList = feeLines.flatMap((line) => MOCK_STORES.filter((store) => store.id === line.storeId));
 
   // The shop on the polaroid: the picked one when it is part of the order, otherwise the first in it.
@@ -118,14 +119,17 @@ export const DeliveryPage: React.FC = () => {
         storeId: line.product.storeId,
       }));
 
-  const orderSubtotal = placedOrder?.subtotal ?? cartSubtotal;
-  const orderDiscount = placedOrder?.discount ?? cartDiscount;
-  const orderFee = placedOrder?.deliveryFee ?? deliveryFee;
+  const orderSubtotal = placedOrder?.subtotal ?? order.itemsSubtotal;
+  const orderDiscount = placedOrder?.discount ?? order.promoCodeDiscount;
+  const orderPromotionLines = placedOrder?.promotionLines ?? order.promotionLines;
+  // Delivery rows show each shop's regular fee; free delivery is taken off in its own row.
+  const orderFee = placedOrder?.deliveryFee ?? order.baseDeliveryFee;
   const orderTotal = placedOrder?.totalAmount ?? totalAmount;
   const orderAddress = placedOrder?.addresses?.[language] || placedOrder?.address || currentAddress;
 
   const totalLabel = formatCurrency(orderTotal);
   const feeLabel = formatCurrency(orderFee);
+  const payableFeeLabel = formatCurrency(deliveryFee);
 
   const itemSummary = orderLines
     .map((line) => (line.quantity > 1 ? `${line.quantity} × ${line.label}` : line.label))
@@ -433,38 +437,35 @@ export const DeliveryPage: React.FC = () => {
                 </li>
               ))}
             </ul>
-            {orderDiscount > 0 && (
-              <>
-                <p className="flex justify-between mb-1 font-bold">
-                  <span>{t.cart.itemsSubtotal}</span>
-                  <span className="whitespace-nowrap">{formatCurrency(orderSubtotal)}</span>
-                </p>
-                <p className="flex justify-between mb-1 font-bold">
-                  <span>{t.cart.promoDiscount}</span>
-                  <span className="whitespace-nowrap">− {formatCurrency(orderDiscount)}</span>
-                </p>
-              </>
+            {(orderDiscount > 0 || orderPromotionLines.length > 0) && (
+              <SummaryRow label={t.cart.itemsSubtotal} value={formatCurrency(orderSubtotal)} />
             )}
+            <PromotionRows lines={orderPromotionLines} showStore={feeLines.length > 1} />
+            {orderDiscount > 0 && <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(orderDiscount)}`} />}
             {feeLines.length > 1 ? (
               feeLines.map((line) => (
-                <p key={line.storeId} className="flex justify-between gap-2 mb-1 font-bold">
-                  <span>
-                    {copy.deliveryLabel} ·{' '}
-                    <bdi>{storeName(line.storeId, MOCK_STORES.find((s) => s.id === line.storeId)?.name ?? '')}</bdi>
-                  </span>
-                  <span className="whitespace-nowrap">{formatCurrency(line.fee)}</span>
-                </p>
+                <SummaryRow
+                  key={line.storeId}
+                  label={
+                    <>
+                      {copy.deliveryLabel} ·{' '}
+                      <bdi>{storeName(line.storeId, MOCK_STORES.find((s) => s.id === line.storeId)?.name ?? '')}</bdi>
+                    </>
+                  }
+                  value={formatCurrency(line.fee)}
+                />
               ))
             ) : (
-              <p className="flex justify-between mb-1 font-bold">
-                <span>{copy.deliveryLabel}</span>
-                <span className="whitespace-nowrap">{feeLabel}</span>
-              </p>
+              <SummaryRow label={copy.deliveryLabel} value={feeLabel} />
             )}
             <p className="flex justify-between items-baseline mb-[18px]">
               <span className="text-xl font-black">{copy.total}</span>
               <span className="text-[38px] font-black whitespace-nowrap">{totalLabel}</span>
             </p>
+            {!isDone && !placedOrder && order.discountChoice !== 'promoCode' && (
+              <PromotionHints stores={orderStores} className="mb-2.5" />
+            )}
+            {!isDone && !placedOrder && <DiscountChoiceNote order={order} className="mb-2.5" />}
             {minOrderNotice('min-order-desktop')}
             {!isDone && (
               <Button
@@ -508,6 +509,18 @@ export const DeliveryPage: React.FC = () => {
             </span>
             <span className="text-[26px] font-black whitespace-nowrap">{totalLabel}</span>
           </div>
+          {orderPromotionLines.length > 0 && (
+            <div className="mb-2 text-sm">
+              <PromotionRows lines={orderPromotionLines} showStore={feeLines.length > 1} />
+            </div>
+          )}
+          {orderDiscount > 0 && (
+            <div className="mb-2 text-sm">
+              <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(orderDiscount)}`} />
+            </div>
+          )}
+          {!placedOrder && order.discountChoice !== 'promoCode' && <PromotionHints stores={orderStores} className="mb-2" />}
+          {!placedOrder && <DiscountChoiceNote order={order} className="mb-2" />}
           {minOrderNotice('min-order-phone')}
           <Button
             size="lg"
@@ -520,7 +533,7 @@ export const DeliveryPage: React.FC = () => {
             {isBusy ? copy.busy : copy.confirmMobile}
           </Button>
           <p className="mt-2 text-center text-xs font-bold">
-            {t.collage.common.demo} · {t.collage.common.fee} {feeLabel}
+            {t.collage.common.demo} · {t.collage.common.fee} {payableFeeLabel}
           </p>
         </div>
       )}

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Store } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { usePromotions } from '../../context/PromotionsContext';
+import { bestPromotion } from '../../data/promotions';
+import { promotionBadge } from '../collage/promotionCopy';
 import { tiltFor } from '../../data/collageCatalog';
 import { Tape } from '../collage/Tape';
 import { HandCircle } from '../collage/HandMarks';
@@ -21,6 +24,8 @@ const CHIP = 'px-2.5 py-[5px] rounded-[10px] text-sm font-extrabold';
 /** Shop polaroid. Time, fee, minimum and distance always come from the store's data. */
 export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, isSelected, detail = 'full', tilt }) => {
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
+  const { promotions, now } = usePromotions();
+  const promotion = bestPromotion(promotions, store.id, now);
 
   const copy = t.collage.storeCopy[store.id];
   const name = copy?.name || store.names?.[language] || store.name;
@@ -44,7 +49,14 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, isSelected
       style={{ '--tilt': tilt ?? tiltFor(store.id) } as React.CSSProperties}
     >
       <Tape small={!isBoard} tone="yellow" />
-      <PolaroidPhoto src={store.coverUrl} aspectClassName={isBoard ? 'aspect-square' : 'aspect-square desk:aspect-[4/3]'} />
+      <span className="relative block">
+        <PolaroidPhoto src={store.coverUrl} aspectClassName={isBoard ? 'aspect-square' : 'aspect-square desk:aspect-[4/3]'} />
+        {promotion && (
+          <span className="absolute top-1.5 start-1.5 max-w-[calc(100%-12px)] px-2 py-0.5 bg-accent border-2 border-ink rounded-lg text-xs font-black -rotate-2">
+            {promotionBadge(promotion, t, language)}
+          </span>
+        )}
+      </span>
 
       <span
         className={`hand block leading-none ${

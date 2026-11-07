@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronLeft, Leaf, MapPin, MessageSquare, Share2, Sparkles } from 'lucide-react';
+import { ChevronLeft, Leaf, MapPin, MessageSquare, Share2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { usePromotions } from '../context/PromotionsContext';
 import { useToast } from '../context/ToastContext';
+import { isLive, visiblePromotions } from '../data/promotions';
 import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 import { GROUP_TINT_CLASS, groupOfCategoryName, tiltFor } from '../data/collageCatalog';
 import { CollageGroupId } from '../i18n/collage';
@@ -13,6 +15,7 @@ import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { PageShell, SectionHeading } from '../components/collage/Page';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
+import { PromotionSticker } from '../components/collage/PromotionSticker';
 import { Stamp } from '../components/collage/Stamp';
 import { Tape } from '../components/collage/Tape';
 
@@ -22,6 +25,7 @@ export const StoreDetailPage: React.FC = () => {
   const { selectedStoreId, navigateTo, addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const { showToast } = useToast();
+  const { promotions, now } = usePromotions();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const store = useMemo(() => MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0], [selectedStoreId]);
@@ -44,7 +48,7 @@ export const StoreDetailPage: React.FC = () => {
   const displayName = copy?.name || store.names?.[language] || store.name;
   const displayKind = copy?.kind || store.categories?.[language] || store.category;
   const displayAddress = store.addresses?.[language] || store.address;
-  const displayPromo = store.promoTexts?.[language] || store.promoText;
+  const shownPromotions = visiblePromotions(promotions, store.id, now);
 
   const categoryLabel = (name: string) =>
     MOCK_CATEGORIES.find((c) => c.name === name)?.names?.[language] || name;
@@ -109,20 +113,12 @@ export const StoreDetailPage: React.FC = () => {
             <span>{displayAddress}</span>
           </p>
 
-          {(store.isEco || (store.isPromo && displayPromo)) && (
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              {store.isEco && (
-                <Stamp tone="success">
-                  <Leaf aria-hidden="true" className="inline w-3.5 h-3.5 me-1 -mt-0.5" />
-                  {t.storeCard.eco}
-                </Stamp>
-              )}
-              {store.isPromo && displayPromo && (
-                <Stamp tone="action">
-                  <Sparkles aria-hidden="true" className="inline w-3.5 h-3.5 me-1 -mt-0.5" />
-                  {displayPromo}
-                </Stamp>
-              )}
+          {store.isEco && (
+            <div className="mt-3">
+              <Stamp tone="success">
+                <Leaf aria-hidden="true" className="inline w-3.5 h-3.5 me-1 -mt-0.5" />
+                {t.storeCard.eco}
+              </Stamp>
             </div>
           )}
 
@@ -162,6 +158,19 @@ export const StoreDetailPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {shownPromotions.length > 0 && (
+        <section className="mb-9 desk:mb-14">
+          <SectionHeading note={t.promotions.shop.note} title={t.promotions.shop.title} />
+          <ul className="grid sm:grid-cols-2 desk:grid-cols-3 gap-4 pt-2">
+            {shownPromotions.map((promotion) => (
+              <li key={promotion.id}>
+                <PromotionSticker promotion={promotion} isRunningNow={isLive(promotion, now)} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <SectionHeading title={`${t.store.storeAssortment} (${filteredProducts.length})`} />
 

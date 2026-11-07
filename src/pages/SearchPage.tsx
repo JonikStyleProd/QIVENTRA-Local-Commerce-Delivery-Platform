@@ -89,7 +89,7 @@ export const SearchPage: React.FC = () => {
       />
 
       <div className="flex flex-wrap items-center gap-2 mt-4">
-        <span className="text-sm font-extrabold text-ink-2">{t.search.trendingSearch}:</span>
+        <span className="text-sm font-extrabold text-ink-2">{copy.examples}:</span>
         {sampleQueries.map((item) => (
           <button
             key={item}

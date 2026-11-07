@@ -2,7 +2,7 @@ import React from 'react';
 
 interface StampProps {
   children: React.ReactNode;
-  tone?: 'success' | 'warn' | 'danger' | 'neutral' | 'action';
+  tone?: 'success' | 'warn' | 'danger' | 'neutral' | 'action' | 'promo';
   className?: string;
 }
 
@@ -12,6 +12,8 @@ const TONE: Record<NonNullable<StampProps['tone']>, string> = {
   danger: 'text-danger border-danger',
   neutral: 'text-ink-2 border-ink-2',
   action: 'text-action-text border-action-text',
+  // For tinted stickers, where red text would fall short of AA.
+  promo: 'text-ink border-action-text',
 };
 
 /** Rubber stamp for statuses. It has no fill, so it sits on whichever sheet is behind it. */

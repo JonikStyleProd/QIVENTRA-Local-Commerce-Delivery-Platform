@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Product } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { usePromotions } from '../../context/PromotionsContext';
 import { tiltFor } from '../../data/collageCatalog';
 import { Tape } from '../collage/Tape';
 import { PolaroidPhoto } from '../collage/PolaroidPhoto';
+import { ProductPrice } from '../collage/ProductPrice';
 import { ProductSheet } from '../collage/ProductSheet';
 import { QuantityStepper } from '../collage/QuantityStepper';
 
@@ -22,7 +24,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onAddToCart,
   onUpdateQuantity,
 }) => {
-  const { language, t, formatCurrency } = useLanguage();
+  const { language, t } = useLanguage();
+  const { labelsFor } = usePromotions();
   const [flash, setFlash] = useState(0);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
@@ -30,9 +33,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const displayDesc = product.descriptions?.[language] || product.description;
   const displayUnit = product.units?.[language] || product.unit;
   const displayStore = product.storeNames?.[language] || product.storeName;
-  const displayBadge = product.badges?.[language] || product.badge;
-
-  const tag = displayBadge || (product.isBestSeller ? t.productCard.topBadge : product.isNew ? t.productCard.newBadge : null);
+  const labels = labelsFor(product.id);
 
   return (
     <article
@@ -49,9 +50,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         className="relative block w-full cursor-pointer"
       >
         <PolaroidPhoto src={product.imageUrl} alt="" noteClassName="text-[22px]" />
-        {tag && (
-          <span className="absolute top-1.5 start-1.5 px-2 py-0.5 bg-accent border-2 border-ink rounded-lg text-xs font-black">
-            {tag}
+        {labels.length > 0 && (
+          <span className="absolute top-1.5 inset-x-1.5 flex flex-wrap gap-1">
+            {labels.map((label) => (
+              <span key={label} className="px-2 py-0.5 bg-accent border-2 border-ink rounded-lg text-xs font-black">
+                {t.promotions.labels[label]}
+              </span>
+            ))}
           </span>
         )}
       </button>
@@ -66,14 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       <div className="relative flex flex-wrap items-center justify-between gap-1.5 mt-2 px-1">
-        <span className="flex items-baseline gap-1.5 min-w-0">
-          <span className="font-black whitespace-nowrap">{formatCurrency(product.price)}</span>
-          {product.oldPrice && (
-            <span className="text-xs font-bold text-ink-3 line-through whitespace-nowrap">
-              {formatCurrency(product.oldPrice)}
-            </span>
-          )}
-        </span>
+        <ProductPrice product={product} />
 
         {inCartQuantity > 0 ? (
           <QuantityStepper

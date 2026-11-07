@@ -10,12 +10,14 @@ import { QuantityStepper } from './QuantityStepper';
 
 /** One basket line: small polaroid, names, quantity, line total and remove. */
 export const CartLine: React.FC<{ item: CartItem }> = ({ item }) => {
-  const { updateCartQuantity, removeFromCart } = useApp();
+  const { updateCartQuantity, removeFromCart, order } = useApp();
   const { language, t, formatCurrency } = useLanguage();
 
   const name = item.product.names?.[language] || item.product.name;
   const storeName = item.product.storeNames?.[language] || item.product.storeName;
   const unit = item.product.units?.[language] || item.product.unit;
+  const unitPrice = order.unitPrices[item.product.id] ?? item.product.price;
+  const isReduced = unitPrice < item.product.price;
 
   return (
     <div className="grid grid-cols-[64px_minmax(0,1fr)] desk:grid-cols-[76px_minmax(0,1fr)] gap-3 py-3.5 first:pt-0 last:pb-0">
@@ -29,7 +31,8 @@ export const CartLine: React.FC<{ item: CartItem }> = ({ item }) => {
         </p>
         <h3 className="font-black leading-snug break-words">{name}</h3>
         <p className="text-xs font-bold text-ink-2">
-          {unit} · {formatCurrency(item.product.price)}
+          {unit} · {isReduced && <s className="me-1 text-ink-3">{formatCurrency(item.product.price)}</s>}
+          {formatCurrency(unitPrice)}
         </p>
 
         <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
@@ -40,8 +43,9 @@ export const CartLine: React.FC<{ item: CartItem }> = ({ item }) => {
             onIncrease={() => updateCartQuantity(item.product.id, item.quantity + 1)}
           />
           <div className="flex items-center gap-2 ms-auto">
-            <span className="text-lg font-black whitespace-nowrap tabular-nums">
-              {formatCurrency(item.product.price * item.quantity)}
+            <span className="text-end whitespace-nowrap tabular-nums">
+              {isReduced && <s className="block text-xs font-bold text-ink-3">{formatCurrency(item.product.price * item.quantity)}</s>}
+              <span className={`text-lg font-black ${isReduced ? 'text-action-text' : ''}`}>{formatCurrency(unitPrice * item.quantity)}</span>
             </span>
             <IconButton
               onClick={() => removeFromCart(item.product.id)}

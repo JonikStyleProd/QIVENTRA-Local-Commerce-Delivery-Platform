@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { EmptyState } from '../components/ui/EmptyState';
 import { CartLine } from '../components/collage/CartLine';
+import { DiscountChoiceNote, PromotionHints, PromotionRows } from '../components/collage/OrderPromotions';
 import { PageHeading, PageShell } from '../components/collage/Page';
 import { Panel } from '../components/collage/Panel';
 import { SummaryRow } from '../components/collage/SummaryRow';
@@ -17,9 +18,8 @@ export const CartPage: React.FC = () => {
     clearCart,
     cartSubtotal,
     cartTotalCount,
-    cartDiscount,
     setCartDiscount,
-    deliveryFee,
+    order,
     orderStores,
     totalAmount,
     currentAddress,
@@ -98,8 +98,9 @@ export const CartPage: React.FC = () => {
           <h2 className="mb-2 text-[22px] font-black">{t.cart.orderSummary}</h2>
 
           <SummaryRow label={`${t.cart.itemsCountLabel} (${cartTotalCount})`} value={formatCurrency(cartSubtotal)} />
-          {cartDiscount > 0 && (
-            <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(cartDiscount)}`} />
+          <PromotionRows lines={order.promotionLines} showStore={orderStores.length > 1} />
+          {order.promoCodeDiscount > 0 && (
+            <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(order.promoCodeDiscount)}`} />
           )}
           {orderStores.length > 1 ? (
             orderStores.map((line) => (
@@ -110,13 +111,15 @@ export const CartPage: React.FC = () => {
                     {t.collage.delivery.deliveryLabel} · <bdi>{t.collage.storeCopy[line.store.id]?.name || line.store.name}</bdi>
                   </>
                 }
-                value={formatCurrency(line.fee)}
+                value={formatCurrency(line.baseFee)}
               />
             ))
           ) : (
-            <SummaryRow label={t.collage.delivery.deliveryLabel} value={formatCurrency(deliveryFee)} />
+            <SummaryRow label={t.collage.delivery.deliveryLabel} value={formatCurrency(order.baseDeliveryFee)} />
           )}
           <SummaryRow isTotal label={t.collage.delivery.total} value={formatCurrency(totalAmount)} />
+
+          {order.discountChoice !== 'promoCode' && <PromotionHints stores={orderStores} className="mt-3" />}
 
           <form onSubmit={handleApplyPromo} className="flex items-end gap-2 mt-4">
             <Input
@@ -130,6 +133,8 @@ export const CartPage: React.FC = () => {
               {t.cart.applyPromo}
             </Button>
           </form>
+
+          <DiscountChoiceNote order={order} className="mt-2.5" />
 
           {/* Next step: choosing the delivery window. Nothing is charged in this demo. */}
           <Button size="lg" fullWidth onClick={() => navigateTo('delivery')} className="mt-4 whitespace-normal">
