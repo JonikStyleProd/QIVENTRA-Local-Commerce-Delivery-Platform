@@ -1,3 +1,5 @@
+import type { DeliveryWindow } from './data/deliverySlots';
+
 export type AppRoute =
   | 'home'
   | 'catalog'
@@ -113,6 +115,8 @@ export interface OrderItem {
   names?: LocalizedText;
   quantity: number;
   price: number;
+  storeId?: string;
+  imageUrl?: string;
 }
 
 export interface Order {
@@ -130,6 +134,13 @@ export interface Order {
   address: string;
   addresses?: LocalizedText;
   etaMinutes: number;
+  /** Set on orders placed in the app; the seed orders in mockData do not have these. */
+  placedAt?: string;
+  deliveryWindow?: DeliveryWindow;
+  note?: string;
+  subtotal?: number;
+  discount?: number;
+  feeLines?: { storeId: string; fee: number }[];
   courier?: {
     id?: string;
     name: string;

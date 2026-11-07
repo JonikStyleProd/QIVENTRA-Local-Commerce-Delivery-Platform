@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { MOCK_STORES } from '../data/mockData';
 import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfDay } from '../data/deliverySlots';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -27,6 +28,9 @@ export const DeliveryPage: React.FC = () => {
     orderStores,
     setIsAddressModalOpen,
     navigateTo,
+    placeOrder,
+    updateOrder,
+    trackedOrders,
   } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const copy = t.collage.delivery;
@@ -37,6 +41,7 @@ export const DeliveryPage: React.FC = () => {
   const [now, setNow] = useState(() => new Date());
   const [note, setNote] = useState('');
   const [phase, setPhase] = useState<Phase>('form');
+  const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const noteId = useId();
 
@@ -61,18 +66,24 @@ export const DeliveryPage: React.FC = () => {
     }
   }, [phase, slot, slotDays]);
 
+  // Once sent, the basket is empty: this screen shows the order that was placed instead.
+  const placedOrder = placedOrderId ? trackedOrders.find((order) => order.id === placedOrderId) : undefined;
+
   const isDone = phase === 'done';
   const isBusy = phase === 'busy';
 
+  const feeLines = placedOrder?.feeLines ?? orderStores.map((line) => ({ storeId: line.store.id, fee: line.fee }));
+  const orderStoreList = feeLines.flatMap((line) => MOCK_STORES.filter((store) => store.id === line.storeId));
+
   // The shop on the polaroid: the picked one when it is part of the order, otherwise the first in it.
-  const headStore = orderStores.find((line) => line.store.id === selectedStore?.id)?.store ?? orderStores[0]?.store;
-  const shortfalls = orderStores.filter((line) => line.shortfall > 0);
+  const headStore = orderStoreList.find((store) => store.id === selectedStore?.id) ?? orderStoreList[0];
+  const shortfalls = placedOrder ? [] : orderStores.filter((line) => line.shortfall > 0);
   const canConfirm = shortfalls.length === 0;
 
-  const storeTime = orderStores.length
+  const storeTime = orderStoreList.length
     ? formatTimeRange(
-        Math.min(...orderStores.map((line) => line.store.deliveryTimeMin)),
-        Math.max(...orderStores.map((line) => line.store.deliveryTimeMax))
+        Math.min(...orderStoreList.map((store) => store.deliveryTimeMin)),
+        Math.max(...orderStoreList.map((store) => store.deliveryTimeMax))
       )
     : '';
   const chosenWindow: DeliveryWindow = slot === 'asap' ? { kind: 'asap' } : { kind: 'slot', startsAt: slot };
@@ -84,25 +95,52 @@ export const DeliveryPage: React.FC = () => {
   const pickedCopy = headStore ? t.collage.storeCopy[headStore.id] : undefined;
 
   // The basket is not limited to one shop, so the order goes to all of its shops.
-  const cartStoreNames = orderStores.map((line) =>
-    storeName(line.store.id, line.store.names?.[language] || line.store.name)
-  );
+  const orderStoreNames = orderStoreList.map((store) => storeName(store.id, store.names?.[language] || store.name));
 
-  const totalLabel = formatCurrency(totalAmount);
-  const feeLabel = formatCurrency(deliveryFee);
+  const orderLines = placedOrder
+    ? placedOrder.items.map((item) => ({
+        key: item.name,
+        name: item.names?.[language] || item.name,
+        quantity: item.quantity,
+        lineTotal: item.price * item.quantity,
+        imageUrl: item.imageUrl,
+        label: item.names?.[language] || item.name,
+        storeId: item.storeId ?? '',
+      }))
+    : cart.map((line) => ({
+        key: line.product.id,
+        name: line.product.names?.[language] || line.product.name,
+        quantity: line.quantity,
+        lineTotal: line.product.price * line.quantity,
+        imageUrl: line.product.imageUrl,
+        label: t.collage.productLabels[line.product.id] || line.product.names?.[language] || line.product.name,
+        storeId: line.product.storeId,
+      }));
 
-  const itemSummary = cart
-    .map((line) => {
-      const label =
-        t.collage.productLabels[line.product.id] || line.product.names?.[language] || line.product.name;
-      return line.quantity > 1 ? `${line.quantity} × ${label}` : label;
-    })
+  const orderSubtotal = placedOrder?.subtotal ?? cartSubtotal;
+  const orderDiscount = placedOrder?.discount ?? cartDiscount;
+  const orderFee = placedOrder?.deliveryFee ?? deliveryFee;
+  const orderTotal = placedOrder?.totalAmount ?? totalAmount;
+  const orderAddress = placedOrder?.addresses?.[language] || placedOrder?.address || currentAddress;
+
+  const totalLabel = formatCurrency(orderTotal);
+  const feeLabel = formatCurrency(orderFee);
+
+  const itemSummary = orderLines
+    .map((line) => (line.quantity > 1 ? `${line.quantity} × ${line.label}` : line.label))
     .join(', ');
 
   const confirm = () => {
     if (phase !== 'form' || !canConfirm) return;
     setPhase('busy');
-    timer.current = window.setTimeout(() => setPhase('done'), SENDING_TIME_MS);
+    timer.current = window.setTimeout(() => {
+      if (placedOrder) {
+        updateOrder(placedOrder.id, { deliveryWindow: chosenWindow, note: note.trim() || undefined });
+      } else {
+        setPlacedOrderId(placeOrder({ deliveryWindow: chosenWindow, note }).id);
+      }
+      setPhase('done');
+    }, SENDING_TIME_MS);
   };
 
   const backToStores = () => navigateTo('catalog');
@@ -111,12 +149,12 @@ export const DeliveryPage: React.FC = () => {
   const sentLine = (
     <>
       {sentBefore}
-      <bdi>{cartStoreNames.join(', ')}</bdi>
+      <bdi>{orderStoreNames.join(', ')}</bdi>
       {sentAfter}
     </>
   );
 
-  if (cart.length === 0 && !isDone) {
+  if (cart.length === 0 && !placedOrder) {
     return (
       <div className="paper-dots min-h-screen pb-16">
         <StepHeader step={copy.step} title={copy.title} backLabel={copy.backMobile} onBack={backToStores} />
@@ -257,7 +295,10 @@ export const DeliveryPage: React.FC = () => {
 
   const doneActions = (
     <>
-      <Button variant="secondary" size="lg" onClick={() => navigateTo('home')}>
+      <Button variant="secondary" size="lg" onClick={() => navigateTo('orders', { orderId: placedOrderId ?? undefined })}>
+        {copy.toOrder}
+      </Button>
+      <Button variant="outline" size="lg" onClick={() => navigateTo('home')}>
         {copy.home}
       </Button>
       <Button variant="outline" size="lg" onClick={() => setPhase('form')}>
@@ -305,7 +346,7 @@ export const DeliveryPage: React.FC = () => {
                 {windowLine} ({chosenHint})
               </p>
               <p className="text-[19px] font-bold leading-[44px]">
-                {currentAddress} · {totalLabel}
+                {orderAddress} · {totalLabel}
               </p>
               <p className="text-[19px] font-bold leading-[44px]">
                 {sentLine}
@@ -316,8 +357,10 @@ export const DeliveryPage: React.FC = () => {
                 </p>
               )}
               <p className="hand text-[28px] leading-[44px] text-link">{copy.packing}</p>
-              {stamp('end-0 bottom-[66px] px-[26px] py-3.5 border-[5px] rounded-2xl text-[34px]')}
-              <div className="flex flex-wrap gap-3 mt-[140px]">{doneActions}</div>
+              <div className="relative h-[120px]">
+                {stamp('end-0 top-5 px-[26px] py-3.5 border-[5px] rounded-2xl text-[34px]')}
+              </div>
+              <div className="flex flex-wrap gap-3">{doneActions}</div>
             </div>
           ) : (
             form
@@ -337,7 +380,7 @@ export const DeliveryPage: React.FC = () => {
               {sentLine}
             </p>
             <p className="mb-1 font-bold text-ink-2">
-              {windowLine} · {currentAddress} · {totalLabel}
+              {windowLine} · {orderAddress} · {totalLabel}
             </p>
             {note && (
               <p className="hand mb-1 text-2xl">
@@ -375,48 +418,44 @@ export const DeliveryPage: React.FC = () => {
 
           <div className="px-6 py-[22px] bg-accent border-[3px] border-ink rounded-[22px] shadow-hard-6">
             <ul className="grid gap-2.5 mb-3.5">
-              {cart.map((line) => {
-                const name = line.product.names?.[language] || line.product.name;
-                return (
-                  <li key={line.product.id} className="flex items-center gap-3">
-                    {line.product.imageUrl && (
-                      <img
-                        src={line.product.imageUrl}
-                        alt=""
-                        className="shrink-0 w-[50px] h-[50px] rounded-full object-cover border-[3px] border-white"
-                      />
-                    )}
-                    <span className="flex-1 min-w-0 font-extrabold leading-tight">
-                      {name}
-                      {line.quantity > 1 ? ` × ${line.quantity}` : ''}
-                      <span className="block text-[13px] font-bold">
-                        <bdi>{storeName(line.product.storeId, line.product.storeNames?.[language] || line.product.storeName)}</bdi>
-                      </span>
+              {orderLines.map((line) => (
+                <li key={line.key} className="flex items-center gap-3">
+                  {line.imageUrl && (
+                    <img
+                      src={line.imageUrl}
+                      alt=""
+                      className="shrink-0 w-[50px] h-[50px] rounded-full object-cover border-[3px] border-white"
+                    />
+                  )}
+                  <span className="flex-1 min-w-0 font-extrabold leading-tight">
+                    {line.name}
+                    {line.quantity > 1 ? ` × ${line.quantity}` : ''}
+                    <span className="block text-[13px] font-bold">
+                      <bdi>{storeName(line.storeId, MOCK_STORES.find((s) => s.id === line.storeId)?.name ?? '')}</bdi>
                     </span>
-                    <span className="font-black whitespace-nowrap">
-                      {formatCurrency(line.product.price * line.quantity)}
-                    </span>
-                  </li>
-                );
-              })}
+                  </span>
+                  <span className="font-black whitespace-nowrap">{formatCurrency(line.lineTotal)}</span>
+                </li>
+              ))}
             </ul>
-            {cartDiscount > 0 && (
+            {orderDiscount > 0 && (
               <>
                 <p className="flex justify-between mb-1 font-bold">
                   <span>{t.cart.itemsSubtotal}</span>
-                  <span className="whitespace-nowrap">{formatCurrency(cartSubtotal)}</span>
+                  <span className="whitespace-nowrap">{formatCurrency(orderSubtotal)}</span>
                 </p>
                 <p className="flex justify-between mb-1 font-bold">
                   <span>{t.cart.promoDiscount}</span>
-                  <span className="whitespace-nowrap">− {formatCurrency(cartDiscount)}</span>
+                  <span className="whitespace-nowrap">− {formatCurrency(orderDiscount)}</span>
                 </p>
               </>
             )}
-            {orderStores.length > 1 ? (
-              orderStores.map((line) => (
-                <p key={line.store.id} className="flex justify-between gap-2 mb-1 font-bold">
+            {feeLines.length > 1 ? (
+              feeLines.map((line) => (
+                <p key={line.storeId} className="flex justify-between gap-2 mb-1 font-bold">
                   <span>
-                    {copy.deliveryLabel} · <bdi>{storeName(line.store.id, line.store.name)}</bdi>
+                    {copy.deliveryLabel} ·{' '}
+                    <bdi>{storeName(line.storeId, MOCK_STORES.find((s) => s.id === line.storeId)?.name ?? '')}</bdi>
                   </span>
                   <span className="whitespace-nowrap">{formatCurrency(line.fee)}</span>
                 </p>
@@ -458,19 +497,19 @@ export const DeliveryPage: React.FC = () => {
         >
           <div className="flex items-center gap-2 mb-2.5">
             <div className="flex shrink-0 ps-2">
-              {cart.slice(0, 3).map((line) =>
-                line.product.imageUrl ? (
+              {orderLines.slice(0, 3).map((line) =>
+                line.imageUrl ? (
                   <img
-                    key={line.product.id}
-                    src={line.product.imageUrl}
-                    alt={line.product.names?.[language] || line.product.name}
+                    key={line.key}
+                    src={line.imageUrl}
+                    alt={line.name}
                     className="w-[38px] h-[38px] -ms-2 rounded-full object-cover border-2 border-white"
                   />
                 ) : null
               )}
             </div>
             <span className="flex-1 min-w-0 text-[13px] font-extrabold leading-tight">
-              <bdi>{cartStoreNames.join(', ')}</bdi> · {itemSummary}
+              <bdi>{orderStoreNames.join(', ')}</bdi> · {itemSummary}
             </span>
             <span className="text-[26px] font-black whitespace-nowrap">{totalLabel}</span>
           </div>

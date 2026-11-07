@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText } from '../types';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_USER } from '../data/mockData';
+import { DeliveryWindow } from '../data/deliverySlots';
+import { collageTranslations } from '../i18n/collage';
 import { OrderStoreLine, orderDeliveryFee, summarizeOrderStores } from '../data/cartRules';
 import { useLanguage } from './LanguageContext';
 
@@ -8,6 +10,7 @@ interface NavigationOptions {
   storeId?: string;
   categorySlug?: string;
   searchQuery?: string;
+  orderId?: string;
 }
 
 interface AppContextType {
@@ -72,8 +75,14 @@ interface AppContextType {
   // Domain state
   currentUser: UserProfile;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
+  /** The order the tracker shows: the one asked for, else the newest placed, else the demo order. */
   activeOrder: Order;
+  /** Every order still tracked, newest placed first, the demo order last. */
+  trackedOrders: Order[];
   advanceOrderSimulation: () => void;
+  /** Turns the basket into an order with status "received", then empties the basket. */
+  placeOrder: (details: { deliveryWindow: DeliveryWindow; note: string }) => Order;
+  updateOrder: (id: string, changes: Partial<Order>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -87,7 +96,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USER);
-  const [activeOrder, setActiveOrder] = useState<Order>(MOCK_ACTIVE_ORDER);
+  const [demoOrder, setDemoOrder] = useState<Order>(MOCK_ACTIVE_ORDER);
+  const [focusedOrderId, setFocusedOrderId] = useState<string | null>(null);
+  const [placedOrders, setPlacedOrders] = useState<Order[]>(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('qiventra_orders') : null;
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed)
+        ? parsed.filter((order) => order && typeof order.id === 'string' && Array.isArray(order.items))
+        : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const trackedOrders = useMemo(() => [...placedOrders, demoOrder], [placedOrders, demoOrder]);
+  const activeOrder = trackedOrders.find((order) => order.id === focusedOrderId) ?? trackedOrders[0];
 
   // Address localization and selection state
   const [selectedAddressId, setSelectedAddressId] = useState<string>('addr-1');
@@ -107,6 +131,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       'Tel Aviv, 42 Rothschild Blvd, Apt 14'
     );
   }, [customAddressMap, currentUser.savedAddresses, selectedAddressId, language]);
+
+  // The same address in every language, so a saved order keeps following the language switch.
+  const currentAddressTexts = useMemo((): LocalizedText | undefined => {
+    if (customAddressMap) return customAddressMap;
+    const saved = currentUser.savedAddresses.find((a) => a.id === selectedAddressId);
+    return saved?.addresses;
+  }, [customAddressMap, currentUser.savedAddresses, selectedAddressId]);
 
   const setCurrentAddress = useCallback(
     (addrOrId: string) => {
@@ -216,6 +247,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [cart]);
 
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('qiventra_orders', JSON.stringify(placedOrders));
+      }
+    } catch {
+      // ignore quota or serialization errors
+    }
+  }, [placedOrders]);
+
   const updateUserProfile = (updates: Partial<UserProfile>) => {
     setCurrentUser((prev) => ({ ...prev, ...updates }));
   };
@@ -236,6 +277,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (options?.storeId) setSelectedStoreId(options.storeId);
     if (options?.categorySlug !== undefined) setSelectedCategorySlug(options.categorySlug);
     if (options?.searchQuery !== undefined) setSearchQuery(options.searchQuery);
+    if (options?.orderId) setFocusedOrderId(options.orderId);
 
     setCurrentRoute(route);
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -295,17 +337,66 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Delivery simulation stepper for the live tracker demo
   const advanceOrderSimulation = () => {
     const statuses: Order['status'][] = ['received', 'preparing', 'courier_assigned', 'on_the_way', 'delivered'];
-    setActiveOrder((prev) => {
-      const idx = statuses.indexOf(prev.status);
-      const nextIdx = (idx + 1) % statuses.length;
-      const nextStatus = statuses[nextIdx];
-      const eta = nextStatus === 'delivered' ? 0 : Math.max(5, prev.etaMinutes - 4);
+    const advance = (order: Order): Order => {
+      const nextStatus = statuses[(statuses.indexOf(order.status) + 1) % statuses.length];
       return {
-        ...prev,
+        ...order,
         status: nextStatus,
-        etaMinutes: eta,
+        etaMinutes: nextStatus === 'delivered' ? 0 : Math.max(5, order.etaMinutes - 4),
       };
-    });
+    };
+    if (activeOrder.id === demoOrder.id) {
+      setDemoOrder(advance);
+    } else {
+      setPlacedOrders((prev) => prev.map((order) => (order.id === activeOrder.id ? advance(order) : order)));
+    }
+  };
+
+  const updateOrder = (id: string, changes: Partial<Order>) => {
+    setPlacedOrders((prev) => prev.map((order) => (order.id === id ? { ...order, ...changes } : order)));
+  };
+
+  const placeOrder = ({ deliveryWindow, note }: { deliveryWindow: DeliveryWindow; note: string }): Order => {
+    const namesIn = (lang: 'ru' | 'en' | 'he') =>
+      orderStores
+        .map((line) => collageTranslations[lang].storeCopy[line.store.id]?.name || line.store.names?.[lang] || line.store.name)
+        .join(', ');
+    const placedAt = new Date();
+
+    const order: Order = {
+      id: `ord-${placedAt.getTime()}`,
+      orderNumber: `QIV-IL-${String(placedAt.getTime()).slice(-4)}`,
+      createdAt: placedAt.toISOString(),
+      placedAt: placedAt.toISOString(),
+      status: 'received',
+      storeName: namesIn('ru'),
+      storeNames: { ru: namesIn('ru'), en: namesIn('en'), he: namesIn('he') },
+      storeId: orderStores[0]?.store.id ?? '',
+      items: cart.map((line) => ({
+        name: line.product.name,
+        names: line.product.names,
+        quantity: line.quantity,
+        price: line.product.price,
+        storeId: line.product.storeId,
+        imageUrl: line.product.imageUrl,
+      })),
+      subtotal: cartSubtotal,
+      discount: cartDiscount,
+      feeLines: orderStores.map((line) => ({ storeId: line.store.id, fee: line.fee })),
+      totalAmount,
+      deliveryFee,
+      address: currentAddress,
+      addresses: currentAddressTexts,
+      etaMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
+      deliveryWindow,
+      note: note.trim() || undefined,
+    };
+
+    setPlacedOrders((prev) => [order, ...prev]);
+    setFocusedOrderId(order.id);
+    setPickedStoreId(null);
+    clearCart();
+    return order;
   };
 
   return (
@@ -350,7 +441,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         currentUser,
         updateUserProfile,
         activeOrder,
+        trackedOrders,
         advanceOrderSimulation,
+        placeOrder,
+        updateOrder,
       }}
     >
       {children}

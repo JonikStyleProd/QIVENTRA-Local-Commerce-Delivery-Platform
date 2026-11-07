@@ -118,8 +118,13 @@ export interface CollageStrings {
     /** {n} is the missing amount, {store} the shop, {min} its minimum order. */
     addMore: string;
     toStoreItems: string;
+    toOrder: string;
     deliveryLabel: string;
     total: string;
+  };
+  orders: {
+    otherActive: string;
+    open: string;
   };
   groups: Record<CollageGroupId, string>;
   storeCopy: Record<string, CollageStoreCopy>;
@@ -236,8 +241,13 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       windowWord: 'Окно',
       addMore: 'Добавьте ещё {n}: минимальный заказ в {store} — {min}.',
       toStoreItems: 'К товарам лавки',
+      toOrder: 'К заказу',
       deliveryLabel: 'Доставка',
       total: 'Итого',
+    },
+    orders: {
+      otherActive: 'Другие активные заказы',
+      open: 'Открыть',
     },
     groups: {
       all: 'Все',
@@ -378,8 +388,13 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       windowWord: 'Window',
       addMore: 'Add {n} more: the minimum order at {store} is {min}.',
       toStoreItems: 'To the shop’s items',
+      toOrder: 'To the order',
       deliveryLabel: 'Delivery',
       total: 'Total',
+    },
+    orders: {
+      otherActive: 'Other active orders',
+      open: 'Open',
     },
     groups: {
       all: 'All',
@@ -520,8 +535,13 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       windowWord: 'חלון',
       addMore: 'הוסיפו עוד {n}: ההזמנה המינימלית ב־{store} היא {min}.',
       toStoreItems: 'למוצרי החנות',
+      toOrder: 'להזמנה',
       deliveryLabel: 'משלוח',
       total: 'סה״כ',
+    },
+    orders: {
+      otherActive: 'הזמנות פעילות נוספות',
+      open: 'פתיחה',
     },
     groups: {
       all: 'הכול',

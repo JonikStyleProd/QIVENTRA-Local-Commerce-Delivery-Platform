@@ -15,10 +15,12 @@ import { MOCK_PAST_ORDERS } from '../data/mockData';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Tape } from '../components/collage/Tape';
+import { formatWindow } from '../data/deliverySlots';
 
 export const OrdersPage: React.FC = () => {
   const {
     activeOrder,
+    trackedOrders,
     advanceOrderSimulation,
     navigateTo,
     openChatWithParticipant,
@@ -46,7 +48,20 @@ export const OrdersPage: React.FC = () => {
 
   const isDelivered = activeOrder.status === 'delivered';
   const displayStoreName = activeOrder.storeNames?.[language] || activeOrder.storeName;
-  const displayAddress = currentAddress || activeOrder.addresses?.[language] || activeOrder.address;
+  // A placed order keeps its own address; the demo order follows the current one.
+  const displayAddress = activeOrder.placedAt
+    ? activeOrder.addresses?.[language] || activeOrder.address
+    : currentAddress || activeOrder.addresses?.[language] || activeOrder.address;
+  const statusLabel = isDelivered
+    ? t.orders.statusDelivered
+    : activeOrder.status === 'received'
+    ? t.orders.stepReceived
+    : t.orders.activeDeliveryBadge;
+  const windowLabel =
+    activeOrder.deliveryWindow?.kind === 'slot'
+      ? formatWindow(activeOrder.deliveryWindow, t.collage.slots, language, new Date())
+      : null;
+  const otherOrders = trackedOrders.filter((order) => order.id !== activeOrder.id);
 
   return (
     <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10">
@@ -69,7 +84,7 @@ export const OrdersPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <Badge variant={isDelivered ? 'success' : 'pistachio'} size="md" dot>
-                {isDelivered ? t.orders.statusDelivered : t.orders.activeDeliveryBadge}
+                {statusLabel}
               </Badge>
               <span className="text-xs text-muted font-medium">#{activeOrder.orderNumber || activeOrder.id}</span>
             </div>
@@ -101,10 +116,10 @@ export const OrdersPage: React.FC = () => {
 
             <div className="text-start sm:text-end bg-surface-elevated sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-2xl border sm:border-0 border-theme">
               <span className="text-xs text-secondary block">
-                {isDelivered ? t.orders.statusLabel : t.orders.estimatedTimeLabel}
+                {isDelivered ? t.orders.statusLabel : windowLabel ? t.collage.delivery.windowWord : t.orders.estimatedTimeLabel}
               </span>
               <span className="text-xl sm:text-2xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans tabular-nums">
-                {isDelivered ? t.orders.statusCompleted : `~${formatMinutes(activeOrder.etaMinutes)}`}
+                {isDelivered ? t.orders.statusCompleted : windowLabel ?? `~${formatMinutes(activeOrder.etaMinutes)}`}
               </span>
             </div>
           </div>
@@ -117,25 +132,21 @@ export const OrdersPage: React.FC = () => {
               <span className={activeOrder.status === 'received' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
                 1. {t.orders.stepReceived}
               </span>
-              <span className="text-[10px] text-muted hidden sm:inline">12:30</span>
             </div>
             <div className="flex flex-col items-center">
               <span className={activeOrder.status === 'preparing' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
                 2. {t.orders.stepPreparing}
               </span>
-              <span className="text-[10px] text-muted hidden sm:inline">12:34</span>
             </div>
             <div className="flex flex-col items-center">
               <span className={activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
                 3. {t.orders.stepOnTheWay}
               </span>
-              <span className="text-[10px] text-muted hidden sm:inline">12:41</span>
             </div>
             <div className="flex flex-col items-center">
               <span className={isDelivered ? 'text-[#1E824C] dark:text-[#48BB78] font-bold' : 'text-secondary'}>
                 4. {t.orders.stepAtDoor}
               </span>
-              <span className="text-[10px] text-muted hidden sm:inline">~12:55</span>
             </div>
           </div>
 
@@ -246,7 +257,7 @@ export const OrdersPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pt-3 border-t border-theme/60 text-sm font-extrabold text-primary">
-            <span>{t.cart.totalPayable}</span>
+            <span>{t.collage.delivery.total}</span>
             <span className="font-sans whitespace-nowrap tabular-nums text-end">
               {formatCurrency(activeOrder.totalAmount)}
             </span>
@@ -269,6 +280,32 @@ export const OrdersPage: React.FC = () => {
         </div>
 
       </div>
+
+      {/* OTHER ACTIVE ORDERS */}
+      {otherOrders.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-base sm:text-lg font-bold text-primary">{t.collage.orders.otherActive}</h2>
+          <div className="space-y-3">
+            {otherOrders.map((order) => (
+              <div
+                key={order.id}
+                className="p-4 sm:p-5 rounded-2xl bg-surface border border-theme flex flex-wrap items-center justify-between gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <span className="text-xs font-bold text-primary">#{order.orderNumber}</span>
+                  <h3 className="text-sm font-bold text-primary truncate">
+                    <bdi>{order.storeNames?.[language] || order.storeName}</bdi>
+                  </h3>
+                </div>
+                <span className="text-sm font-extrabold text-primary whitespace-nowrap">{formatCurrency(order.totalAmount)}</span>
+                <Button variant="outline" size="sm" onClick={() => navigateTo('orders', { orderId: order.id })}>
+                  {t.collage.orders.open}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* PAST ORDERS ARCHIVE */}
       <div className="space-y-4">
