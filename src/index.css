@@ -208,12 +208,16 @@
   --border-color: #E9DFCB;
 }
 
-/* Author logo: the same file in both themes. In the dark theme a soft light edge keeps it readable. */
+/*
+ * Author logo: the same file in both themes. Its letters are thin and dark, so at 24-28px the dark
+ * theme needs a tight outline (stacked, because one blurs into a smudge) and only a faint halo.
+ */
 .dark .made-by-logo {
   filter:
-    drop-shadow(0 0 0.75px rgba(255, 248, 236, 0.95))
-    drop-shadow(0 0 4px rgba(255, 248, 236, 0.45))
-    drop-shadow(0 0 10px rgba(255, 248, 236, 0.2));
+    drop-shadow(0 0 0.4px #FFF8EC)
+    drop-shadow(0 0 0.4px #FFF8EC)
+    drop-shadow(0 0 0.4px #FFF8EC)
+    drop-shadow(0 0 5px rgba(255, 248, 236, 0.22));
 }
 
 /* -------------------------------------------------------------

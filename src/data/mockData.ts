@@ -260,6 +260,11 @@ export const MOCK_STORES: Store[] = [
     isFeatured: true,
     isPromo: true,
     promoText: 'Спешелти кофе в подарок к выпечке до 11:30',
+    promoTexts: {
+      ru: 'Спешелти кофе в подарок к выпечке до 11:30',
+      en: 'Free specialty coffee with pastries until 11:30',
+      he: 'קפה ספיישלטי במתנה עם מאפה עד 11:30',
+    },
     tags: ['Свежая хала', 'Спешелти кофе', 'На закваске'],
     bannerGradient: 'from-[#382613] to-[#5C3E20]',
     logoUrl: '/photos/store-levinsky-bakery.webp',
@@ -938,6 +943,11 @@ export const MOCK_ACTIVE_ORDER: Order = {
   etaMinutes: 14,
   courier: {
     name: 'Томер Леви (תומר לוי)',
+    names: {
+      ru: 'Томер Леви',
+      en: 'Tomer Levi',
+      he: 'תומר לוי',
+    },
     id: 'courier-1',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     phone: '+972 50 312 8840',
@@ -1052,6 +1062,11 @@ export const MOCK_PAST_ORDERS: Order[] = [
 export const MOCK_USER: UserProfile = {
   id: 'usr-1',
   name: 'Майя Коэн (Maya Cohen / מאיה כהן)',
+  names: {
+    ru: 'Майя Коэн',
+    en: 'Maya Cohen',
+    he: 'מאיה כהן',
+  },
   phone: '+972 54 745 1289',
   email: 'maya.cohen@qiventra.il',
   savedAddresses: [

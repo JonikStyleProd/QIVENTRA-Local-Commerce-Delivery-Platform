@@ -241,6 +241,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen, onClose, initial
           {activeConversation ? (
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3">
+                {messages.length === 0 && !isTyping && (
+                  <p className="hand pt-10 text-center text-[28px] leading-tight text-link-text">{copy.start}</p>
+                )}
                 {messages.map((msg) => {
                   const isMe = msg.senderRole === 'customer';
                   const text = msg.texts?.[language] || msg.text;
