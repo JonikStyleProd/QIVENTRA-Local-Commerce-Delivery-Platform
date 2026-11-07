@@ -89,6 +89,19 @@
   h3 {
     text-wrap: balance;
   }
+
+  /* 44px minimum touch target everywhere, including screens that were not redrawn. */
+  button,
+  [role='button'],
+  select,
+  textarea,
+  input:not([type='radio'], [type='checkbox'], [type='file']) {
+    min-height: 44px;
+  }
+  button,
+  [role='button'] {
+    min-width: 44px;
+  }
 }
 
 /* Custom Utilities for Design System */
@@ -247,7 +260,7 @@ h1[tabindex='-1']:focus {
   }
 
   .chip-tilt {
-    transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.3, 1), background-color 0.2s;
+    transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.3, 1);
   }
   .chip-tilt:hover {
     transform: rotate(-3deg);

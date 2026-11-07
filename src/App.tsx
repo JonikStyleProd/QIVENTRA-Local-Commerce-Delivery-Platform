@@ -5,7 +5,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
-import { ToastProvider, useToast } from './context/ToastContext';
+import { ToastProvider } from './context/ToastContext';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/layout/Navbar';
@@ -17,7 +17,6 @@ import { AddressModal } from './components/modals/AddressModal';
 import { AuthModal } from './components/modals/AuthModal';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
 import { PwaSplash } from './components/pwa/PwaSplash';
-import { Toast } from './components/ui/Toast';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { focusPageHeading } from './components/collage/focusHeading';
 
@@ -36,7 +35,6 @@ import { AdminPortalPage } from './pages/AdminPortalPage';
 
 const AppContent: React.FC = () => {
   const { currentRoute, isChatOpen, setIsChatOpen, chatParticipant } = useApp();
-  const { toasts, removeToast } = useToast();
   const { t } = useLanguage();
 
   // There are no URLs to announce a screen change, so focus moves to the new page's heading.
@@ -111,18 +109,6 @@ const AppContent: React.FC = () => {
       <AddressModal />
       <AuthModal />
       <OfflineIndicator />
-
-      {/* Floating Toast Notification Container */}
-      <div
-        className="fixed top-20 end-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"
-        aria-live="polite"
-      >
-        {toasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto">
-            <Toast toast={toast} onClose={() => removeToast(toast.id)} />
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

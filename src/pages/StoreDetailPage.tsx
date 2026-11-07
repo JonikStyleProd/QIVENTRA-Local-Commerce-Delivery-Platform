@@ -127,8 +127,8 @@ export const StoreDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsChatOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/45 backdrop-blur-xs hover:bg-black/65 transition text-xs font-semibold text-white border border-white/20"
-                aria-label="Chat with store"
+                className="flex items-center gap-1.5 min-w-11 min-h-11 px-3 rounded-xl bg-black/45 backdrop-blur-xs hover:bg-black/65 transition text-xs font-semibold text-white border border-white/20"
+                aria-label={t.chat?.title}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#FFD84D]" />
                 <span className="hidden sm:inline">
@@ -139,7 +139,7 @@ export const StoreDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleShare}
-                className="p-2 rounded-xl bg-black/30 backdrop-blur-xs hover:bg-black/50 transition text-white border border-white/20"
+                className="grid place-items-center w-11 h-11 rounded-xl bg-black/30 backdrop-blur-xs hover:bg-black/50 transition text-white border border-white/20"
                 aria-label={t.store.shareStore}
               >
                 <Share2 className="w-4 h-4" />

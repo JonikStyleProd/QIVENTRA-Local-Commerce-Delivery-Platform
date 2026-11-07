@@ -96,7 +96,7 @@ export const CartPage: React.FC = () => {
               return (
                 <div
                   key={item.product.id}
-                  className="py-4 first:pt-0 last:pb-0 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-4"
+                  className="py-4 first:pt-0 last:pb-0 flex flex-col gap-2 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
                 >
                   {/* Left: Product Info with wrapping title */}
                   <div className="flex flex-col min-w-0 pe-2">
@@ -113,7 +113,7 @@ export const CartPage: React.FC = () => {
                   </div>
 
                   {/* Right: Stepper + Total + Delete */}
-                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <div className="flex items-center justify-between gap-2 sm:gap-3 shrink-0">
                     {/* Stepper */}
                     <div className="seg-group flex items-center bg-accent border-2 border-ink rounded-xl overflow-hidden">
                       <button
@@ -179,18 +179,18 @@ export const CartPage: React.FC = () => {
 
         {/* Right Column: Order Summary & Checkout Card */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="rounded-2xl sm:rounded-3xl bg-surface border border-theme p-5 sm:p-6 shadow-xs space-y-4">
+          <div className="rounded-[22px] bg-accent border-[3px] border-ink p-5 sm:p-6 shadow-hard-6 space-y-4">
             <h3 className="text-base font-bold text-primary">{t.cart.orderSummary}</h3>
 
             {/* Calculations */}
-            <div className="space-y-2 text-xs">
+            <div className="space-y-2 text-sm font-bold">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-secondary">
                 <span>{t.cart.itemsCountLabel} ({cartTotalCount})</span>
                 <span className="font-semibold text-primary whitespace-nowrap tabular-nums">{formatCurrency(cartSubtotal)}</span>
               </div>
 
               {cartDiscount > 0 && (
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-[#1E824C] dark:text-[#48BB78]">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center font-extrabold text-ink">
                   <span>{t.cart.promoDiscount}</span>
                   <span className="font-semibold whitespace-nowrap tabular-nums">- {formatCurrency(cartDiscount)}</span>
                 </div>

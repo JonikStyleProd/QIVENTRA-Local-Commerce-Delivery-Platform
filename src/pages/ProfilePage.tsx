@@ -75,7 +75,7 @@ export const ProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsUploadModalOpen(true)}
-              className="absolute -bottom-1 -end-1 p-1.5 rounded-xl bg-surface border border-theme text-primary hover:text-[#1E1E1E] dark:hover:text-[#FFD84D] shadow-sm transition hover:scale-110"
+              className="absolute -bottom-2 -end-2 grid place-items-center w-11 h-11 rounded-xl bg-white border-2 border-ink text-ink cursor-pointer"
               title={t.media.changePhoto}
               aria-label={t.media.changePhoto}
             >
@@ -127,7 +127,7 @@ export const ProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAddressModalOpen(true)}
-              className="text-xs font-semibold text-[#1E1E1E] dark:text-[#FFD84D] hover:underline"
+              className="min-w-11 min-h-11 text-sm font-extrabold hover:underline cursor-pointer"
             >
               {t.profile.manage}
             </button>

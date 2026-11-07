@@ -153,9 +153,11 @@ export const DesktopHeader: React.FC = () => {
         </button>
 
         {currentRoute === 'home' && (
-          <Button size="lg" onClick={() => navigateTo('catalog')} className="hidden min-[1320px]:inline-flex whitespace-nowrap">
-            {t.collage.landing.cta}
-          </Button>
+          <div className="hidden min-[1320px]:block shrink-0">
+            <Button size="lg" onClick={() => navigateTo('catalog')} className="whitespace-nowrap">
+              {t.collage.landing.cta}
+            </Button>
+          </div>
         )}
       </div>
     </div>

@@ -113,7 +113,7 @@ export const HomePage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigateTo('catalog')}
-              className="min-h-11 text-sm font-extrabold underline cursor-pointer"
+              className="min-w-11 min-h-11 text-sm font-extrabold underline cursor-pointer"
             >
               {phone.all}
             </button>
