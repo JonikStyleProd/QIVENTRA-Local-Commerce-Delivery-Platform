@@ -216,47 +216,6 @@
     drop-shadow(0 0 10px rgba(255, 248, 236, 0.2));
 }
 
-/* Custom Utilities for Design System */
-.bg-app {
-  background-color: var(--bg-app);
-}
-.bg-surface {
-  background-color: var(--bg-surface);
-}
-.bg-surface-elevated {
-  background-color: var(--bg-surface-elevated);
-}
-.bg-surface-card {
-  background-color: var(--bg-surface-card);
-}
-.text-primary {
-  color: var(--text-primary);
-}
-.text-secondary {
-  color: var(--text-secondary);
-}
-.text-muted {
-  color: var(--text-muted);
-}
-.border-subtle {
-  border-color: var(--border-subtle);
-}
-.border-theme {
-  border-color: var(--border-color);
-}
-.bg-mineral {
-  background-color: #1E1E1E;
-}
-.text-mineral {
-  color: #1E1E1E;
-}
-.bg-pistachio {
-  background-color: #FFD84D;
-}
-.text-pistachio {
-  color: #FFD84D;
-}
-
 /* -------------------------------------------------------------
    FOCUS: unlayered on purpose, so `focus:outline-none` utilities
    on older screens cannot remove the visible keyboard ring.

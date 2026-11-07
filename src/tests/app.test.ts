@@ -262,11 +262,6 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
     expect(sizes.footerLockup).toBeLessThanOrEqual(48);
   });
 
-  it('contains the mandatory footer compliance statement', () => {
-    const expectedStatement = 'Produced and developed by JonikStyle Production. All rights reserved by JonikStyle Production.';
-    expect(expectedStatement).toBe('Produced and developed by JonikStyle Production. All rights reserved by JonikStyle Production.');
-  });
-
   it('renders App component without throwing', async () => {
     const React = await import('react');
     const { renderToString } = await import('react-dom/server');
@@ -472,5 +467,79 @@ describe('QIVENTRA Collage design', () => {
     expect(formatWindow(at(10), strings, 'he', now)).toBe('מחר \u206618–19\u2069');
     expect(formatWindow(at(11), strings, 'he', now)).toBe('מחרתיים \u206618–19\u2069');
     expect(formatWindow(at(20), strings, 'he', now)).not.toContain('היום');
+  });
+});
+
+describe('QIVENTRA author signature', () => {
+  const renderSignature = async (language: 'ru' | 'en' | 'he') => {
+    const React = await import('react');
+    const { renderToString } = await import('react-dom/server');
+    const { MadeByView } = await import('../components/collage/MadeBy');
+    return renderToString(React.createElement(MadeByView, { copy: translations[language].screens.madeBy }));
+  };
+
+  it('shows the current year and the agreed text in every language', async () => {
+    const year = new Date().getFullYear();
+    const expected = {
+      ru: ['Создано', `© ${year} `, '. Все права защищены.'],
+      en: ['Created by', `© ${year} `, '. All rights reserved.'],
+      he: ['נוצר על ידי', `© ${year} `, '. כל הזכויות שמורות.'],
+    } as const;
+
+    for (const language of ['ru', 'en', 'he'] as const) {
+      const html = await renderSignature(language);
+      expected[language].forEach((part) => expect(html).toContain(part));
+      expect(html).toContain('<bdi>JonikStyle Production</bdi>');
+    }
+  });
+
+  it('uses the WebP logo with a PNG fallback, explicit size and lazy loading, and no link', async () => {
+    const html = await renderSignature('en');
+    expect(html).toContain('srcSet="/brand/jonikstyle-logo.webp"');
+    expect(html).toContain('src="/brand/jonikstyle-logo-160.png"');
+    expect(html).toContain('alt="JonikStyle Production"');
+    expect(html).toContain('width="426"');
+    expect(html).toContain('height="160"');
+    expect(html).toContain('loading="lazy"');
+    expect(html).toContain('decoding="async"');
+    expect(html).not.toContain('<a ');
+  });
+
+  it('fills the year into the rights line', async () => {
+    const { madeByRightsLine } = await import('../components/collage/MadeBy');
+    expect(madeByRightsLine(translations.en.screens.madeBy.rights, 2031)).toBe(
+      '© 2031 JonikStyle Production. All rights reserved.'
+    );
+  });
+});
+
+describe('QIVENTRA honest footer', () => {
+  const INVENTED = ['890-1200', 'support@qiventra.com', '07:00', '01:00', 'Produced and developed'];
+
+  const renderFooter = async () => {
+    const React = await import('react');
+    const { renderToString } = await import('react-dom/server');
+    const { ThemeProvider } = await import('../context/ThemeContext');
+    const { LanguageProvider } = await import('../context/LanguageContext');
+    const { ToastProvider } = await import('../context/ToastContext');
+    const { AppProvider } = await import('../context/AppContext');
+    const { Footer } = await import('../components/layout/Footer');
+    const h = React.createElement;
+    return renderToString(
+      h(ThemeProvider, null, h(LanguageProvider, null, h(ToastProvider, null, h(AppProvider, null, h(Footer)))))
+    );
+  };
+
+  it('shows the signature once and no invented contacts', async () => {
+    const html = await renderFooter();
+    INVENTED.forEach((text) => expect(html).not.toContain(text));
+    expect(html.match(/made-by-logo/g)).toHaveLength(1);
+  });
+
+  it('says in every language that contacts are not connected', () => {
+    (['ru', 'en', 'he'] as const).forEach((language) => {
+      expect(translations[language].screens.footer.contactsDemo).toBeTruthy();
+      INVENTED.forEach((text) => expect(JSON.stringify(translations[language].screens)).not.toContain(text));
+    });
   });
 });
