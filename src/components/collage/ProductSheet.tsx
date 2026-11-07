@@ -26,7 +26,7 @@ interface ProductSheetProps {
  * so quantity is the only choice here.
  */
 export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onClose }) => {
-  const { cart, addToCart, updateCartQuantity, currentRoute, selectedStoreId } = useApp();
+  const { cart, addToCart, updateCartQuantity, currentRoute, selectedStoreId, deliveryFor } = useApp();
   const { language, t } = useLanguage();
   const { labelsFor } = usePromotions();
   const copy = t.screens.product;
@@ -74,7 +74,9 @@ export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onC
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-4">
-            {quantity > 0 ? (
+            {!deliveryFor(product.storeId).inRange && quantity === 0 ? (
+              <p className="font-extrabold text-action-text">{t.demo.delivery.outOfRange}</p>
+            ) : quantity > 0 ? (
               <div className="flex items-center gap-2.5">
                 <span className="text-sm font-extrabold">{copy.quantity}</span>
                 <QuantityStepper

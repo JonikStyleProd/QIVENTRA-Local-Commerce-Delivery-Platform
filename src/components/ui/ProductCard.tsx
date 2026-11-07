@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Product } from '../../types';
+import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePromotions } from '../../context/PromotionsContext';
 import { tiltFor } from '../../data/collageCatalog';
@@ -27,6 +28,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const { language, t } = useLanguage();
   const { labelsFor } = usePromotions();
+  const { deliveryFor } = useApp();
+  const canOrder = deliveryFor(product.storeId).inRange;
   const [flash, setFlash] = useState(0);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
@@ -67,7 +70,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className="relative flex flex-wrap items-center justify-between gap-1.5 mt-2 px-1">
         <ProductPrice product={product} />
 
-        {inCartQuantity > 0 ? (
+        {!canOrder && inCartQuantity === 0 ? (
+          <span className="text-xs font-extrabold text-action-text">{t.demo.delivery.cannotAdd}</span>
+        ) : inCartQuantity > 0 ? (
           <QuantityStepper
             quantity={inCartQuantity}
             name={displayName}

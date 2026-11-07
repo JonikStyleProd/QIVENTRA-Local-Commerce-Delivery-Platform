@@ -17,14 +17,17 @@ import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { StepHeader } from '../components/collage/StepHeader';
 import { pathFor } from '../router/paths';
+import { Store } from '../types';
 
-type SortKey = 'deliveryTime' | 'minOrder';
+type SortKey = 'distance' | 'deliveryTime' | 'minOrder';
 
 /** Step 1 of the path: shop picker (N9-Stores / M9-Stores) with the existing filters and products tab. */
 export const CatalogPage: React.FC = () => {
   const {
     selectedStoreId,
     pickStore,
+    deliveryFor,
+    currentAddressId,
     navigateTo,
     addToCart,
     updateCartQuantity,
@@ -56,7 +59,7 @@ export const CatalogPage: React.FC = () => {
   const [filterFreeDeliveryOnly, setFilterFreeDeliveryOnly] = useState(false);
   const [filterKosher, setFilterKosher] = useState(false);
   const [filterVegan, setFilterVegan] = useState(false);
-  const [sortBy, setSortBy] = useState<SortKey>('deliveryTime');
+  const [sortBy, setSortBy] = useState<SortKey>('distance');
 
   const activeGroup = groupFromSlug(selectedCategorySlug);
   const isComingSoon = activeGroup !== 'all' && !visibleGroups.includes(activeGroup as (typeof visibleGroups)[number]);
@@ -74,14 +77,16 @@ export const CatalogPage: React.FC = () => {
       list = list.filter((s) => s.deliveryFee === 0);
     }
 
-    if (sortBy === 'deliveryTime') {
-      list.sort((a, b) => a.deliveryTimeMin - b.deliveryTimeMin);
-    } else if (sortBy === 'minOrder') {
-      list.sort((a, b) => a.minOrder - b.minOrder);
-    }
-
-    return list;
-  }, [activeGroup, filterEcoOnly, filterFreeDeliveryOnly, sortBy]);
+    // Whatever the sort, shops that cannot reach the address come after the ones that can.
+    const rank = (a: Store, b: Store) => {
+      const [first, second] = [deliveryFor(a.id), deliveryFor(b.id)];
+      if (first.inRange !== second.inRange) return first.inRange ? -1 : 1;
+      if (sortBy === 'distance') return first.km - second.km;
+      if (sortBy === 'deliveryTime') return first.timeMin - second.timeMin;
+      return a.minOrder - b.minOrder;
+    };
+    return list.sort(rank);
+  }, [activeGroup, filterEcoOnly, filterFreeDeliveryOnly, sortBy, deliveryFor, currentAddressId]);
 
   const requiredLabels = useMemo(() => {
     const required: ProductLabel[] = [];
@@ -108,7 +113,7 @@ export const CatalogPage: React.FC = () => {
   };
 
   // The panel follows the mockups: it shows only while the picked shop is on screen.
-  const pickedStore = filteredStores.find((s) => s.id === selectedStoreId);
+  const pickedStore = filteredStores.find((s) => s.id === selectedStoreId && deliveryFor(s.id).inRange);
   const pickedName = pickedStore
     ? t.collage.storeCopy[pickedStore.id]?.name || pickedStore.names?.[language] || pickedStore.name
     : '';
@@ -200,6 +205,7 @@ export const CatalogPage: React.FC = () => {
                 onChange={(e) => setSortBy(e.target.value as SortKey)}
                 className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
               >
+                <option value="distance">{t.demo.delivery.sortNear}</option>
                 <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
                 <option value="minOrder">{t.catalog.sortMinOrder}</option>
               </select>
@@ -231,7 +237,8 @@ export const CatalogPage: React.FC = () => {
                 <li key={store.id} className="anim-drop" style={{ animationDelay: `${(index * 0.08).toFixed(2)}s` }}>
                   <StoreCard
                     store={store}
-                    isSelected={store.id === selectedStoreId}
+                    isSelected={store.id === selectedStoreId && deliveryFor(store.id).inRange}
+                    to={deliveryFor(store.id).inRange ? undefined : pathFor('store', { storeId: store.id })}
                     onClick={() => pickStore(store.id)}
                   />
                 </li>
@@ -265,7 +272,7 @@ export const CatalogPage: React.FC = () => {
           note={copy.chosen}
           title={
             <>
-              <bdi>{pickedName}</bdi> · {formatTimeRange(pickedStore.deliveryTimeMin, pickedStore.deliveryTimeMax)}
+              <bdi>{pickedName}</bdi> · {formatTimeRange(deliveryFor(pickedStore.id).timeMin, deliveryFor(pickedStore.id).timeMax)}
             </>
           }
         >

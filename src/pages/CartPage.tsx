@@ -11,6 +11,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { CartLine } from '../components/collage/CartLine';
 import { DiscountChoiceNote, PromotionHints, PromotionRows } from '../components/collage/OrderPromotions';
 import { PageHeading, PageShell } from '../components/collage/Page';
+import { UndeliverableNotice } from '../components/collage/UndeliverableNotice';
 import { Panel } from '../components/collage/Panel';
 import { SummaryRow } from '../components/collage/SummaryRow';
 
@@ -171,9 +172,17 @@ export const CartPage: React.FC = () => {
           )}
 
           <DiscountChoiceNote order={order} className="mt-2.5" />
+          <UndeliverableNotice lines={order.undeliverable} id="cart-undeliverable" className="mt-3" />
 
           {/* Next step: choosing the delivery window. Nothing is charged in this demo. */}
-          <Button size="lg" fullWidth onClick={() => navigateTo('delivery')} className="mt-4 whitespace-normal">
+          <Button
+            size="lg"
+            fullWidth
+            disabled={order.undeliverable.length > 0}
+            aria-describedby={order.undeliverable.length > 0 ? 'cart-undeliverable' : undefined}
+            onClick={() => navigateTo('delivery')}
+            className="mt-4 whitespace-normal"
+          >
             {t.screens.cart.toWindow}
           </Button>
           <p className="mt-2 text-center text-[13px] font-bold">{t.collage.common.demo}</p>

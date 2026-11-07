@@ -29,7 +29,7 @@ const FACT = 'min-w-0 px-3 py-2 border-2 border-ink rounded-xl';
 
 export const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams();
-  const { addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
+  const { deliveryFor, setIsAddressModalOpen, addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const share = useShare();
   const { promotions, now, labelsFor } = usePromotions();
@@ -64,6 +64,7 @@ export const StoreDetailPage: React.FC = () => {
   const displayName = copy?.name || store.names?.[language] || store.name;
   const displayKind = copy?.kind || store.categories?.[language] || store.category;
   const displayAddress = store.addresses?.[language] || store.address;
+  const delivery = deliveryFor(store.id);
   const shownPromotions = visiblePromotions(promotions, store.id, now);
 
   const categoryLabel = (name: string) =>
@@ -124,7 +125,7 @@ export const StoreDetailPage: React.FC = () => {
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
             <div className={`${FACT} bg-tint-health`}>
               <dt className="text-xs font-bold text-ink-2">{t.store.courierDeliveryLabel}</dt>
-              <dd className="font-black tabular-nums">{formatTimeRange(store.deliveryTimeMin, store.deliveryTimeMax)}</dd>
+              <dd className="font-black tabular-nums">{formatTimeRange(delivery.timeMin, delivery.timeMax)}</dd>
             </div>
             <div className={`${FACT} bg-tint-food`}>
               <dt className="text-xs font-bold text-ink-2">{t.store.deliveryCostLabel}</dt>
@@ -136,9 +137,23 @@ export const StoreDetailPage: React.FC = () => {
             </div>
             <div className={`${FACT} bg-tint-gift`}>
               <dt className="text-xs font-bold text-ink-2">{t.screens.store.distance}</dt>
-              <dd className="font-black tabular-nums">{formatDistance(store.distanceKm)}</dd>
+              <dd className="font-black tabular-nums">{formatDistance(delivery.km)}</dd>
             </div>
           </dl>
+
+          {!delivery.inRange && (
+            <div role="status" className="mt-4 p-3 bg-tint-food border-2 border-ink rounded-xl">
+              <p className="font-black">{t.demo.delivery.outOfRange}</p>
+              <p className="text-sm font-bold">
+                {t.demo.delivery.outOfRangeDesc
+                  .replace('{distance}', formatDistance(delivery.km))
+                  .replace('{radius}', formatDistance(store.deliveryRadiusKm))}
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => setIsAddressModalOpen(true)} className="mt-2">
+                {t.demo.delivery.changeAddress}
+              </Button>
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-2.5 mt-4">
             <Button

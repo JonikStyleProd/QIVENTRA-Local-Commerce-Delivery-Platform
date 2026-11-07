@@ -10,6 +10,7 @@ import { Tape } from '../components/collage/Tape';
 import { HandArrow, HandUnderline } from '../components/collage/HandMarks';
 import { ProductSticker } from '../components/collage/ProductSticker';
 import { ComingSoon } from '../components/collage/ComingSoon';
+import { AddressStrip } from '../components/collage/AddressStrip';
 
 /** Decorative collage around the desktop hero. `caption` indexes t.collage.landing.caps. */
 const HERO_STICKERS: {
@@ -54,12 +55,13 @@ const STEP_STYLES = [
 ];
 
 export const HomePage: React.FC = () => {
-  const { navigateTo, pickStore, addToCart, cart } = useApp();
+  const { navigateTo, pickStore, addToCart, cart, deliveryFor } = useApp();
   const { t } = useLanguage();
 
   const landing = t.collage.landing;
   const phone = t.collage.mobileHome;
   const storeCount = String(MOCK_STORES.length);
+  const nearCount = String(MOCK_STORES.filter((store) => deliveryFor(store.id).inRange).length);
 
   const boardStores = BOARD_ORDER.map((id) => MOCK_STORES.find((s) => s.id === id)).filter(
     (s): s is (typeof MOCK_STORES)[number] => Boolean(s)
@@ -69,6 +71,9 @@ export const HomePage: React.FC = () => {
     <>
       {/* ---------- Phone: M9-Home ---------- */}
       <div className="desk:hidden pb-5">
+        <div className="px-4 pt-3">
+          <AddressStrip />
+        </div>
         <section className="px-4 pt-2 pb-4">
           <p className="hand anim-in inline-block text-[26px] text-link-text -rotate-2">{phone.today}</p>
           <h1 className="anim-in text-[40px] font-black leading-[0.98] tracking-[-0.03em]" style={{ animationDelay: '0.1s' }}>
@@ -111,7 +116,7 @@ export const HomePage: React.FC = () => {
           <div className="flex items-baseline justify-between mb-2.5">
             <h2 id="home-shops" className="text-xl font-black">
               {phone.near}{' '}
-              <span className="hand font-bold text-link-text">{phone.count.replace('{n}', storeCount)}</span>
+              <span className="hand font-bold text-link-text">{phone.count.replace('{n}', nearCount)}</span>
             </h2>
             <Link
               to={pathFor('catalog')}
@@ -169,6 +174,9 @@ export const HomePage: React.FC = () => {
 
       {/* ---------- Desktop: N9-Landing ---------- */}
       <div className="hidden desk:block overflow-hidden">
+        <div className="max-w-[1360px] mx-auto px-10 pt-4">
+          <AddressStrip className="max-w-[780px]" />
+        </div>
         <section className="relative max-w-[1360px] min-h-[760px] mx-auto px-10 pt-[30px] pb-20">
           <div className="relative z-[2] max-w-[56%] xl:max-w-[760px]">
             <p className="hand anim-in inline-block mb-1.5 text-[32px] text-link-text -rotate-3">{landing.hello}</p>
@@ -250,6 +258,7 @@ export const HomePage: React.FC = () => {
                     store={store}
                     detail="board"
                     tilt={BOARD_TILTS[index]}
+                    to={deliveryFor(store.id).inRange ? undefined : pathFor('store', { storeId: store.id })}
                     onClick={() => {
                       pickStore(store.id);
                       navigateTo('catalog');

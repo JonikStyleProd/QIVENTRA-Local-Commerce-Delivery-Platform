@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText } from '../types';
+import { AppRoute, CartItem, Product, Store, Order, UserProfile } from '../types';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_PAST_ORDERS, MOCK_USER } from '../data/mockData';
 import { advanceOrder } from '../data/orderTracker';
+import { DEFAULT_ADDRESS_ID, DEMO_ADDRESSES, StoreDelivery, addressById, storeDelivery } from '../data/addresses';
 import { DeliveryWindow } from '../data/deliverySlots';
 import { collageTranslations } from '../i18n/collage';
 import { OrderCalculation, OrderStoreLine, calculateOrder } from '../data/cartRules';
@@ -22,7 +23,12 @@ interface AppContextType {
   /** Shops in the current order, with each one's fee and distance from its minimum. */
   orderStores: OrderStoreLine[];
   currentAddress: string;
-  setCurrentAddress: (address: string) => void;
+  currentAddressId: string;
+  /** Picks an address from the demo list by its id. */
+  setCurrentAddress: (addressId: string) => void;
+  /** Distance, time and reach of a shop for the chosen address. */
+  deliveryFor: (storeId: string) => StoreDelivery;
+  removeStoreItems: (storeId: string) => void;
   
   // Cart
   cart: CartItem[];
@@ -87,6 +93,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const ORDERS_KEY = 'qiventra_orders';
+const ADDRESS_KEY = 'qiventra_address';
 const DEMO_ORDER_KEY = 'qiventra_demo_order';
 const SESSION_KEY = 'qiventra_session';
 
@@ -181,64 +188,33 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  // Address localization and selection state
-  const [selectedAddressId, setSelectedAddressId] = useState<string>('addr-1');
-  const [customAddressMap, setCustomAddressMap] = useState<LocalizedText | null>(null);
-
-  const currentAddress = useMemo(() => {
-    if (customAddressMap) {
-      return customAddressMap[language] || customAddressMap.ru || customAddressMap.en;
+  const [currentAddressId, setCurrentAddressId] = useState<string>(() => {
+    try {
+      return addressById(localStorage.getItem(ADDRESS_KEY))?.id ?? DEFAULT_ADDRESS_ID;
+    } catch {
+      return DEFAULT_ADDRESS_ID;
     }
-    const saved = currentUser.savedAddresses.find((a) => a.id === selectedAddressId);
-    if (saved) {
-      return saved.addresses?.[language] || saved.address;
+  });
+  const chosenAddress = addressById(currentAddressId) ?? DEMO_ADDRESSES[0];
+  const currentAddress = chosenAddress.label[language];
+
+  const setCurrentAddress = useCallback((addressId: string) => {
+    if (!addressById(addressId)) return;
+    setCurrentAddressId(addressId);
+    try {
+      localStorage.setItem(ADDRESS_KEY, addressId);
+    } catch {
+      // Without storage the address lasts until the page closes.
     }
-    return (
-      currentUser.savedAddresses[0]?.addresses?.[language] ||
-      currentUser.savedAddresses[0]?.address ||
-      'Tel Aviv, 42 Rothschild Blvd, Apt 14'
-    );
-  }, [customAddressMap, currentUser.savedAddresses, selectedAddressId, language]);
+  }, []);
 
-  // The same address in every language, so a saved order keeps following the language switch.
-  const currentAddressTexts = useMemo((): LocalizedText | undefined => {
-    if (customAddressMap) return customAddressMap;
-    const saved = currentUser.savedAddresses.find((a) => a.id === selectedAddressId);
-    return saved?.addresses;
-  }, [customAddressMap, currentUser.savedAddresses, selectedAddressId]);
-
-  const setCurrentAddress = useCallback(
-    (addrOrId: string) => {
-      // 1. Check if it's an address id
-      const foundById = currentUser.savedAddresses.find((a) => a.id === addrOrId);
-      if (foundById) {
-        setSelectedAddressId(foundById.id);
-        setCustomAddressMap(null);
-        return;
-      }
-
-      // 2. Check if it matches any localized address string in saved addresses
-      const foundByText = currentUser.savedAddresses.find(
-        (a) =>
-          a.address === addrOrId ||
-          a.addresses?.ru === addrOrId ||
-          a.addresses?.en === addrOrId ||
-          a.addresses?.he === addrOrId
-      );
-      if (foundByText) {
-        setSelectedAddressId(foundByText.id);
-        setCustomAddressMap(null);
-        return;
-      }
-
-      // 3. Custom address entered by the user
-      setCustomAddressMap({
-        ru: addrOrId,
-        en: addrOrId,
-        he: addrOrId,
-      });
-    },
-    [currentUser.savedAddresses]
+  const deliveries = useMemo(
+    () => Object.fromEntries(MOCK_STORES.map((store) => [store.id, storeDelivery(store, chosenAddress.coords)])),
+    [chosenAddress]
+  );
+  const deliveryFor = useCallback(
+    (storeId: string): StoreDelivery => deliveries[storeId] ?? { km: 0, inRange: false, timeMin: 0, timeMax: 0 },
+    [deliveries]
   );
 
   // Initial cart with localStorage persistence and defensive corrupt state recovery
@@ -361,10 +337,15 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     return MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0];
   }, [selectedStoreId]);
 
-  const pickStore = useCallback((id: string) => {
-    setSelectedStoreId(id);
-    setPickedStoreId(id);
-  }, []);
+  const pickStore = useCallback(
+    (id: string) => {
+      // A shop out of range stays visible but cannot be chosen for an order.
+      if (!deliveries[id]?.inRange) return;
+      setSelectedStoreId(id);
+      setPickedStoreId(id);
+    },
+    [deliveries]
+  );
 
   const navigateTo = useCallback(
     (route: AppRoute, options: NavigationOptions = {}) => {
@@ -404,6 +385,10 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
+  const removeStoreItems = (storeId: string) => {
+    setCart((prev) => prev.filter((item) => item.product.storeId !== storeId));
+  };
+
   const clearCart = () => {
     setCart([]);
     setPromoCodeText(null);
@@ -418,8 +403,8 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   const order = useMemo(
-    () => calculateOrder({ cart, pickedStoreId, promotions, promoCode: findPromoCode(promoCodeText), now }),
-    [cart, pickedStoreId, promotions, promoCodeText, now]
+    () => calculateOrder({ cart, pickedStoreId, promotions, promoCode: findPromoCode(promoCodeText), now, deliveryPoint: chosenAddress.coords }),
+    [cart, pickedStoreId, promotions, promoCodeText, now, chosenAddress]
   );
   const orderStores = order.stores;
   const deliveryFee = order.deliveryFee;
@@ -483,9 +468,10 @@ function AppStateProvider({ children }: { children: ReactNode }) {
       totalAmount,
       deliveryFee: order.baseDeliveryFee,
       address: currentAddress,
-      addresses: currentAddressTexts,
-      etaMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
-      etaTotalMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
+      addresses: chosenAddress.label,
+      destination: chosenAddress.coords,
+      etaMinutes: Math.max(...orderStores.map((line) => line.delivery?.timeMax ?? line.store.deliveryTimeMax)),
+      etaTotalMinutes: Math.max(...orderStores.map((line) => line.delivery?.timeMax ?? line.store.deliveryTimeMax)),
       deliveryWindow,
       note: note.trim() || undefined,
     };
@@ -507,7 +493,10 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         pickStore,
         orderStores,
         currentAddress,
+        currentAddressId,
         setCurrentAddress,
+        deliveryFor,
+        removeStoreItems,
         cart,
         addToCart,
         updateCartQuantity,

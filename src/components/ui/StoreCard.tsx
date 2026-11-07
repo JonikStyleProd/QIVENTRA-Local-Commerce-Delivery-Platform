@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { Store } from '../../types';
+import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePromotions } from '../../context/PromotionsContext';
 import { bestPromotion } from '../../data/promotions';
@@ -28,6 +29,8 @@ const CHIP = 'px-2.5 py-[5px] rounded-[10px] text-sm font-extrabold';
 export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, to, isSelected, detail = 'full', tilt }) => {
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const { promotions, now } = usePromotions();
+  const { deliveryFor } = useApp();
+  const delivery = deliveryFor(store.id);
   const promotion = bestPromotion(promotions, store.id, now);
 
   const copy = t.collage.storeCopy[store.id];
@@ -35,7 +38,17 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, to, isSele
   const kind = copy?.kind || store.categories?.[language] || store.category;
   const area = copy?.area;
 
-  const time = formatTimeRange(store.deliveryTimeMin, store.deliveryTimeMax);
+  const time = formatTimeRange(delivery.timeMin, delivery.timeMax);
+  const outOfRange = (
+    <span className="block mt-1 px-2 py-1 bg-tint-food border-2 border-ink rounded-lg text-xs desk:text-sm font-extrabold">
+      {t.demo.delivery.outOfRange}
+      <span className="block font-bold">
+        {t.demo.delivery.outOfRangeShort
+          .replace('{distance}', formatDistance(delivery.km))
+          .replace('{radius}', formatDistance(store.deliveryRadiusKm))}
+      </span>
+    </span>
+  );
   const fee = `${t.collage.common.fee} ${formatCurrency(store.deliveryFee)}`;
   const min = `${t.collage.common.minFrom} ${formatCurrency(store.minOrder)}`;
 
@@ -66,7 +79,9 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, to, isSele
         <bdi>{name}</bdi>
       </span>
 
-      {isBoard ? (
+      {!delivery.inRange ? (
+        outOfRange
+      ) : isBoard ? (
         <span className="block mt-1 font-bold text-ink-2">
           {kind} · {time}
         </span>
@@ -81,7 +96,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, to, isSele
           </span>
           <span className="hidden desk:block mt-1.5 font-bold text-ink-2">
             {kind}
-            {area ? ` · ${area}` : ''} · {formatDistance(store.distanceKm)}
+            {area ? ` · ${area}` : ''} · {formatDistance(delivery.km)}
           </span>
           <span className="hidden desk:flex flex-wrap gap-2 mt-2.5">
             <span className={`${CHIP} bg-tint-health`}>{time}</span>

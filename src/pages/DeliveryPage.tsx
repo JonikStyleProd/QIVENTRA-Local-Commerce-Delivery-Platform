@@ -12,6 +12,7 @@ import { SummaryRow } from '../components/collage/SummaryRow';
 import { NotebookPage } from '../components/collage/NotebookPage';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { StepHeader } from '../components/collage/StepHeader';
+import { UndeliverableNotice } from '../components/collage/UndeliverableNotice';
 import { Tape } from '../components/collage/Tape';
 import { focusPageHeading } from '../components/collage/focusHeading';
 
@@ -30,6 +31,7 @@ export const DeliveryPage: React.FC = () => {
     selectedStore,
     orderStores,
     setIsAddressModalOpen,
+    deliveryFor,
     navigateTo,
     placeOrder,
     updateOrder,
@@ -84,12 +86,13 @@ export const DeliveryPage: React.FC = () => {
   // The shop on the polaroid: the picked one when it is part of the order, otherwise the first in it.
   const headStore = orderStoreList.find((store) => store.id === selectedStore?.id) ?? orderStoreList[0];
   const shortfalls = placedOrder ? [] : orderStores.filter((line) => line.shortfall > 0);
-  const canConfirm = shortfalls.length === 0;
+  const undeliverable = placedOrder ? [] : order.undeliverable;
+  const canConfirm = shortfalls.length === 0 && undeliverable.length === 0;
 
   const storeTime = orderStoreList.length
     ? formatTimeRange(
-        Math.min(...orderStoreList.map((store) => store.deliveryTimeMin)),
-        Math.max(...orderStoreList.map((store) => store.deliveryTimeMax))
+        Math.min(...orderStoreList.map((store) => deliveryFor(store.id).timeMin)),
+        Math.max(...orderStoreList.map((store) => deliveryFor(store.id).timeMax))
       )
     : '';
   const chosenWindow: DeliveryWindow = slot === 'asap' ? { kind: 'asap' } : { kind: 'slot', startsAt: slot };
@@ -255,7 +258,7 @@ export const DeliveryPage: React.FC = () => {
   );
 
   const minOrderNotice = (id: string) =>
-    !isDone && !canConfirm ? (
+    !isDone && shortfalls.length > 0 ? (
       <ul id={id} className="grid gap-1 mb-2.5 text-sm font-extrabold">
         {shortfalls.map((line) => {
           const [before, after] = copy.addMore
@@ -399,7 +402,7 @@ export const DeliveryPage: React.FC = () => {
                 {headStore && (
                   <p className="mt-1 font-bold text-ink-2">
                     {pickedCopy?.area ? `${pickedCopy.area} · ` : ''}
-                    {formatDistance(headStore.distanceKm)} · {formatTimeRange(headStore.deliveryTimeMin, headStore.deliveryTimeMax)}
+                    {formatDistance(deliveryFor(headStore.id).km)} · {formatTimeRange(deliveryFor(headStore.id).timeMin, deliveryFor(headStore.id).timeMax)}
                   </p>
                 )}
               </>
@@ -457,6 +460,7 @@ export const DeliveryPage: React.FC = () => {
               <PromotionHints stores={orderStores} className="mb-2.5" />
             )}
             {!isDone && !placedOrder && <DiscountChoiceNote order={order} className="mb-2.5" />}
+            {!isDone && <UndeliverableNotice lines={undeliverable} className="mb-2.5" />}
             {minOrderNotice('min-order-desktop')}
             {!isDone && (
               <Button
@@ -512,6 +516,7 @@ export const DeliveryPage: React.FC = () => {
           )}
           {!placedOrder && order.discountChoice !== 'promoCode' && <PromotionHints stores={orderStores} className="mb-2" />}
           {!placedOrder && <DiscountChoiceNote order={order} className="mb-2" />}
+          <UndeliverableNotice lines={undeliverable} className="mb-2.5" />
           {minOrderNotice('min-order-phone')}
           <Button
             size="lg"

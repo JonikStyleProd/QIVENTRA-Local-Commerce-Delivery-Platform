@@ -23,7 +23,7 @@ const TILE =
 
 export const ProfilePage: React.FC = () => {
   const { resolvedTheme, toggleTheme } = useTheme();
-  const { currentUser, isSignedIn, signOut, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, openChatWithParticipant } = useApp();
+  const { currentAddress, currentUser, isSignedIn, signOut, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, openChatWithParticipant } = useApp();
   const { language, t } = useLanguage();
   const { showToast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -125,6 +125,7 @@ export const ProfilePage: React.FC = () => {
                 <p className="text-sm font-bold text-ink-2 break-words">{addr.addresses?.[language] || addr.address}</p>
               </li>
             ))}
+            {currentUser.savedAddresses.length === 0 && <li className="font-bold">{currentAddress}</li>}
           </ul>
         </Panel>
 

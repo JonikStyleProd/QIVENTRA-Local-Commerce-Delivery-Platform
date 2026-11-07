@@ -1,6 +1,7 @@
 import { CartItem, OrderItem, OrderPromotionLine, Product, Store } from '../types';
 import { MOCK_PRODUCTS, MOCK_STORES } from './mockData';
 import { PromoCode, Promotion, isLive } from './promotions';
+import { GeoPoint, StoreDelivery, storeDelivery } from './addresses';
 
 /** A promotion working on the current order, and what it is worth to the buyer. */
 export interface AppliedPromotion {
@@ -32,6 +33,8 @@ export interface OrderStoreLine {
   hints: PromotionHint[];
   /** What the buyer pays per unit, by product id. */
   unitPrices: Record<string, number>;
+  /** Distance and time to the delivery address, when one is known. */
+  delivery?: StoreDelivery;
 }
 
 const roundMoney = (amount: number): number => Math.round(amount * 100) / 100;
@@ -147,7 +150,8 @@ export const summarizeOrderStores = (
   cart: CartItem[],
   pickedStoreId: string | null,
   promotions: Promotion[] = [],
-  now: Date = new Date()
+  now: Date = new Date(),
+  deliveryPoint?: GeoPoint
 ): OrderStoreLine[] => {
   if (cart.length === 0) return [];
 
@@ -158,11 +162,15 @@ export const summarizeOrderStores = (
     const store = MOCK_STORES.find((s) => s.id === id);
     if (!store) return [];
     const items = cart.filter((line) => line.product.storeId === id);
+    const delivery = deliveryPoint ? storeDelivery(store, deliveryPoint) : undefined;
+    // A picked shop with no goods has nothing to deliver, so out of range it simply leaves the order.
+    if (items.length === 0 && delivery && !delivery.inRange) return [];
     const subtotal = items.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
     const base = { store, subtotal, baseFee: store.deliveryFee };
     return [
       {
         ...base,
+        delivery,
         shortfall: Math.max(0, store.minOrder - subtotal),
         ...applyPromotions(base, items, promotions, now),
       },
@@ -184,6 +192,8 @@ export interface OrderCalculation {
   deliveryFee: number;
   /** Delivery before promotions: the summary shows this and takes free delivery off as its own line. */
   baseDeliveryFee: number;
+  /** Shops with goods in the basket that cannot reach the address. The order cannot be sent until this is empty. */
+  undeliverable: OrderStoreLine[];
   /** A promo code and shop promotions do not add up: this says which of them won. */
   discountChoice: DiscountChoice;
   /** The promo code's value, if it won. */
@@ -218,14 +228,16 @@ export const calculateOrder = ({
   promotions,
   promoCode = null,
   now,
+  deliveryPoint,
 }: {
   cart: CartItem[];
   pickedStoreId: string | null;
   promotions: Promotion[];
   promoCode?: PromoCode | null;
   now: Date;
+  deliveryPoint?: GeoPoint;
 }): OrderCalculation => {
-  const withPromotions = summarizeOrderStores(cart, pickedStoreId, promotions, now);
+  const withPromotions = summarizeOrderStores(cart, pickedStoreId, promotions, now, deliveryPoint);
   const itemsSubtotal = withPromotions.reduce((sum, line) => sum + line.subtotal, 0);
   const promotionsValue = roundMoney(
     withPromotions.reduce((sum, line) => sum + line.applied.reduce((total, entry) => total + entry.saving, 0), 0)
@@ -235,7 +247,7 @@ export const calculateOrder = ({
   const promoCodeValue = promoCode && cart.length > 0 && missing === 0 ? Math.min(promoCode.amount, itemsSubtotal) : 0;
 
   const codeWins = promoCodeValue > promotionsValue;
-  const stores = codeWins ? summarizeOrderStores(cart, pickedStoreId, [], now) : withPromotions;
+  const stores = codeWins ? summarizeOrderStores(cart, pickedStoreId, [], now, deliveryPoint) : withPromotions;
   const promoCodeDiscount = codeWins ? promoCodeValue : 0;
 
   const promotionLines = stores.flatMap((line) => line.applied.map((entry) => toLine(line.store.id, entry)));
@@ -251,6 +263,7 @@ export const calculateOrder = ({
     itemsSubtotal,
     deliveryFee: orderDeliveryFee(stores),
     baseDeliveryFee,
+    undeliverable: stores.filter((line) => line.delivery && !line.delivery.inRange),
     discountChoice: codeWins ? 'promoCode' : promotionsValue > 0 ? 'promotions' : 'none',
     promoCodeDiscount,
     promoCode: promoCode && cart.length > 0 ? { ...promoCode, missing } : null,

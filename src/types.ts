@@ -1,5 +1,6 @@
 import { PromotionText, PromotionType } from './data/promotions';
 import type { DeliveryWindow } from './data/deliverySlots';
+import type { GeoPoint } from './data/addresses';
 
 export type AppRoute =
   | 'home'
@@ -56,7 +57,9 @@ export interface Store {
   minOrder: number;
   address: string;
   addresses?: LocalizedText;
-  distanceKm: number;
+  coords: GeoPoint;
+  /** The shop delivers this far from its door, in a straight line. */
+  deliveryRadiusKm: number;
   isVerified: boolean;
   isEco: boolean;
   isFeatured?: boolean;
@@ -155,6 +158,8 @@ export interface Order {
   deliveryFee: number;
   address: string;
   addresses?: LocalizedText;
+  /** Where it goes, for the courier's route. */
+  destination?: GeoPoint;
   etaMinutes: number;
   /** The whole promised time, so the estimate can shrink step by step. */
   etaTotalMinutes?: number;
@@ -190,6 +195,8 @@ export interface AddressItem {
   titles?: LocalizedText;
   address: string;
   addresses?: LocalizedText;
+  /** The address on the demo list, which has the coordinates. */
+  demoAddressId: string;
   isDefault: boolean;
 }
 
