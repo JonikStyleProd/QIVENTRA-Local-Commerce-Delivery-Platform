@@ -495,11 +495,12 @@ describe('QIVENTRA author signature', () => {
 
   it('uses the WebP logo with a PNG fallback, explicit size and lazy loading, and no link', async () => {
     const html = await renderSignature('en');
-    expect(html).toContain('srcSet="/brand/jonikstyle-logo.webp"');
+    expect(html).toContain('/brand/jonikstyle-logo-36.webp 96w');
+    expect(html).toContain('/brand/jonikstyle-logo-72.webp 191w');
     expect(html).toContain('src="/brand/jonikstyle-logo-160.png"');
     expect(html).toContain('alt="JonikStyle Production"');
-    expect(html).toContain('width="426"');
-    expect(html).toContain('height="160"');
+    expect(html).toContain('width="96"');
+    expect(html).toContain('height="36"');
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('decoding="async"');
     expect(html).not.toContain('<a ');
@@ -570,11 +571,19 @@ describe('QIVENTRA repeat order', () => {
 });
 
 describe('QIVENTRA service worker assets', () => {
-  it('keeps the interface logo small and the source logo out of the precache', async () => {
+  it('keeps interface logos under 30 KB and brand PNGs out of the precache', async () => {
     const { statSync, readFileSync } = await import('node:fs');
-    expect(statSync('public/brand/jonikstyle-logo.webp').size).toBeLessThanOrEqual(30 * 1024);
+    [
+      'jonikstyle-logo-36.webp',
+      'jonikstyle-logo-72.webp',
+      'jonikstyle-logo.webp',
+      'mark.webp',
+      'mark-light.webp',
+      'qiventra-mark.webp',
+      'qiventra-full.webp',
+    ].forEach((file) => expect(statSync(`public/brand/${file}`).size).toBeLessThanOrEqual(30 * 1024));
     const config = readFileSync('vite.config.ts', 'utf8');
-    expect(config).toContain("'brand/jonikstyle-logo.webp'");
-    expect(config).toContain("globIgnores: ['brand/jonikstyle-logo.png'");
+    expect(config).toContain("'brand/*.webp'");
+    expect(config).toContain("globIgnores: ['brand/*.png']");
   });
 });

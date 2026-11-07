@@ -48,7 +48,10 @@ export const PwaSplash: React.FC = () => {
     >
       <div className="text-center">
         <div className="splash-sticker inline-block px-[22px] py-5 bg-card border-[3px] border-ink rounded-[28px] shadow-hard-6">
-          <img src="/brand/mark.png" alt="" width={72} height={66} className="block w-[72px] h-[66px]" />
+          <picture>
+            <source srcSet="/brand/mark.webp" type="image/webp" />
+            <img src="/brand/mark.png" alt="" width={72} height={66} className="block w-[72px] h-[66px]" />
+          </picture>
         </div>
         <p className="hand anim-in mt-5 text-[34px]" style={{ animationDelay: '0.7s' }}>
           {t.collage.landing.hello}

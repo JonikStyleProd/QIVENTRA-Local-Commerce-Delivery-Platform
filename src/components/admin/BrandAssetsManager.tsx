@@ -315,7 +315,7 @@ export const BrandAssetsManager: React.FC = () => {
                   alt="QIVENTRA"
                   style={PREVIEW_LOGO}
                   onError={(e) => {
-                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.darkLockup.localPng;
+                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.darkLockup.localWebP;
                   }}
                 />
               </div>
@@ -326,7 +326,7 @@ export const BrandAssetsManager: React.FC = () => {
                   alt="QIVENTRA"
                   style={PREVIEW_LOGO}
                   onError={(e) => {
-                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.lightLockup.localPng;
+                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.lightLockup.localWebP;
                   }}
                 />
               </div>
@@ -339,7 +339,7 @@ export const BrandAssetsManager: React.FC = () => {
                 alt="QIVENTRA"
                 style={{ maxWidth: '100%', maxHeight: '64px', aspectRatio: '1 / 1' }}
                 onError={(e) => {
-                  e.currentTarget.src = OFFICIAL_BRAND_METADATA.mark.localPng;
+                  e.currentTarget.src = OFFICIAL_BRAND_METADATA.mark.localWebP;
                 }}
               />
             </div>

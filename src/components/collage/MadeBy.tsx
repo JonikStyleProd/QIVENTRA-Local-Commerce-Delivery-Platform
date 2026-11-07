@@ -26,15 +26,19 @@ export const MadeByView: React.FC<MadeByViewProps> = ({ copy, year = new Date().
       <span className="inline-flex items-center gap-2 shrink-0">
         <span>{copy.created}</span>
         <picture className="shrink-0">
-          <source srcSet="/brand/jonikstyle-logo.webp" type="image/webp" />
+          <source
+            type="image/webp"
+            srcSet="/brand/jonikstyle-logo-36.webp 96w, /brand/jonikstyle-logo-72.webp 191w, /brand/jonikstyle-logo.webp 426w"
+            sizes="(min-width: 56.25rem) 96px, 80px"
+          />
           <img
             src="/brand/jonikstyle-logo-160.png"
             alt={COMPANY}
-            width={426}
-            height={160}
+            width={96}
+            height={36}
             loading="lazy"
             decoding="async"
-            className="made-by-logo block w-auto h-6 desk:h-7"
+            className="made-by-logo block w-auto h-[30px] desk:h-9"
           />
         </picture>
       </span>
