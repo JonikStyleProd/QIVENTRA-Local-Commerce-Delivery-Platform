@@ -1,105 +1,68 @@
 import React from 'react';
-import { Home, Search, ShoppingBag, ShoppingCart, User } from 'lucide-react';
+import { Home, Store, ShoppingBag, ClipboardList, User } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { AppRoute } from '../../types';
+import { CartCountBadge } from '../collage/HeaderControls';
 
 export const MobileBottomNav: React.FC = () => {
   const { currentRoute, navigateTo, cartTotalCount, setIsCartDrawerOpen } = useApp();
   const { t } = useLanguage();
 
-  const navItems: { label: string; route?: AppRoute; isCart?: boolean; icon: React.ReactNode }[] = [
+  // The delivery window has its own yellow sheet at the bottom of the phone screen instead.
+  if (currentRoute === 'delivery') return null;
+
+  const navItems: { label: string; route: AppRoute; icon: React.ReactNode; aria?: string }[] = [
+    { label: t.collage.tabs.home, route: 'home', icon: <Home aria-hidden="true" className="w-5 h-5" /> },
+    { label: t.collage.tabs.shops, route: 'catalog', icon: <Store aria-hidden="true" className="w-5 h-5" /> },
     {
-      label: t.nav.home,
-      route: 'home',
-      icon: <Home className="w-5 h-5" />,
-    },
-    {
-      label: t.nav.search,
-      route: 'search',
-      icon: <Search className="w-5 h-5" />,
-    },
-    {
-      label: t.nav.cart,
+      label: t.collage.tabs.cart,
       route: 'cart',
+      aria: `${t.collage.common.cartItems} ${cartTotalCount}`,
       icon: (
-        <div className="relative">
-          <ShoppingCart className="w-5 h-5" />
-          {cartTotalCount > 0 && (
-            <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-[#B8D96B] text-[#151817] text-[10px] font-black leading-none shadow-xs tabular-nums">
-              {cartTotalCount}
-            </span>
-          )}
-        </div>
+        <span className="relative">
+          <ShoppingBag aria-hidden="true" className="w-5 h-5" />
+          <CartCountBadge count={cartTotalCount} className="absolute -top-2.5 -end-3.5" />
+        </span>
       ),
     },
-    {
-      label: t.nav.orders,
-      route: 'orders',
-      icon: <ShoppingBag className="w-5 h-5" />,
-    },
-    {
-      label: t.nav.profile,
-      route: 'profile',
-      icon: <User className="w-5 h-5" />,
-    },
+    { label: t.collage.tabs.orders, route: 'orders', icon: <ClipboardList aria-hidden="true" className="w-5 h-5" /> },
+    { label: t.collage.tabs.profile, route: 'profile', icon: <User aria-hidden="true" className="w-5 h-5" /> },
   ];
 
   return (
     <nav
       id="mobile-bottom-navigation"
-      aria-label="Mobile bottom navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FFFFFF] dark:bg-[#161B19] border-t border-[#E2DFD4] dark:border-[#27332E] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.45)] transition-colors"
-      style={{
-        paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))',
-      }}
+      aria-label={t.collage.tabs.label}
+      className="desk:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 px-2 pt-1 bg-white border-t border-ink"
+      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
     >
-      <div className="flex items-center justify-around h-15 max-w-md mx-auto px-1">
-        {navItems.map((item, idx) => {
-          const isActive = item.route && currentRoute === item.route;
-
-          const handleClick = () => {
-            if (item.route) {
+      {navItems.map((item) => {
+        const isActive = currentRoute === item.route;
+        return (
+          <button
+            key={item.route}
+            type="button"
+            onClick={() => {
               setIsCartDrawerOpen(false);
               navigateTo(item.route);
-            }
-          };
-
-          return (
-            <button
-              key={idx}
-              type="button"
-              onClick={handleClick}
-              className={`
-                flex flex-col items-center justify-center flex-1 h-full min-h-[44px] min-w-[44px] py-1 transition-all select-none relative
-                ${
-                  isActive
-                    ? 'text-[#123B35] dark:text-[#B8D96B] font-bold'
-                    : 'text-[#4D5956] dark:text-[#A0AEA9] hover:text-[#151817] dark:hover:text-[#F3F1EA] font-semibold'
-                }
-              `}
-              aria-label={item.label}
-              aria-current={isActive ? 'page' : undefined}
+            }}
+            aria-label={item.aria}
+            aria-current={isActive ? 'page' : undefined}
+            className={`flex flex-col items-center gap-0.5 min-w-0 min-h-[54px] py-1.5 text-[11px] font-bold cursor-pointer ${
+              isActive ? 'text-ink' : 'text-ink-3'
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`grid place-items-center w-[52px] max-w-full h-7 rounded-full ${isActive ? 'bg-accent' : ''}`}
             >
-              <div
-                className={`
-                  flex items-center justify-center w-10 h-7 rounded-xl transition-all
-                  ${
-                    isActive
-                      ? 'bg-[#123B35]/10 dark:bg-[#B8D96B]/15 text-[#123B35] dark:text-[#B8D96B] scale-105'
-                      : ''
-                  }
-                `}
-              >
-                {item.icon}
-              </div>
-              <span className={`text-[10px] tracking-tight mt-0.5 leading-none whitespace-nowrap truncate max-w-[68px] ${isActive ? 'font-bold' : 'font-medium'}`}>
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              {item.icon}
+            </span>
+            <span className="truncate max-w-full">{item.label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 };

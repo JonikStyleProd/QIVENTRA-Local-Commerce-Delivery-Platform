@@ -11,6 +11,8 @@ interface LanguageContextType {
   formatCurrency: (amount: number) => string;
   formatMinutes: (minutes: number) => string;
   formatDistance: (km: number) => string;
+  /** "15–25 мин": the range is isolated so RTL text does not reverse it to "25–15". */
+  formatTimeRange: (min: number, max: number) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -41,6 +43,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Apply root attributes
     document.documentElement.lang = language;
     document.documentElement.dir = direction;
+    document.title = (translations[language] || translations.ru).collage.meta.title;
 
     if (isRTL) {
       document.documentElement.classList.add('rtl');
@@ -80,7 +83,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (language === 'en') {
       return `${km} km`;
     }
-    return `${km} км`;
+    return `${String(km).replace('.', ',')} км`;
+  };
+
+  const formatTimeRange = (min: number, max: number): string => {
+    const unit = language === 'he' ? 'דק׳' : language === 'en' ? 'min' : 'мин';
+    return `⁦${min}–${max}⁩ ${unit}`;
   };
 
   return (
@@ -95,6 +103,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         formatCurrency,
         formatMinutes,
         formatDistance,
+        formatTimeRange,
       }}
     >
       {children}

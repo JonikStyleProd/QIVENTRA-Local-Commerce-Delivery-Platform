@@ -1,6 +1,9 @@
+import { CollageStrings, collageTranslations } from './collage';
+
 export type Language = 'ru' | 'en' | 'he';
 
 export interface Translations {
+  collage: CollageStrings;
   nav: {
     home: string;
     catalog: string;
@@ -494,6 +497,7 @@ export interface Translations {
 
 export const translations: Record<Language, Translations> = {
   he: {
+    collage: collageTranslations.he,
     nav: {
       home: 'בית',
       catalog: 'קטלוג',
@@ -985,6 +989,7 @@ export const translations: Record<Language, Translations> = {
     },
   },
   en: {
+    collage: collageTranslations.en,
     nav: {
       home: 'Home',
       catalog: 'Catalog',
@@ -1476,6 +1481,7 @@ export const translations: Record<Language, Translations> = {
     },
   },
   ru: {
+    collage: collageTranslations.ru,
     nav: {
       home: 'Главная',
       catalog: 'Каталог',
