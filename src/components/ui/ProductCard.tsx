@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Product } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { tiltFor } from '../../data/collageCatalog';
 import { Tape } from '../collage/Tape';
 import { PolaroidPhoto } from '../collage/PolaroidPhoto';
+import { ProductSheet } from '../collage/ProductSheet';
+import { QuantityStepper } from '../collage/QuantityStepper';
 
 interface ProductCardProps {
   product: Product;
   inCartQuantity?: number;
   onAddToCart: (product: Product) => void;
   onUpdateQuantity: (productId: string, quantity: number) => void;
-  onClick?: () => void;
 }
 
 /** Product sticker for shop, search and catalog grids: taped photo, price and basket controls. */
@@ -20,10 +21,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   inCartQuantity = 0,
   onAddToCart,
   onUpdateQuantity,
-  onClick,
 }) => {
   const { language, t, formatCurrency } = useLanguage();
   const [flash, setFlash] = useState(0);
+  const [isViewOpen, setIsViewOpen] = useState(false);
 
   const displayName = product.names?.[language] || product.name;
   const displayDesc = product.descriptions?.[language] || product.description;
@@ -42,8 +43,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
       <button
         type="button"
-        onClick={onClick}
-        aria-label={displayName}
+        onClick={() => setIsViewOpen(true)}
+        aria-label={`${t.screens.product.details}: ${displayName}`}
+        aria-haspopup="dialog"
         className="relative block w-full cursor-pointer"
       >
         <PolaroidPhoto src={product.imageUrl} alt="" noteClassName="text-[22px]" />
@@ -74,30 +76,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </span>
 
         {inCartQuantity > 0 ? (
-          <span className="inline-flex items-center bg-accent border-2 border-ink rounded-xl overflow-hidden seg-group">
-            <button
-              type="button"
-              onClick={() => onUpdateQuantity(product.id, inCartQuantity - 1)}
-              aria-label={`${t.productCard.decrease}: ${displayName}`}
-              className="grid place-items-center w-11 h-11 cursor-pointer"
-            >
-              <Minus aria-hidden="true" className="w-4 h-4" />
-            </button>
-            <span className="w-6 text-center text-sm font-black tabular-nums" aria-live="polite">
-              {inCartQuantity}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                onUpdateQuantity(product.id, inCartQuantity + 1);
-                setFlash((n) => n + 1);
-              }}
-              aria-label={`${t.productCard.increase}: ${displayName}`}
-              className="grid place-items-center w-11 h-11 cursor-pointer"
-            >
-              <Plus aria-hidden="true" className="w-4 h-4" />
-            </button>
-          </span>
+          <QuantityStepper
+            quantity={inCartQuantity}
+            name={displayName}
+            onDecrease={() => onUpdateQuantity(product.id, inCartQuantity - 1)}
+            onIncrease={() => {
+              onUpdateQuantity(product.id, inCartQuantity + 1);
+              setFlash((n) => n + 1);
+            }}
+          />
         ) : (
           <button
             type="button"
@@ -123,6 +110,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </span>
         )}
       </div>
+
+      <ProductSheet product={product} isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} />
     </article>
   );
 };

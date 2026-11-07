@@ -79,10 +79,7 @@ export const CatalogPage: React.FC = () => {
     : '';
 
   return (
-    <div
-      className="paper-dots min-h-screen pb-[170px] desk:pb-[140px]"
-      style={{ '--panel-bottom': 'calc(env(safe-area-inset-bottom, 0px) + 78px)' } as React.CSSProperties}
-    >
+    <div className="paper-dots min-h-screen pb-10">
       <StepHeader
         step={copy.step}
         title={copy.titleMobile}
@@ -196,7 +193,6 @@ export const CatalogPage: React.FC = () => {
                 inCartQuantity={getInCartQuantity(product.id)}
                 onAddToCart={addToCart}
                 onUpdateQuantity={updateCartQuantity}
-                onClick={() => navigateTo('store', { storeId: product.storeId })}
               />
             ))}
           </div>
