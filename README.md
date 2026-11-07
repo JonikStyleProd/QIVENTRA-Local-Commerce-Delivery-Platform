@@ -377,9 +377,11 @@ The application architecture adheres to modern web application security practice
 
 ---
 
-## Credits
+## Автор
 
-Designed and developed by **JonikStyle Production**.
+<img src="public/brand/jonikstyle-logo.png" alt="JonikStyle Production" height="64">
+
+© JonikStyle Production. Все права защищены.
 
 ---
 
