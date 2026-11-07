@@ -1,25 +1,34 @@
 import React, { useState } from 'react';
-import {
-  Store,
-  Package,
-  TrendingUp,
-} from 'lucide-react';
+import { Store } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
-import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { PageShell, SectionHeading } from '../components/collage/Page';
+import { Panel } from '../components/collage/Panel';
+import { PortalHeader } from '../components/collage/PortalHeader';
+import { Stamp } from '../components/collage/Stamp';
+import { DemoFiguresNote, StatSticker } from '../components/collage/StatSticker';
+import { StatusToggle } from '../components/collage/StatusToggle';
+
+type VendorOrderStatus = 'assembling' | 'ready_for_pickup' | 'completed';
 
 export const VendorPortalPage: React.FC = () => {
   const { language, t, formatCurrency } = useLanguage();
   const { showToast } = useToast();
 
-  const [orders, setOrders] = useState([
+  // Statuses live apart from the text, so the list follows a language switch.
+  const [statuses, setStatuses] = useState<Record<string, VendorOrderStatus>>({
+    'QIV-7821-M': 'assembling',
+    'QIV-7820-K': 'ready_for_pickup',
+    'QIV-7815-A': 'completed',
+  });
+
+  const orders = [
     {
       id: 'QIV-7821-M',
       client: language === 'he' ? 'נועה כהן' : language === 'en' ? 'Noa Cohen' : 'Ноа Коэн',
       items: language === 'he' ? 'אבוקדו האס (2 יח׳), גבינת עיזים (1 יח׳)' : language === 'en' ? 'Hass Avocado (2 pcs), Goat Cheese (1 pc)' : 'Авокадо Hass (2 шт.), Козий сыр (1 шт.)',
       total: 62,
-      status: 'assembling',
       time: language === 'he' ? 'לפני 5 דק׳' : language === 'en' ? '5 min ago' : '5 мин назад',
     },
     {
@@ -27,7 +36,6 @@ export const VendorPortalPage: React.FC = () => {
       client: language === 'he' ? 'דניאל לוי' : language === 'en' ? 'Daniel Levi' : 'Даниэль Леви',
       items: language === 'he' ? 'שמן זית כתית מעולה 750 מ״ל (1 יח׳)' : language === 'en' ? 'Extra Virgin Olive Oil (1 pc)' : 'Оливковое масло Extra Virgin (1 шт.)',
       total: 48,
-      status: 'ready_for_pickup',
       time: language === 'he' ? 'לפני 18 דק׳' : language === 'en' ? '18 min ago' : '18 мин назад',
     },
     {
@@ -35,24 +43,17 @@ export const VendorPortalPage: React.FC = () => {
       client: language === 'he' ? 'מיכל אברהם' : language === 'en' ? 'Michal Avraham' : 'Михаль Авраам',
       items: language === 'he' ? 'חלת שבת קלועה (2 יח׳)' : language === 'en' ? 'Artisan Challah (2 pcs)' : 'Свежая хала (2 шт.)',
       total: 36,
-      status: 'completed',
       time: language === 'he' ? 'לפני 42 דק׳' : language === 'en' ? '42 min ago' : '42 мин назад',
     },
-  ]);
+  ];
 
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
 
   const handleUpdateStatus = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: o.status === 'assembling' ? 'ready_for_pickup' : 'completed',
-            }
-          : o
-      )
-    );
+    setStatuses((prev) => ({
+      ...prev,
+      [orderId]: prev[orderId] === 'assembling' ? 'ready_for_pickup' : 'completed',
+    }));
     showToast({
       type: 'success',
       title: t.vendor.statusUpdatedToastTitle,
@@ -65,156 +66,72 @@ export const VendorPortalPage: React.FC = () => {
     showToast({
       type: 'info',
       title: !isAcceptingOrders ? t.vendor.acceptanceOpenToast : t.vendor.acceptancePausedToast,
-      message: !isAcceptingOrders
-        ? t.vendor.acceptanceOpenMsg
-        : t.vendor.acceptancePausedMsg,
+      message: !isAcceptingOrders ? t.vendor.acceptanceOpenMsg : t.vendor.acceptancePausedMsg,
     });
   };
 
-  const storeTitle = language === 'he' ? 'שוק הכרמל - חנות טרייה' : language === 'en' ? 'Carmel Fresh Market' : 'Carmel Fresh Market';
+  const storeTitle = language === 'he' ? 'שוק הכרמל - חנות טרייה' : 'Carmel Fresh Market';
   const storeAddress = language === 'he' ? 'תל אביב, רחוב הכרמל 18' : language === 'en' ? 'Tel Aviv, 18 HaCarmel St' : 'Тель-Авив, ул. Кармель 18';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
-      {/* Merchant Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            CF
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-primary">
-                {t.vendor.portalTitle}: «{storeTitle}»
-              </h1>
-              <Badge variant="pistachio" size="sm">
-                {t.vendor.partnerSince}
-              </Badge>
-            </div>
-            <p className="text-xs text-secondary mt-0.5">
-              {storeAddress}
-            </p>
-          </div>
+    <PageShell>
+      <PortalHeader
+        icon={<Store className="w-7 h-7 desk:w-9 desk:h-9" />}
+        note={t.vendor.portalTitle}
+        title={<bdi>{storeTitle}</bdi>}
+        lead={storeAddress}
+      >
+        <StatusToggle
+          isOn={isAcceptingOrders}
+          label={isAcceptingOrders ? t.vendor.acceptanceActive : t.vendor.acceptancePaused}
+          onToggle={toggleAcceptance}
+        />
+      </PortalHeader>
+
+      <section className="mb-9 desk:mb-12">
+        <DemoFiguresNote text={t.screens.common.demoFigures} />
+        <div className="grid grid-cols-2 desk:grid-cols-3 gap-3.5 desk:gap-5">
+          <StatSticker label={t.vendor.revenueToday} value={formatCurrency(3840)} tint="gift" />
+          <StatSticker label={t.vendor.ordersShift} value="42" tint="health" />
+          <StatSticker label={t.vendor.avgTicket} value={formatCurrency(91)} tint="tech" />
         </div>
+      </section>
 
-        {/* Toggle Store Active Status */}
-        <button
-          type="button"
-          onClick={toggleAcceptance}
-          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold border transition shrink-0 ${
-            isAcceptingOrders
-              ? 'bg-success-bg text-success border-[#A3D9B8]'
-              : 'bg-surface-elevated text-secondary border-theme'
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              isAcceptingOrders ? 'bg-[#1E824C] animate-pulse' : 'bg-muted'
-            }`}
-          />
-          <span>{isAcceptingOrders ? t.vendor.acceptanceActive : t.vendor.acceptancePaused}</span>
-        </button>
-      </div>
-
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
-          <span className="text-xs text-secondary block">{t.vendor.revenueToday}</span>
-          <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
-            {formatCurrency(3840)}
-          </span>
-          <span className="text-[11px] text-success font-medium flex items-center gap-0.5 mt-1">
-            <TrendingUp className="w-3 h-3 me-0.5" /> +14.2% {t.vendor.vsLastWeek}
-          </span>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
-          <span className="text-xs text-secondary block">{t.vendor.ordersShift}</span>
-          <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
-            42
-          </span>
-          <span className="text-[11px] text-muted mt-1 block">
-            {t.vendor.avgPrepTime}
-          </span>
-        </div>
-
-        <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
-          <span className="text-xs text-secondary block">{t.vendor.avgTicket}</span>
-          <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
-            {formatCurrency(91)}
-          </span>
-          <span className="text-[11px] text-muted mt-1 block">
-            {t.vendor.optRange}
-          </span>
-        </div>
-
-      </div>
-
-      {/* Live Orders Board */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-primary flex items-center gap-2">
-            <Package className="w-5 h-5 text-ink" />
-            <span>{t.vendor.liveOrdersQueue}</span>
-          </h2>
-          <span className="text-xs text-secondary">
-            {t.vendor.autoRefresh}
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="p-5 rounded-2xl bg-surface border border-theme flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-primary">#{order.id}</span>
-                  <Badge
-                    variant={
-                      order.status === 'assembling'
-                        ? 'warning'
-                        : order.status === 'ready_for_pickup'
-                        ? 'pistachio'
-                        : 'success'
-                    }
-                    size="sm"
-                  >
-                    {order.status === 'assembling'
+      <section>
+        <SectionHeading note={t.screens.portal.queue} title={t.vendor.liveOrdersQueue} />
+        <ul className="grid desk:grid-cols-2 gap-4">
+          {orders.map((order) => {
+            const status = statuses[order.id];
+            return (
+              <Panel key={order.id} as="li">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  <span className="text-sm font-bold text-ink-2">
+                    <bdi>#{order.id}</bdi>
+                  </span>
+                  <Stamp tone={status === 'assembling' ? 'warn' : status === 'ready_for_pickup' ? 'action' : 'success'}>
+                    {status === 'assembling'
                       ? t.vendor.statusAssembling
-                      : order.status === 'ready_for_pickup'
+                      : status === 'ready_for_pickup'
                       ? t.vendor.statusReadyForPickup
                       : t.vendor.statusHandedToCourier}
-                  </Badge>
-                  <span className="text-[11px] text-muted">{order.time}</span>
+                  </Stamp>
+                  <span className="text-sm font-bold text-ink-3">{order.time}</span>
                 </div>
-                <h4 className="text-sm font-bold text-primary">{order.client}</h4>
-                <p className="text-xs text-secondary">{order.items}</p>
-              </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-theme">
-                <span className="text-base font-extrabold text-primary font-sans whitespace-nowrap tabular-nums">
-                  {formatCurrency(order.total)}
-                </span>
-                {order.status !== 'completed' && (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => handleUpdateStatus(order.id)}
-                  >
-                    {order.status === 'assembling'
-                      ? t.vendor.finishAssembly
-                      : t.vendor.handToCourier}
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-    </div>
+                <h3 className="mt-1 text-lg font-black">{order.client}</h3>
+                <p className="text-sm font-bold text-ink-2">{order.items}</p>
+                <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5">
+                  <span className="text-lg font-black whitespace-nowrap tabular-nums">{formatCurrency(order.total)}</span>
+                  {status !== 'completed' && (
+                    <Button size="sm" onClick={() => handleUpdateStatus(order.id)}>
+                      {status === 'assembling' ? t.vendor.finishAssembly : t.vendor.handToCourier}
+                    </Button>
+                  )}
+                </div>
+              </Panel>
+            );
+          })}
+        </ul>
+      </section>
+    </PageShell>
   );
 };

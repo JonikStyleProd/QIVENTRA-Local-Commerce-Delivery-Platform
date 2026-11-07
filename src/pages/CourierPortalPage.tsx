@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import {
-  Bike,
-  CheckCircle2,
-} from 'lucide-react';
+import { Bike } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
-import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { NotebookPage, NotebookStep, NotebookSteps } from '../components/collage/NotebookPage';
+import { PageShell } from '../components/collage/Page';
+import { PortalHeader } from '../components/collage/PortalHeader';
+import { Stamp } from '../components/collage/Stamp';
+import { DemoFiguresNote, StatSticker } from '../components/collage/StatSticker';
+import { StatusToggle } from '../components/collage/StatusToggle';
 
 export const CourierPortalPage: React.FC = () => {
   const { language, t, formatCurrency } = useLanguage();
@@ -18,10 +20,10 @@ export const CourierPortalPage: React.FC = () => {
   const courierName = language === 'he' ? 'אבי מזרחי' : language === 'en' ? 'Avi Mizrahi' : 'Ави Мизрахи';
   const vehicleName = language === 'he' ? 'אופניים חשמליים' : language === 'en' ? 'E-Bike' : 'Электровелосипед';
   const shiftTime = language === 'he' ? 'משמרת פעילה 3 שעות 20 דק׳' : language === 'en' ? 'Shift active 3h 20m' : 'Смена открыта 3 ч 20 мин';
-  const storeName = language === 'he' ? 'שוק הכרמל - חנות טרייה' : language === 'en' ? 'Carmel Fresh Market' : 'Carmel Fresh Market';
-  const storeAddr = language === 'he' ? 'רחוב הכרמל 18, תל אביב • קוד איסוף: 481' : language === 'en' ? '18 HaCarmel St, Tel Aviv • Pickup code: 481' : 'ул. Кармель 18, Тель-Авив • Код выдачи: 481';
-  const clientName = language === 'he' ? 'נועה כהן (+972 54-892-3401)' : language === 'en' ? 'Noa Cohen (+972 54-892-3401)' : 'Ноа Коэн (+972 54-892-3401)';
-  const clientAddr = language === 'he' ? 'רחוב דיזנגוף 142, קומה 3, דירה 12 (קוד כניסה 12B)' : language === 'en' ? '142 Dizengoff St, Fl 3, Apt 12 (Door code 12B)' : 'ул. Дизенгоф 142, эт. 3, кв. 12 (домофон 12B)';
+  const storeName = language === 'he' ? 'שוק הכרמל - חנות טרייה' : 'Carmel Fresh Market';
+  const storeAddr = language === 'he' ? 'רחוב הכרמל 18, תל אביב' : language === 'en' ? '18 HaCarmel St, Tel Aviv' : 'ул. Кармель 18, Тель-Авив';
+  const clientName = language === 'he' ? 'נועה כהן' : language === 'en' ? 'Noa Cohen' : 'Ноа Коэн';
+  const clientAddr = language === 'he' ? 'רחוב דיזנגוף 142, קומה 3, דירה 12' : language === 'en' ? '142 Dizengoff St, Fl 3, Apt 12' : 'ул. Дизенгоф 142, эт. 3, кв. 12';
 
   const handleAdvanceStep = () => {
     if (activeDeliveryStep === 'to_store') {
@@ -57,141 +59,82 @@ export const CourierPortalPage: React.FC = () => {
     });
   };
 
+  const route: NotebookStep[] = [
+    {
+      key: 'pickup',
+      label: t.courier.pointAPickup,
+      state: activeDeliveryStep === 'to_store' ? 'current' : 'done',
+      detail: (
+        <>
+          <p className="font-black text-ink">
+            <bdi>{storeName}</bdi>
+          </p>
+          <p>
+            {storeAddr} · {t.screens.portal.pickupCode}: <bdi>481</bdi>
+          </p>
+        </>
+      ),
+    },
+    {
+      key: 'delivery',
+      label: t.courier.pointBDelivery,
+      state: activeDeliveryStep === 'delivered' ? 'done' : activeDeliveryStep === 'to_client' ? 'current' : 'todo',
+      detail: (
+        <>
+          <p className="font-black text-ink">{clientName}</p>
+          <p>
+            {clientAddr} · {t.screens.portal.doorCode}: <bdi>12B</bdi>
+          </p>
+        </>
+      ),
+    },
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
-      {/* Courier Header */}
-      <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-xl shadow-sm shrink-0">
-            <Bike className="w-7 h-7 text-accent-on-ink" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-primary">{t.courier.courierLabel}: {courierName}</h1>
-            </div>
-            <p className="text-xs text-secondary mt-0.5">
-              {vehicleName} • {shiftTime}
-            </p>
-          </div>
+    <PageShell width="narrow">
+      <PortalHeader
+        icon={<Bike className="w-7 h-7 desk:w-9 desk:h-9" />}
+        note={t.courier.courierLabel}
+        title={courierName}
+        lead={`${vehicleName} · ${shiftTime}`}
+      >
+        <StatusToggle isOn={isOnShift} label={isOnShift ? t.courier.onShift : t.courier.breakTime} onToggle={toggleShift} />
+      </PortalHeader>
+
+      <section className="mb-9 desk:mb-12">
+        <DemoFiguresNote text={t.screens.common.demoFigures} />
+        <div className="grid grid-cols-2 desk:grid-cols-3 gap-3.5 desk:gap-5">
+          <StatSticker label={t.courier.earnedShift} value={formatCurrency(285)} hint={t.courier.includingTips} tint="gift" />
+          <StatSticker label={t.courier.completedDeliveries} value={`8 ${t.orders.deliveriesCount}`} tint="health" />
+          <StatSticker label={t.courier.batteryLevel} value="84%" hint={`~4 ${t.courier.hoursLeft}`} tint="tech" />
         </div>
+      </section>
 
-        <button
-          type="button"
-          onClick={toggleShift}
-          className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold border transition shrink-0 ${
-            isOnShift
-              ? 'bg-success-bg text-success border-[#A3D9B8]'
-              : 'bg-surface-elevated text-secondary border-theme'
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              isOnShift ? 'bg-[#1E824C] animate-pulse' : 'bg-muted'
-            }`}
-          />
-          <span>{isOnShift ? t.courier.onShift : t.courier.breakTime}</span>
-        </button>
-      </div>
-
-      {/* Courier Shift Summary */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-surface border border-theme text-center">
-          <span className="text-xs text-secondary block">{t.courier.earnedShift}</span>
-          <span className="text-xl font-extrabold text-ink font-sans mt-0.5 block tabular-nums">
-            {formatCurrency(285)}
-          </span>
-          <span className="text-[10px] text-muted">{t.courier.includingTips}</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-surface border border-theme text-center">
-          <span className="text-xs text-secondary block">{t.courier.completedDeliveries}</span>
-          <span className="text-xl font-extrabold text-primary font-sans mt-0.5 block tabular-nums">
-            8 {t.orders.deliveriesCount}
-          </span>
-          <span className="text-[10px] text-success">100% {t.courier.onTime}</span>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-surface border border-theme text-center">
-          <span className="text-xs text-secondary block">{t.courier.batteryLevel}</span>
-          <span className="text-xl font-extrabold text-primary font-sans mt-0.5 block tabular-nums">
-            84%
-          </span>
-          <span className="text-[10px] text-muted">~4 {t.courier.hoursLeft}</span>
-        </div>
-      </div>
-
-      {/* Active Assignment Card */}
-      <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-7 shadow-md space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b border-theme">
-          <div>
-            <span className="text-xs font-semibold text-secondary">{t.courier.currentTask}</span>
-            <h2 className="text-lg font-bold text-primary">#QIV-7821-M</h2>
-          </div>
-          <Badge
-            variant={
-              activeDeliveryStep === 'delivered'
-                ? 'success'
-                : activeDeliveryStep === 'to_client'
-                ? 'pistachio'
-                : 'warning'
-            }
-            size="md"
-          >
+      <NotebookPage>
+        <p className="hand text-[26px] leading-[44px] text-action">{t.courier.currentTask}</p>
+        <div className="flex flex-wrap items-center gap-2.5 min-h-11">
+          <h2 className="text-[26px] font-black tracking-tight">
+            <bdi>#QIV-7821-M</bdi>
+          </h2>
+          <Stamp tone={activeDeliveryStep === 'delivered' ? 'success' : activeDeliveryStep === 'to_client' ? 'action' : 'warn'}>
             {activeDeliveryStep === 'to_store'
               ? t.courier.headingToStore
               : activeDeliveryStep === 'to_client'
               ? t.courier.headingToClient
               : t.orders.statusDelivered}
-          </Badge>
+          </Stamp>
         </div>
 
-        {/* Route Steps */}
-        <div className="space-y-4">
-          <div className="flex items-start gap-3.5">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              activeDeliveryStep !== 'to_store' ? 'bg-success-bg text-success' : 'bg-ink text-paper'
-            }`}>
-              {activeDeliveryStep !== 'to_store' ? <CheckCircle2 className="w-5 h-5" /> : '1'}
-            </div>
-            <div>
-              <span className="text-[11px] text-secondary block">{t.courier.pointAPickup}</span>
-              <p className="text-sm font-bold text-primary">{storeName}</p>
-              <p className="text-xs text-muted">{storeAddr}</p>
-            </div>
-          </div>
+        <NotebookSteps steps={route} label={t.courier.currentTask} />
 
-          <div className="flex items-start gap-3.5">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              activeDeliveryStep === 'delivered' ? 'bg-success-bg text-success' : 'bg-surface-elevated text-secondary border border-theme'
-            }`}>
-              {activeDeliveryStep === 'delivered' ? <CheckCircle2 className="w-5 h-5" /> : '2'}
-            </div>
-            <div>
-              <span className="text-[11px] text-secondary block">{t.courier.pointBDelivery}</span>
-              <p className="text-sm font-bold text-primary">{clientName}</p>
-              <p className="text-xs text-muted">{clientAddr}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Button */}
-        <div className="pt-2">
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            onClick={handleAdvanceStep}
-          >
-            {activeDeliveryStep === 'to_store'
-              ? t.courier.confirmPickup
-              : activeDeliveryStep === 'to_client'
-              ? t.courier.confirmDelivery
-              : t.courier.acceptNewOrder}
-          </Button>
-        </div>
-      </div>
-
-    </div>
+        <Button size="lg" onClick={handleAdvanceStep} fullWidth className="mt-3 whitespace-normal">
+          {activeDeliveryStep === 'to_store'
+            ? t.courier.confirmPickup
+            : activeDeliveryStep === 'to_client'
+            ? t.courier.confirmDelivery
+            : t.courier.acceptNewOrder}
+        </Button>
+      </NotebookPage>
+    </PageShell>
   );
 };

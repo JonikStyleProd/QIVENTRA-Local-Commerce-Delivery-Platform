@@ -1,24 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Upload,
-  RefreshCw,
-  History,
-  CheckCircle2,
-  Copy,
-  Check,
-  FileCheck,
-  AlertTriangle,
-  ExternalLink,
-  Layers,
-  Database,
-} from 'lucide-react';
+import { ShieldAlert, Upload, RefreshCw, History, CheckCircle2, Copy, Check, FileCheck, AlertTriangle, Layers, Database } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { useApp } from '../../context/AppContext';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
+import { Modal } from '../ui/Modal';
+import { Skeleton } from '../ui/Skeleton';
+import { Panel } from '../collage/Panel';
+import { SegmentedControl } from '../collage/SegmentedControl';
+import { Stamp } from '../collage/Stamp';
 import {
   BRAND_ASSETS,
   OFFICIAL_BRAND_METADATA,
@@ -32,19 +22,22 @@ import {
   uploadBrandAsset,
   rollbackBrandAsset,
   isSupabaseConfigured,
-  getBrandAssetPublicUrl,
 } from '../../services/supabase';
 import { BrandAssetRecord, BrandAssetVariant } from '../../types';
 
+const SHEET = 'p-3.5 desk:p-5 bg-paper border-2 border-ink rounded-2xl';
+const PREVIEW_LOGO: React.CSSProperties = { maxWidth: '100%', maxHeight: '40px', aspectRatio: '4096 / 1120' };
+const TECH = 'font-mono text-xs break-all';
+
 export const BrandAssetsManager: React.FC = () => {
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
   const { showToast } = useToast();
   const { currentUser } = useApp();
+  const copy = t.screens.brand;
 
   const [selectedVariant, setSelectedVariant] = useState<BrandAssetVariant>('lockup');
   const [records, setRecords] = useState<BrandAssetRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [storageSource, setStorageSource] = useState<'supabase' | 'fallback'>('fallback');
   const [copiedSha, setCopiedSha] = useState<string | null>(null);
 
   // Staged upload state for preview before save
@@ -68,7 +61,6 @@ export const BrandAssetsManager: React.FC = () => {
     setIsLoading(true);
     const res = await fetchBrandAssetRecords();
     setRecords(res.data);
-    setStorageSource(res.source);
     setIsLoading(false);
   };
 
@@ -93,9 +85,7 @@ export const BrandAssetsManager: React.FC = () => {
     created_by: null,
   };
 
-  const historyRecords = records.filter(
-    (r) => r.variant === selectedVariant && !r.is_active
-  );
+  const historyRecords = records.filter((r) => r.variant === selectedVariant && !r.is_active);
 
   // Handle file selection and preview calculation
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,25 +96,22 @@ export const BrandAssetsManager: React.FC = () => {
 
     // 1. MIME type validation
     if (!ALLOWED_BRAND_MIME_TYPES.includes(file.type as any)) {
-      const err = `Недопустимый формат (${file.type || 'неизвестно'}). Разрешены только PNG, WebP и проверенные SVG.`;
+      const err = copy.badFormat.replace('{type}', file.type || copy.unknownType);
       setValidationError(err);
-      showToast({ type: 'error', title: 'Ошибка формата файла', message: err });
+      showToast({ type: 'error', title: copy.badFormatTitle, message: err });
       return;
     }
 
     // 2. Size validation
     if (file.size > MAX_BRAND_FILE_SIZE_BYTES) {
-      const err = `Размер файла превышает лимит 10 МБ (${(file.size / (1024 * 1024)).toFixed(2)} МБ).`;
+      const err = copy.tooBig.replace('{size}', (file.size / (1024 * 1024)).toFixed(2));
       setValidationError(err);
-      showToast({ type: 'error', title: 'Превышен размер файла', message: err });
+      showToast({ type: 'error', title: copy.tooBigTitle, message: err });
       return;
     }
 
     try {
-      const [sha, dims] = await Promise.all([
-        computeBlobSha256(file),
-        readImageDimensions(file),
-      ]);
+      const [sha, dims] = await Promise.all([computeBlobSha256(file), readImageDimensions(file)]);
 
       setStagedFile(file);
       setStagedSha256(sha);
@@ -135,13 +122,12 @@ export const BrandAssetsManager: React.FC = () => {
 
       showToast({
         type: 'info',
-        title: 'Файл проверен и готов к предпросмотру',
-        message: `Разрешение: ${dims.width} × ${dims.height} px | SHA-256 рассчитан.`,
+        title: copy.fileReadyTitle,
+        message: copy.fileReadyMsg.replace('{w}', String(dims.width)).replace('{h}', String(dims.height)),
       });
     } catch (err) {
-      const msg = 'Не удалось прочитать изображение или рассчитать контрольную сумму.';
-      setValidationError(msg);
-      showToast({ type: 'error', title: 'Ошибка обработки', message: msg });
+      setValidationError(copy.readError);
+      showToast({ type: 'error', title: copy.readErrorTitle, message: copy.readError });
     }
   };
 
@@ -177,8 +163,8 @@ export const BrandAssetsManager: React.FC = () => {
       if (!res.success) {
         showToast({
           type: 'error',
-          title: 'Ошибка загрузки',
-          message: res.error || 'Не удалось обновить официальный бренд-ассет.',
+          title: copy.uploadErrorTitle,
+          message: res.error || copy.uploadError,
         });
         setIsUploading(false);
         return;
@@ -186,8 +172,8 @@ export const BrandAssetsManager: React.FC = () => {
 
       showToast({
         type: 'success',
-        title: 'Бренд-ассет обновлен',
-        message: `Новая версия v${res.record?.version || 2} успешно зафиксирована в Supabase Storage.`,
+        title: copy.uploadedTitle,
+        message: copy.uploadedMsg.replace('{version}', String(res.record?.version || 2)),
       });
 
       clearStaged();
@@ -195,8 +181,8 @@ export const BrandAssetsManager: React.FC = () => {
     } catch (err) {
       showToast({
         type: 'error',
-        title: 'Исключение при обновлении',
-        message: err instanceof Error ? err.message : 'Неизвестная ошибка',
+        title: copy.uploadExceptionTitle,
+        message: err instanceof Error ? err.message : copy.unknownError,
       });
     } finally {
       setIsUploading(false);
@@ -216,14 +202,14 @@ export const BrandAssetsManager: React.FC = () => {
       if (!res.success) {
         showToast({
           type: 'error',
-          title: 'Ошибка отката версии',
-          message: res.error || 'Не удалось откатить версию.',
+          title: copy.rollbackErrorTitle,
+          message: res.error || copy.rollbackError,
         });
       } else {
         showToast({
           type: 'success',
-          title: 'Версия восстановлена',
-          message: `Бренд-ассет возвращен к версии v${version}.`,
+          title: copy.rolledBackTitle,
+          message: copy.rolledBackMsg.replace('{version}', String(version)),
         });
         await loadRecords();
       }
@@ -239,8 +225,8 @@ export const BrandAssetsManager: React.FC = () => {
     setTimeout(() => setCopiedSha(null), 2000);
     showToast({
       type: 'success',
-      title: 'Скопировано в буфер',
-      message: 'Контрольная сумма SHA-256 скопирована.',
+      title: copy.copiedTitle,
+      message: copy.copiedMsg,
     });
   };
 
@@ -249,555 +235,350 @@ export const BrandAssetsManager: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="p-6 sm:p-8 rounded-3xl bg-surface border border-red-200 shadow-xs space-y-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-base sm:text-lg font-bold text-primary">
-              {t.admin.adminOnlyNotice}
-            </h3>
-            <p className="text-sm text-secondary mt-1 leading-relaxed">
-              Управление официальными логотипами и бренд-ассетами QIVENTRA в Supabase Storage доступно только учетным записям с правами администратора платформы (Role: <span className="font-mono font-semibold">admin</span>). Покупатели, продавцы и курьеры не имеют прав на изменение бренд-ассетов.
+      <Panel tone="food" as="section">
+        <div className="flex items-start gap-3.5">
+          <ShieldAlert aria-hidden="true" className="w-7 h-7 shrink-0 text-danger" />
+          <div className="min-w-0">
+            <h2 className="text-lg desk:text-xl font-black">{t.admin.adminOnlyNotice}</h2>
+            <p className="mt-1 font-bold text-ink-2">{copy.adminOnlyBody}</p>
+            <p className="flex flex-wrap items-center gap-2 mt-2.5 text-sm font-bold text-ink-2">
+              {copy.currentRole}:
+              <Stamp>{t.screens.portal.roles[currentUser.role as keyof typeof t.screens.portal.roles] ?? currentUser.role}</Stamp>
             </p>
-            <div className="mt-3 flex items-center gap-2 text-xs text-muted">
-              <span>Текущая роль:</span>
-              <Badge variant="neutral" size="sm">
-                {currentUser.role}
-              </Badge>
-            </div>
           </div>
         </div>
-      </div>
+      </Panel>
     );
   }
 
   return (
-    <div className="p-6 sm:p-8 rounded-3xl bg-surface border border-theme shadow-xs space-y-6">
-      
-      {/* Header & Section Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
-        <div className="flex items-start gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            <ShieldCheck className="w-6 h-6 text-accent-on-ink" />
+    <Panel as="section" tape="blue" aria-label={t.admin.brandAssetsTitle}>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+        <div className="min-w-0 flex-[1_1_280px]">
+          <h2 className="text-[22px] desk:text-[28px] font-black tracking-tight leading-tight">{t.admin.brandAssetsTitle}</h2>
+          <p className="mt-1 max-w-[720px] text-sm font-bold text-ink-2">{t.admin.brandAssetsSubtitle}</p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={loadRecords}
+          disabled={isLoading}
+          leftIcon={<RefreshCw aria-hidden="true" className={`w-4 h-4 ${isLoading ? 'anim-spin' : ''}`} />}
+        >
+          {copy.refresh}
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-3 mb-4 bg-tint-pets border-2 border-ink rounded-xl text-sm font-bold">
+        <p className="flex items-start gap-2 min-w-0">
+          <Database aria-hidden="true" className="w-4 h-4 mt-0.5 shrink-0" />
+          <span className="min-w-0">
+            <bdi className="font-mono font-extrabold">{BRAND_ASSETS_BUCKET}</bdi> · {copy.bucketNote}
+          </span>
+        </p>
+        <Stamp tone={isSupabaseConfigured ? 'success' : 'warn'}>{isSupabaseConfigured ? copy.connected : copy.fallback}</Stamp>
+      </div>
+
+      <SegmentedControl
+        label={t.admin.brandAssetsTitle}
+        value={selectedVariant}
+        onChange={(variant) => {
+          setSelectedVariant(variant);
+          clearStaged();
+        }}
+        className="flex w-full max-w-[640px] mb-5"
+        options={[
+          { value: 'lockup', label: t.admin.lockupTitle, icon: <Layers aria-hidden="true" className="w-4 h-4 shrink-0" /> },
+          { value: 'mark', label: t.admin.markTitle, icon: <CheckCircle2 aria-hidden="true" className="w-4 h-4 shrink-0" /> },
+        ]}
+      />
+
+      <div className="grid desk:grid-cols-2 gap-5">
+        {/* ---------- Active version ---------- */}
+        <div className={SHEET}>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <h3 className="font-black">{t.admin.currentActiveVersion}</h3>
+            <Stamp tone="success">
+              {copy.active} · v{activeRecord.version}
+            </Stamp>
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-lg sm:text-xl font-bold text-primary">
-                {t.admin.brandAssetsTitle}
-              </h2>
-              <Badge variant="pistachio" size="sm">
-                Supabase Storage
-              </Badge>
-              <Badge variant="success" size="sm">
-                RLS Protected
-              </Badge>
+
+          {isLoading ? (
+            <Skeleton className="h-40" />
+          ) : selectedVariant === 'lockup' ? (
+            <div className="space-y-3">
+              {/* These two sheets show the logo on a fixed ground, whatever the app's theme. */}
+              <div className="flex flex-col items-center gap-2 p-4 bg-[#FFF8EC] text-[#5A554C] border-2 border-[#1E1E1E] rounded-xl">
+                <span className="text-xs font-extrabold">{copy.previewLight}</span>
+                <img
+                  src={BRAND_ASSETS.darkLockup}
+                  alt="QIVENTRA"
+                  style={PREVIEW_LOGO}
+                  onError={(e) => {
+                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.darkLockup.localPng;
+                  }}
+                />
+              </div>
+              <div className="flex flex-col items-center gap-2 p-4 bg-[#1E1E1E] text-[#FFD84D] border-2 border-[#1E1E1E] rounded-xl">
+                <span className="text-xs font-extrabold">{copy.previewDark}</span>
+                <img
+                  src={BRAND_ASSETS.lightLockup}
+                  alt="QIVENTRA"
+                  style={PREVIEW_LOGO}
+                  onError={(e) => {
+                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.lightLockup.localPng;
+                  }}
+                />
+              </div>
             </div>
-            <p className="text-xs text-secondary mt-1 max-w-2xl">
-              {t.admin.brandAssetsSubtitle}
-            </p>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 p-6 bg-[#FFF8EC] text-[#5A554C] border-2 border-[#1E1E1E] rounded-xl">
+              <span className="text-xs font-extrabold">{copy.previewMark}</span>
+              <img
+                src={BRAND_ASSETS.mark}
+                alt="QIVENTRA"
+                style={{ maxWidth: '100%', maxHeight: '64px', aspectRatio: '1 / 1' }}
+                onError={(e) => {
+                  e.currentTarget.src = OFFICIAL_BRAND_METADATA.mark.localPng;
+                }}
+              />
+            </div>
+          )}
+
+          <dl className="mt-3 space-y-2 text-sm">
+            <div className="flex flex-wrap justify-between gap-x-3 pb-2 border-b-2 border-paper-dot">
+              <dt className="font-bold text-ink-2">{t.admin.actualDimensions}</dt>
+              <dd className="font-extrabold tabular-nums" dir="ltr">
+                {activeRecord.width || OFFICIAL_BRAND_METADATA[selectedVariant].width} ×{' '}
+                {activeRecord.height || OFFICIAL_BRAND_METADATA[selectedVariant].height} px
+              </dd>
+            </div>
+            <div className="flex flex-wrap justify-between gap-x-3 pb-2 border-b-2 border-paper-dot">
+              <dt className="font-bold text-ink-2">MIME</dt>
+              <dd className={TECH} dir="ltr">
+                {activeRecord.mime_type}
+              </dd>
+            </div>
+            <div className="flex flex-wrap justify-between gap-x-3 pb-2 border-b-2 border-paper-dot">
+              <dt className="font-bold text-ink-2">{copy.canonicalPath}</dt>
+              <dd className={TECH} dir="ltr">
+                {FIXED_STORAGE_PATHS[selectedVariant]}
+              </dd>
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-x-3">
+                <dt className="font-bold text-ink-2">{t.admin.checksumLabel}</dt>
+                <dd>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(activeRecord.sha256)}
+                    className="inline-flex items-center gap-1 min-h-11 px-1 font-extrabold cursor-pointer hover:underline"
+                  >
+                    {copiedSha === activeRecord.sha256 ? (
+                      <Check aria-hidden="true" className="w-4 h-4 text-success" />
+                    ) : (
+                      <Copy aria-hidden="true" className="w-4 h-4" />
+                    )}
+                    {copiedSha === activeRecord.sha256 ? copy.copied : copy.copy}
+                  </button>
+                </dd>
+              </div>
+              <p className={`${TECH} p-2 bg-card border-2 border-ink rounded-lg`} dir="ltr">
+                {activeRecord.sha256}
+              </p>
+            </div>
+          </dl>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {/* ---------- Upload ---------- */}
+        <div className={`${SHEET} flex flex-col gap-3`}>
+          <div className="flex flex-wrap items-center justify-between gap-x-3">
+            <h3 className="font-black">{t.admin.uploadNewVersion}</h3>
+            <span className="text-xs font-bold text-ink-2">{copy.formats}</span>
+          </div>
+
+          {!stagedFile ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex flex-col items-center justify-center gap-2 min-h-[180px] p-5 text-center border-2 border-dashed border-ink rounded-2xl bg-card cursor-pointer hover:bg-tint-gift"
+            >
+              <Upload aria-hidden="true" className="w-7 h-7" />
+              <span className="font-black">{t.admin.dropFileHere}</span>
+              <span className="text-sm font-bold text-ink-2">{copy.stagingHint}</span>
+              <span className="inline-flex items-center min-h-11 px-4 mt-1 bg-card text-sm font-extrabold border-2 border-ink rounded-[14px]">
+                {t.admin.browseFiles}
+              </span>
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 min-w-0 text-sm font-extrabold">
+                  <FileCheck aria-hidden="true" className="w-4 h-4 shrink-0 text-success" />
+                  <bdi className="truncate">{stagedFile.name}</bdi>
+                </span>
+                <Button variant="ghost" size="sm" onClick={clearStaged}>
+                  {t.common.cancel}
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-center min-h-[140px] p-4 bg-[#FFF8EC] border-2 border-[#1E1E1E] rounded-xl">
+                {stagedPreviewUrl && (
+                  <img
+                    src={stagedPreviewUrl}
+                    alt={copy.previewAlt}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: selectedVariant === 'lockup' ? '48px' : '72px',
+                      aspectRatio: selectedVariant === 'lockup' ? '1060 / 280' : '1 / 1',
+                    }}
+                  />
+                )}
+              </div>
+
+              {stagedDimensions && stagedSha256 && (
+                <dl className="p-3 space-y-1.5 bg-card border-2 border-ink rounded-xl text-sm">
+                  <div className="flex flex-wrap justify-between gap-x-3">
+                    <dt className="font-bold text-ink-2">{t.admin.actualDimensions}</dt>
+                    <dd className="font-extrabold tabular-nums" dir="ltr">
+                      {stagedDimensions.width} × {stagedDimensions.height} px
+                    </dd>
+                  </div>
+                  <div className="flex flex-wrap justify-between gap-x-3">
+                    <dt className="font-bold text-ink-2">{copy.fileSize}</dt>
+                    <dd className="font-extrabold tabular-nums" dir="ltr">
+                      {(stagedFile.size / 1024).toFixed(1)} KB
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-bold text-ink-2">{copy.newSha}</dt>
+                    <dd className={TECH} dir="ltr">
+                      {stagedSha256}
+                    </dd>
+                  </div>
+                </dl>
+              )}
+            </div>
+          )}
+
+          {validationError && (
+            <p role="alert" className="flex items-center gap-2 p-3 bg-danger-bg text-danger border-2 border-danger rounded-xl text-sm font-bold">
+              <AlertTriangle aria-hidden="true" className="w-4 h-4 shrink-0" />
+              <span>{validationError}</span>
+            </p>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".png,.webp,.svg,image/png,image/webp,image/svg+xml"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+
           <Button
-            variant="outline"
-            size="sm"
-            onClick={loadRecords}
-            disabled={isLoading}
-            leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />}
+            fullWidth
+            disabled={!stagedFile || isUploading}
+            onClick={() => setIsConfirmModalOpen(true)}
+            leftIcon={<Upload aria-hidden="true" className="w-4 h-4" />}
+            className="mt-auto whitespace-normal"
           >
-            Обновить статус
+            {isUploading ? copy.publishing : copy.commit}
           </Button>
         </div>
       </div>
 
-      {/* Backend & Bucket Info Pill */}
-      <div className="p-4 rounded-2xl bg-surface-elevated border border-theme flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-ink" />
-          <span className="font-medium text-primary">
-            Bucket: <span className="font-mono text-ink font-bold">{BRAND_ASSETS_BUCKET}</span>
-          </span>
-          <span className="text-muted">•</span>
-          <span className="text-secondary">Публичное чтение активно, запись ограничена Admin RLS</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-          <span className="text-muted">
-            {isSupabaseConfigured ? 'Supabase Connected' : 'Local Fallback Mode Active'}
-          </span>
-        </div>
-      </div>
-
-      {/* Tabs: Mark vs Lockup */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-surface-elevated border border-theme max-w-md">
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedVariant('lockup');
-            clearStaged();
-          }}
-          className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
-            selectedVariant === 'lockup'
-              ? 'bg-ink text-paper shadow-xs'
-              : 'text-secondary hover:text-primary'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>{t.admin.lockupTitle}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedVariant('mark');
-            clearStaged();
-          }}
-          className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
-            selectedVariant === 'mark'
-              ? 'bg-ink text-paper shadow-xs'
-              : 'text-secondary hover:text-primary'
-          }`}
-        >
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>{t.admin.markTitle}</span>
-        </button>
-      </div>
-
-      {/* Main Grid: Active Version & Upload Staging */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Card 1: Currently Active Version */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-surface-elevated border border-theme flex flex-col justify-between space-y-5">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted">
-                  {t.admin.currentActiveVersion}
-                </span>
-                <Badge variant="success" size="sm">
-                  Active (v{activeRecord.version})
-                </Badge>
-              </div>
-              <span className="text-[11px] font-mono text-muted">
-                {FIXED_STORAGE_PATHS[selectedVariant]}
-              </span>
-            </div>
-
-            {/* Official Logo Render Stage: Both Light and Dark Theme Real-World Previews */}
-            {selectedVariant === 'lockup' ? (
-              <div className="space-y-3">
-                {/* Light theme: darkLockup (dark letters on light background) */}
-                <div className="p-4 rounded-xl bg-[#FFF8EC] border border-[#E9DFCB] flex flex-col items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold text-ink-2 uppercase tracking-wider">
-                    Light Theme & Header (darkLockup)
-                  </span>
-                  <img
-                    src={BRAND_ASSETS.darkLockup}
-                    alt="QIVENTRA"
-                    className="brand-logo"
-                    style={{
-                      display: 'block',
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '100%',
-                      objectFit: 'contain',
-                      objectPosition: 'center',
-                      flexShrink: 0,
-                      transform: 'none',
-                      filter: 'none',
-                      maxHeight: '40px',
-                      aspectRatio: '4096 / 1120',
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.src = OFFICIAL_BRAND_METADATA.darkLockup.localPng;
-                    }}
-                  />
-                </div>
-
-                {/* Dark theme & Footer: lightLockup (light letters on dark background) */}
-                <div className="p-4 rounded-xl bg-[#1E1E1E] border border-[#1E1E1E] flex flex-col items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold text-accent uppercase tracking-wider">
-                    Dark Theme & Footer (lightLockup)
-                  </span>
-                  <img
-                    src={BRAND_ASSETS.lightLockup}
-                    alt="QIVENTRA"
-                    className="brand-logo"
-                    style={{
-                      display: 'block',
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '100%',
-                      objectFit: 'contain',
-                      objectPosition: 'center',
-                      flexShrink: 0,
-                      transform: 'none',
-                      filter: 'none',
-                      maxHeight: '40px',
-                      aspectRatio: '4096 / 1120',
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.src = OFFICIAL_BRAND_METADATA.lightLockup.localPng;
-                    }}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="min-h-[160px] p-6 rounded-2xl bg-surface-elevated border border-theme flex flex-col items-center justify-center gap-2 shadow-inner">
-                <span className="text-[10px] font-semibold text-secondary uppercase tracking-wider">
-                  Mobile Header & Icon (mark: 2048 × 2048)
-                </span>
-                <img
-                  src={BRAND_ASSETS.mark}
-                  alt="QIVENTRA"
-                  className="brand-logo"
-                  style={{
-                    display: 'block',
-                    width: 'auto',
-                    height: 'auto',
-                    maxWidth: '100%',
-                    objectFit: 'contain',
-                    objectPosition: 'center',
-                    flexShrink: 0,
-                    transform: 'none',
-                    filter: 'none',
-                    maxHeight: '64px',
-                    aspectRatio: '1 / 1',
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.src = OFFICIAL_BRAND_METADATA.mark.localPng;
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Specifications & Verified Checksums */}
-            <div className="space-y-2.5 pt-2 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-theme/60">
-                <span className="text-secondary">{t.admin.actualDimensions}:</span>
-                <span className="font-mono font-semibold text-primary">
-                  {activeRecord.width || OFFICIAL_BRAND_METADATA[selectedVariant].width} × {activeRecord.height || OFFICIAL_BRAND_METADATA[selectedVariant].height} px
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-theme/60">
-                <span className="text-secondary">MIME Type:</span>
-                <span className="font-mono text-primary font-medium">{activeRecord.mime_type}</span>
-              </div>
-
-              <div className="space-y-1 py-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-secondary">{t.admin.checksumLabel}:</span>
-                  <button
-                    type="button"
-                    onClick={() => copyToClipboard(activeRecord.sha256)}
-                    className="text-[11px] text-ink hover:underline flex items-center gap-1 font-medium"
-                  >
-                    {copiedSha === activeRecord.sha256 ? (
-                      <Check className="w-3 h-3 text-emerald-500" />
-                    ) : (
-                      <Copy className="w-3 h-3" />
-                    )}
-                    <span>{copiedSha === activeRecord.sha256 ? 'Скопировано' : 'Копировать'}</span>
-                  </button>
-                </div>
-                <p className="font-mono text-[10px] break-all bg-surface p-2 rounded-lg border border-theme text-secondary select-all">
-                  {activeRecord.sha256}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-2 text-[11px] text-muted flex items-center justify-between">
-            <span>Каноничный путь: <code className="font-mono">{activeRecord.storage_path}</code></span>
-            <span>Версия: v{activeRecord.version}</span>
-          </div>
-        </div>
-
-        {/* Card 2: Upload Staging & Live Preview */}
-        <div className="p-5 sm:p-6 rounded-2xl bg-surface-elevated border border-theme flex flex-col justify-between space-y-5">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted">
-                {t.admin.uploadNewVersion}
-              </span>
-              <span className="text-[11px] text-muted">PNG, WebP, SVG (макс. 10 MB)</span>
-            </div>
-
-            {/* Staging Dropzone or Preview */}
-            {!stagedFile ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="min-h-[160px] p-6 rounded-2xl border-2 border-dashed border-theme hover:border-ink transition-colors flex flex-col items-center justify-center gap-3 cursor-pointer bg-surface group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-surface-elevated text-secondary group-hover:text-ink flex items-center justify-center transition">
-                  <Upload className="w-5 h-5" />
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="text-xs font-bold text-primary">
-                    {t.admin.dropFileHere}
-                  </p>
-                  <p className="text-[11px] text-muted">
-                    Файл будет проверен, измерен и вычислена контрольная сумма до сохранения
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" type="button">
-                  {t.admin.browseFiles}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
-                    <FileCheck className="w-4 h-4 text-emerald-500" />
-                    <span>{stagedFile.name}</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={clearStaged}
-                    className="text-xs text-red-500 hover:underline font-medium"
-                  >
-                    Отменить
-                  </button>
-                </div>
-
-                {/* Staged Live Preview */}
-                <div className="min-h-[140px] p-4 rounded-2xl bg-[#FFF8EC] border border-[#E9DFCB] flex items-center justify-center">
-                  {stagedPreviewUrl && (
-                    <img
-                      src={stagedPreviewUrl}
-                      alt="Staged Brand Asset Preview"
-                      style={{
-                        display: 'block',
-                        width: 'auto',
-                        height: 'auto',
-                        maxWidth: '100%',
-                        objectFit: 'contain',
-                        objectPosition: 'center',
-                        flexShrink: 0,
-                        transform: 'none',
-                        filter: 'none',
-                        maxHeight: selectedVariant === 'lockup' ? '48px' : '72px',
-                        aspectRatio: selectedVariant === 'lockup' ? '1060 / 280' : '1 / 1',
-                      }}
-                    />
-                  )}
-                </div>
-
-                {/* Staged Metadata */}
-                {stagedDimensions && stagedSha256 && (
-                  <div className="p-3 rounded-xl bg-surface border border-theme text-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-secondary">{t.admin.actualDimensions}:</span>
-                      <span className="font-mono font-bold text-primary">
-                        {stagedDimensions.width} × {stagedDimensions.height} px
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-secondary">Размер файла:</span>
-                      <span className="font-mono text-primary">
-                        {(stagedFile.size / 1024).toFixed(1)} KB
-                      </span>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-secondary text-[11px]">Новый SHA-256:</span>
-                      <p className="font-mono text-[10px] break-all text-primary bg-surface-elevated p-1.5 rounded border border-theme">
-                        {stagedSha256}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {validationError && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{validationError}</span>
-              </div>
-            )}
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".png,.webp,.svg,image/png,image/webp,image/svg+xml"
-              className="hidden"
-              onChange={handleFileSelect}
-            />
-          </div>
-
-          <div className="pt-2">
-            <Button
-              variant="primary"
-              size="md"
-              fullWidth
-              disabled={!stagedFile || isUploading}
-              onClick={() => setIsConfirmModalOpen(true)}
-              leftIcon={<Upload className="w-4 h-4" />}
-            >
-              {isUploading ? 'Публикация в Supabase Storage...' : 'Зафиксировать замену ассета'}
-            </Button>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Version History & Rollback Section */}
-      <div className="space-y-3 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-ink" />
-            <h3 className="text-sm font-bold text-primary">
-              {t.admin.versionHistory} ({selectedVariant})
-            </h3>
-          </div>
-          <span className="text-xs text-secondary">
-            Предыдущие версии сохраняются для безопасного отката
-          </span>
-        </div>
+      {/* ---------- Version history ---------- */}
+      <div className="mt-6">
+        <h3 className="flex items-center gap-2 text-lg font-black">
+          <History aria-hidden="true" className="w-5 h-5 shrink-0" />
+          {t.admin.versionHistory}
+        </h3>
+        <p className="mb-3 text-sm font-bold text-ink-2">{copy.historyHint}</p>
 
         {historyRecords.length === 0 ? (
-          <div className="p-4 rounded-2xl bg-surface-elevated border border-theme text-xs text-secondary text-center">
-            Предыдущих версий для этого ассета пока нет. Текущая активная версия является базовой (v1).
-          </div>
+          <p className="p-4 text-center text-sm font-bold text-ink-2 border-2 border-dashed border-ink rounded-2xl">
+            {copy.historyEmpty}
+          </p>
         ) : (
-          <div className="space-y-2">
+          <ul className="space-y-2.5">
             {historyRecords.map((hist) => (
-              <div
-                key={hist.id}
-                className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-primary">Версия v{hist.version}</span>
-                    <Badge variant="neutral" size="sm">Архив</Badge>
-                    <span className="text-muted">
-                      {new Date(hist.created_at).toLocaleDateString()}
+              <li key={hist.id} className={`${SHEET} flex flex-wrap items-center justify-between gap-3`}>
+                <div className="min-w-0 flex-[1_1_240px]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-black">
+                      {copy.version} v{hist.version}
                     </span>
+                    <Stamp>{copy.archive}</Stamp>
+                    <span className="text-sm font-bold text-ink-3">{new Date(hist.created_at).toLocaleDateString()}</span>
                   </div>
-                  <p className="font-mono text-[10px] text-muted truncate max-w-md">
-                    SHA-256: {hist.sha256}
+                  <p className={`${TECH} mt-1 text-ink-2`} dir="ltr">
+                    {hist.sha256}
                   </p>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isUploading}
-                    onClick={() => setRollbackTarget(hist.version)}
-                  >
-                    {t.admin.restoreVersion}
-                  </Button>
-                </div>
-              </div>
+                <Button variant="outline" size="sm" disabled={isUploading} onClick={() => setRollbackTarget(hist.version)}>
+                  {t.admin.restoreVersion}
+                </Button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
-      {/* Confirmation Modal for Replacement */}
-      {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-surface rounded-3xl border border-theme p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-primary">
-                  {t.admin.confirmReplacement}
-                </h4>
-                <p className="text-xs text-secondary mt-0.5">
-                  Замена официального ассета: <span className="font-bold font-mono">{FIXED_STORAGE_PATHS[selectedVariant]}</span>
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs text-secondary leading-relaxed">
-              {t.admin.confirmReplacementMsg}
-            </p>
-
-            <div className="p-3 rounded-xl bg-surface-elevated border border-theme text-xs space-y-1.5 font-mono">
-              <div className="flex justify-between">
-                <span className="text-secondary">Новый размер:</span>
-                <span className="text-primary">{stagedDimensions?.width} × {stagedDimensions?.height} px</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-secondary">Новая версия:</span>
-                <span className="text-primary">v{activeRecord.version + 1}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsConfirmModalOpen(false)}
-                disabled={isUploading}
-              >
-                Отмена
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleConfirmUpload}
-                disabled={isUploading}
-              >
-                {isUploading ? 'Публикация...' : 'Подтвердить и опубликовать'}
-              </Button>
-            </div>
+      {/* ---------- Confirm replacement ---------- */}
+      <Modal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        title={t.admin.confirmReplacement}
+        maxWidth="md"
+      >
+        <p className="font-bold text-ink-2">{t.admin.confirmReplacementMsg}</p>
+        <dl className="mt-3 p-3 space-y-1.5 bg-tint-pets border-2 border-ink rounded-xl text-sm">
+          <div className="flex flex-wrap justify-between gap-x-3">
+            <dt className="font-bold text-ink-2">{copy.replacing}</dt>
+            <dd className={TECH} dir="ltr">
+              {FIXED_STORAGE_PATHS[selectedVariant]}
+            </dd>
           </div>
-        </div>
-      )}
-
-      {/* Confirmation Modal for Rollback */}
-      {rollbackTarget !== null && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-surface rounded-3xl border border-theme p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-ink text-accent-on-ink flex items-center justify-center shrink-0">
-                <History className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-base font-bold text-primary">
-                  Восстановление версии v{rollbackTarget}
-                </h4>
-                <p className="text-xs text-secondary mt-0.5">
-                  Официальный ассет {selectedVariant}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs text-secondary leading-relaxed">
-              Вы уверены, что хотите переключить активный логотип на версию v{rollbackTarget}? Текущий активный ассет перейдет в архив.
-            </p>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setRollbackTarget(null)}
-                disabled={isUploading}
-              >
-                Отмена
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => handleRollback(rollbackTarget)}
-                disabled={isUploading}
-              >
-                Восстановить версию
-              </Button>
-            </div>
+          <div className="flex flex-wrap justify-between gap-x-3">
+            <dt className="font-bold text-ink-2">{copy.newSize}</dt>
+            <dd className="font-extrabold tabular-nums" dir="ltr">
+              {stagedDimensions?.width} × {stagedDimensions?.height} px
+            </dd>
           </div>
+          <div className="flex flex-wrap justify-between gap-x-3">
+            <dt className="font-bold text-ink-2">{copy.newVersion}</dt>
+            <dd className="font-extrabold tabular-nums">v{activeRecord.version + 1}</dd>
+          </div>
+        </dl>
+        <div className="flex flex-wrap justify-end gap-2 mt-4">
+          <Button variant="outline" size="sm" onClick={() => setIsConfirmModalOpen(false)} disabled={isUploading}>
+            {t.common.cancel}
+          </Button>
+          <Button size="sm" onClick={handleConfirmUpload} disabled={isUploading}>
+            {isUploading ? copy.publishing : copy.confirmPublish}
+          </Button>
         </div>
-      )}
+      </Modal>
 
-    </div>
+      {/* ---------- Confirm rollback ---------- */}
+      <Modal
+        isOpen={rollbackTarget !== null}
+        onClose={() => setRollbackTarget(null)}
+        title={copy.rollbackTitle.replace('{version}', String(rollbackTarget))}
+        subtitle={copy.rollbackAsset.replace('{variant}', selectedVariant)}
+        maxWidth="md"
+      >
+        <p className="font-bold text-ink-2">{copy.rollbackConfirm.replace('{version}', String(rollbackTarget))}</p>
+        <div className="flex flex-wrap justify-end gap-2 mt-4">
+          <Button variant="outline" size="sm" onClick={() => setRollbackTarget(null)} disabled={isUploading}>
+            {t.common.cancel}
+          </Button>
+          <Button size="sm" onClick={() => rollbackTarget !== null && handleRollback(rollbackTarget)} disabled={isUploading}>
+            {copy.rollbackBtn}
+          </Button>
+        </div>
+      </Modal>
+    </Panel>
   );
 };
