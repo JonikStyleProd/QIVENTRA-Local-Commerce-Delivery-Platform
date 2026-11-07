@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router';
 import { MapPin } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -29,6 +30,8 @@ export const CartPage: React.FC = () => {
 
   const { t, formatCurrency } = useLanguage();
   const { showToast } = useToast();
+  const location = useLocation();
+  const cameFromDelivery = (location.state as { notice?: string } | null)?.notice === 'emptyForDelivery';
   const [promoCode, setPromoCode] = useState('');
 
   const handleApplyPromo = (e: React.FormEvent) => {
@@ -55,7 +58,7 @@ export const CartPage: React.FC = () => {
         <h1 className="sr-only">{t.cart.checkoutTitle}</h1>
         <EmptyState
           title={t.cart.emptyTitle}
-          description={t.cart.emptyDesc}
+          description={cameFromDelivery ? t.demo.cart.emptyForDelivery : t.cart.emptyDesc}
           actionText={t.cart.exploreCatalog}
           onAction={() => navigateTo('catalog')}
         />

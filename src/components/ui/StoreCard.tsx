@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { Store } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePromotions } from '../../context/PromotionsContext';
@@ -12,6 +13,8 @@ import { PolaroidPhoto } from '../collage/PolaroidPhoto';
 interface StoreCardProps {
   store: Store;
   onClick?: () => void;
+  /** Makes the card a link to this address instead of a button. */
+  to?: string;
   /** Set on the shop picker: the card then behaves as a toggle and can be circled. */
   isSelected?: boolean;
   /** "board" is the compact caption of the landing board; "full" lists time, fee and minimum. */
@@ -22,7 +25,7 @@ interface StoreCardProps {
 const CHIP = 'px-2.5 py-[5px] rounded-[10px] text-sm font-extrabold';
 
 /** Shop polaroid. Time, fee, minimum and distance always come from the store's data. */
-export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, isSelected, detail = 'full', tilt }) => {
+export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, to, isSelected, detail = 'full', tilt }) => {
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const { promotions, now } = usePromotions();
   const promotion = bestPromotion(promotions, store.id, now);
@@ -38,16 +41,13 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, isSelected
 
   const isBoard = detail === 'board';
 
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={isSelected}
-      className={`card-tilt relative block w-full h-full bg-card text-ink text-start cursor-pointer shadow-polaroid ${
-        isBoard ? 'px-3 pt-3 pb-[18px]' : 'p-[7px] pb-2.5 desk:p-3.5 desk:pb-5'
-      }`}
-      style={{ '--tilt': tilt ?? tiltFor(store.id) } as React.CSSProperties}
-    >
+  const cardClass = `card-tilt relative block w-full h-full bg-card text-ink text-start cursor-pointer shadow-polaroid ${
+    isBoard ? 'px-3 pt-3 pb-[18px]' : 'p-[7px] pb-2.5 desk:p-3.5 desk:pb-5'
+  }`;
+  const cardStyle = { '--tilt': tilt ?? tiltFor(store.id) } as React.CSSProperties;
+
+  const body = (
+    <>
       <Tape small={!isBoard} tone="yellow" />
       <span className="relative block">
         <PolaroidPhoto src={store.coverUrl} aspectClassName={isBoard ? 'aspect-square' : 'aspect-square desk:aspect-[4/3]'} />
@@ -102,6 +102,16 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, isSelected
           </span>
         </>
       )}
+    </>
+  );
+
+  return to ? (
+    <Link to={to} className={cardClass} style={cardStyle}>
+      {body}
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} aria-pressed={isSelected} className={cardClass} style={cardStyle}>
+      {body}
     </button>
   );
 };

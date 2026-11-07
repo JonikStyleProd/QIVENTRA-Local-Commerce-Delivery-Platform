@@ -1,6 +1,7 @@
 import { CollageStrings, collageTranslations } from './collage';
 import { ScreenStrings, screenTranslations } from './screens';
 import { PromotionStrings, promotionTranslations } from './promotions';
+import { DemoStrings, demoTranslations } from './demo';
 
 export type Language = 'ru' | 'en' | 'he';
 
@@ -8,6 +9,7 @@ export interface Translations {
   collage: CollageStrings;
   screens: ScreenStrings;
   promotions: PromotionStrings;
+  demo: DemoStrings;
   nav: {
     home: string;
     catalog: string;
@@ -495,6 +497,7 @@ export const translations: Record<Language, Translations> = {
     collage: collageTranslations.he,
     screens: screenTranslations.he,
     promotions: promotionTranslations.he,
+    demo: demoTranslations.he,
     nav: {
       home: 'בית',
       catalog: 'קטלוג',
@@ -980,6 +983,7 @@ export const translations: Record<Language, Translations> = {
     collage: collageTranslations.en,
     screens: screenTranslations.en,
     promotions: promotionTranslations.en,
+    demo: demoTranslations.en,
     nav: {
       home: 'Home',
       catalog: 'Catalog',
@@ -1465,6 +1469,7 @@ export const translations: Record<Language, Translations> = {
     collage: collageTranslations.ru,
     screens: screenTranslations.ru,
     promotions: promotionTranslations.ru,
+    demo: demoTranslations.ru,
     nav: {
       home: 'Главная',
       catalog: 'Каталог',

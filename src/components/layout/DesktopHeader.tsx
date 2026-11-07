@@ -1,18 +1,20 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { Search, ShoppingBag, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BrandLogo } from '../ui/BrandLogo';
-import { Button } from '../ui/Button';
+import { LinkButton } from '../ui/LinkButton';
 import { IconButton } from '../ui/IconButton';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { AppRoute } from '../../types';
+import { pathFor } from '../../router/paths';
 import { AddressButton, CartCountBadge } from '../collage/HeaderControls';
 import { ProfileMenu } from './ProfileMenu';
 
 export const DesktopHeader: React.FC = () => {
-  const { currentRoute, navigateTo, cartTotalCount } = useApp();
+  const { currentRoute, cartTotalCount } = useApp();
   const { t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
 
@@ -27,9 +29,8 @@ export const DesktopHeader: React.FC = () => {
   return (
     <div className="flex items-center justify-between gap-3 max-w-[1360px] mx-auto px-6 xl:px-10 py-2.5">
       <div className="flex items-center gap-1 xl:gap-3 min-w-0">
-        <button
-          type="button"
-          onClick={() => navigateTo('home')}
+        <Link
+          to={pathFor('home')}
           aria-label="QIVENTRA"
           aria-current={currentRoute === 'home' ? 'page' : undefined}
           className="flex items-center gap-2.5 min-h-11 shrink-0 text-ink cursor-pointer"
@@ -38,16 +39,15 @@ export const DesktopHeader: React.FC = () => {
           <span dir="ltr" className="hidden lg:inline text-xl font-black tracking-[0.04em]">
             QIVENTRA
           </span>
-        </button>
+        </Link>
 
         <nav aria-label={t.collage.tabs.main} className="flex items-center gap-0.5 shrink-0">
           {navLinks.map((item) => {
             const isActive = currentRoute === item.route;
             return (
-              <button
+              <Link
                 key={item.route}
-                type="button"
-                onClick={() => navigateTo(item.route)}
+                to={pathFor(item.route)}
                 aria-current={isActive ? 'page' : undefined}
                 className={`inline-flex items-center gap-1.5 min-h-11 px-2.5 rounded-xl text-[15px] font-extrabold cursor-pointer whitespace-nowrap ${
                   isActive ? 'bg-accent' : 'hover:bg-paper-dot/50'
@@ -55,7 +55,7 @@ export const DesktopHeader: React.FC = () => {
               >
                 {item.route === 'search' && <Search aria-hidden="true" className="w-4 h-4 shrink-0" />}
                 {item.label}
-              </button>
+              </Link>
             );
           })}
         </nav>
@@ -78,26 +78,24 @@ export const DesktopHeader: React.FC = () => {
           }
         />
 
-        <IconButton
-          onClick={() => navigateTo('cart')}
+        <Link
+          to={pathFor('cart')}
           aria-label={`${t.collage.common.cartItems} ${cartTotalCount}`}
           title={t.collage.tabs.cart}
-          icon={
-            <>
-              <ShoppingBag aria-hidden="true" className="w-5 h-5" />
-              <CartCountBadge count={cartTotalCount} className="absolute -top-2 -end-2" />
-            </>
-          }
-        />
+          className="chip-tilt relative grid place-items-center w-11 h-11 shrink-0 bg-card text-ink border-2 border-ink rounded-xl cursor-pointer"
+        >
+          <ShoppingBag aria-hidden="true" className="w-5 h-5" />
+          <CartCountBadge count={cartTotalCount} className="absolute -top-2 -end-2" />
+        </Link>
 
         <ProfileMenu />
 
         {/* The picker itself and the narrowest desktop widths do without it; "Shops" goes to the same place. */}
         {currentRoute !== 'catalog' && (
           <div className="hidden min-[1200px]:block shrink-0">
-            <Button size="lg" onClick={() => navigateTo('catalog')} className="whitespace-nowrap">
+            <LinkButton to={pathFor('catalog')} size="lg" className="whitespace-nowrap">
               {t.collage.landing.cta}
-            </Button>
+            </LinkButton>
           </div>
         )}
       </div>

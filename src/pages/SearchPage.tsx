@@ -1,10 +1,12 @@
 import React, { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Leaf, Search } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/mockData';
 import { GROUP_TINT_CLASS, groupOfCategoryName } from '../data/collageCatalog';
 import { CollageGroupId } from '../i18n/collage';
+import { pathFor } from '../router/paths';
 import { SearchBar } from '../components/ui/SearchBar';
 import { StoreCard } from '../components/ui/StoreCard';
 import { ProductCard } from '../components/ui/ProductCard';
@@ -13,7 +15,11 @@ import { CategoryChip } from '../components/collage/CategoryChip';
 import { PageHeading, PageShell, SectionHeading } from '../components/collage/Page';
 
 export const SearchPage: React.FC = () => {
-  const { searchQuery, setSearchQuery, navigateTo, addToCart, updateCartQuantity, cart } = useApp();
+  const { navigateTo, addToCart, updateCartQuantity, cart } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') ?? '';
+  const setSearchQuery = (next: string) =>
+    setSearchParams(next ? { q: next } : {}, { replace: true, preventScrollReset: true });
   const { language, t } = useLanguage();
   const copy = t.screens.search;
 
@@ -151,7 +157,7 @@ export const SearchPage: React.FC = () => {
                 <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] pt-2 desk:gap-x-[34px] desk:gap-y-[46px] desk:grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))]">
                   {matchedStores.map((store, index) => (
                     <li key={store.id} className="anim-drop" style={{ animationDelay: `${(index * 0.08).toFixed(2)}s` }}>
-                      <StoreCard store={store} onClick={() => navigateTo('store', { storeId: store.id })} />
+                      <StoreCard store={store} to={pathFor('store', { storeId: store.id })} />
                     </li>
                   ))}
                 </ul>

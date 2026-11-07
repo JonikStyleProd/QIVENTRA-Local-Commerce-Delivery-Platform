@@ -255,8 +255,23 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
   it('renders App component without throwing', async () => {
     const React = await import('react');
     const { renderToString } = await import('react-dom/server');
-    const { default: App } = await import('../App');
-    const html = renderToString(React.createElement(App));
+    const { createMemoryRouter, RouterProvider } = await import('react-router');
+    const { appRoutes } = await import('../router/routes');
+    const { ThemeProvider } = await import('../context/ThemeContext');
+    const { LanguageProvider } = await import('../context/LanguageContext');
+    const { ToastProvider } = await import('../context/ToastContext');
+    const router = createMemoryRouter(appRoutes, { initialEntries: ['/'] });
+    const html = renderToString(
+      React.createElement(
+        ThemeProvider,
+        null,
+        React.createElement(
+          LanguageProvider,
+          null,
+          React.createElement(ToastProvider, null, React.createElement(RouterProvider, { router }))
+        )
+      )
+    );
     expect(html).toBeTruthy();
   });
 
@@ -267,6 +282,7 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
     const { LanguageProvider } = await import('../context/LanguageContext');
     const { ToastProvider } = await import('../context/ToastContext');
     const { AppProvider } = await import('../context/AppContext');
+    const { MemoryRouter, Routes, Route } = await import('react-router');
 
     const { HomePage } = await import('../pages/HomePage');
     const { CatalogPage } = await import('../pages/CatalogPage');
@@ -304,7 +320,18 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
           React.createElement(
             ToastProvider,
             null,
-            React.createElement(AppProvider, null, React.createElement(Page))
+            React.createElement(
+              MemoryRouter,
+              { initialEntries: ['/shops/store-1'] },
+              React.createElement(
+                Routes,
+                null,
+                React.createElement(Route, {
+                  path: '/shops/:storeId',
+                  element: React.createElement(AppProvider, null, React.createElement(Page)),
+                })
+              )
+            )
           )
         )
       );
@@ -515,9 +542,14 @@ describe('QIVENTRA honest footer', () => {
     const { ToastProvider } = await import('../context/ToastContext');
     const { AppProvider } = await import('../context/AppContext');
     const { Footer } = await import('../components/layout/Footer');
+    const { MemoryRouter } = await import('react-router');
     const h = React.createElement;
     return renderToString(
-      h(ThemeProvider, null, h(LanguageProvider, null, h(ToastProvider, null, h(AppProvider, null, h(Footer)))))
+      h(
+        ThemeProvider,
+        null,
+        h(LanguageProvider, null, h(ToastProvider, null, h(MemoryRouter, null, h(AppProvider, null, h(Footer)))))
+      )
     );
   };
 

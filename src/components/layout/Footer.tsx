@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { ArrowUpRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { AppRoute } from '../../types';
+import { pathFor } from '../../router/paths';
 import { MadeBy } from '../collage/MadeBy';
 import { Tape } from '../collage/Tape';
 
@@ -17,7 +19,7 @@ const bottomSpace = (route: AppRoute): string => {
 };
 
 export const Footer: React.FC = () => {
-  const { navigateTo, currentRoute } = useApp();
+  const { currentRoute } = useApp();
   const { t } = useLanguage();
 
   const customerLinks: { label: string; route: AppRoute }[] = [
@@ -47,9 +49,9 @@ export const Footer: React.FC = () => {
             <ul>
               {customerLinks.map((link) => (
                 <li key={link.route}>
-                  <button type="button" onClick={() => navigateTo(link.route)} className={FOOTER_LINK}>
+                  <Link to={pathFor(link.route)} className={FOOTER_LINK}>
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -60,10 +62,10 @@ export const Footer: React.FC = () => {
             <ul>
               {businessLinks.map((link) => (
                 <li key={link.route}>
-                  <button type="button" onClick={() => navigateTo(link.route)} className={FOOTER_LINK}>
+                  <Link to={pathFor(link.route)} className={FOOTER_LINK}>
                     {link.label}
                     <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0 rtl-flip" />
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>

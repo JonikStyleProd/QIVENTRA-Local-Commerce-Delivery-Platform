@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
-import { Button } from '../components/ui/Button';
+import { LinkButton } from '../components/ui/LinkButton';
+import { pathFor } from '../router/paths';
 import { StoreCard } from '../components/ui/StoreCard';
 import { Tape } from '../components/collage/Tape';
 import { HandArrow, HandUnderline } from '../components/collage/HandMarks';
@@ -110,17 +112,15 @@ export const HomePage: React.FC = () => {
               {phone.near}{' '}
               <span className="hand font-bold text-link-text">{phone.count.replace('{n}', storeCount)}</span>
             </h2>
-            <button
-              type="button"
-              onClick={() => navigateTo('catalog')}
-              className="min-w-11 min-h-11 text-sm font-extrabold underline cursor-pointer"
+            <Link
+              to={pathFor('catalog')}
+              className="inline-grid place-items-center min-w-11 min-h-11 text-sm font-extrabold underline cursor-pointer"
             >
               {phone.all}
-            </button>
+            </Link>
           </div>
-          <button
-            type="button"
-            onClick={() => navigateTo('catalog')}
+          <Link
+            to={pathFor('catalog')}
             className="on-blue block w-full p-4 bg-link text-white text-start border-[3px] border-ink rounded-[22px] shadow-hard-5 overflow-hidden cursor-pointer chip-tilt"
           >
             <span className="flex gap-2 mb-3">
@@ -137,7 +137,7 @@ export const HomePage: React.FC = () => {
             </span>
             <span className="block text-[22px] font-black leading-tight">{phone.kinds}</span>
             <span className="hand block mt-1 text-2xl text-accent">{phone.pick}</span>
-          </button>
+          </Link>
         </section>
 
         <section className="px-4">
@@ -148,9 +148,8 @@ export const HomePage: React.FC = () => {
         </section>
 
         <section className="px-4 pt-7">
-          <button
-            type="button"
-            onClick={() => navigateTo('catalog')}
+          <Link
+            to={pathFor('catalog')}
             className="card-tilt relative block w-full p-2 pb-2.5 bg-card text-start shadow-polaroid cursor-pointer"
             style={{ '--tilt': '1.5deg' } as React.CSSProperties}
           >
@@ -162,7 +161,7 @@ export const HomePage: React.FC = () => {
               className="block w-full aspect-[16/9] object-cover"
             />
             <span className="hand block mt-2 text-[26px] leading-none">{landing.wait}</span>
-          </button>
+          </Link>
         </section>
       </div>
 
@@ -189,9 +188,9 @@ export const HomePage: React.FC = () => {
               {landing.lead}
             </p>
             <div className="anim-in flex flex-wrap items-center gap-3.5" style={{ animationDelay: '0.35s' }}>
-              <Button variant="secondary" size="lg" onClick={() => navigateTo('catalog')} className="shadow-hard-4 min-h-[60px]">
+              <LinkButton to={pathFor('catalog')} variant="secondary" size="lg" className="shadow-hard-4 min-h-[60px]">
                 {landing.start}
-              </Button>
+              </LinkButton>
               <span className="hand text-[28px] text-action -rotate-[4deg]">{landing.quick}</span>
             </div>
           </div>
@@ -306,9 +305,9 @@ export const HomePage: React.FC = () => {
                 className="block w-full aspect-[16/10] object-cover"
               />
             </div>
-            <Button size="lg" onClick={() => navigateTo('catalog')} className="shadow-hard-4 text-xl min-h-[64px]">
+            <LinkButton to={pathFor('catalog')} size="lg" className="shadow-hard-4 text-xl min-h-[64px]">
               {landing.toShops}
-            </Button>
+            </LinkButton>
           </div>
         </section>
       </div>

@@ -5,7 +5,9 @@ import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePromotions } from '../../context/PromotionsContext';
 import { tiltFor } from '../../data/collageCatalog';
+import { pathFor } from '../../router/paths';
 import { Button } from '../ui/Button';
+import { LinkButton } from '../ui/LinkButton';
 import { Modal } from '../ui/Modal';
 import { PolaroidPhoto } from './PolaroidPhoto';
 import { FactLabels, PromoLabels } from './ProductLabelChips';
@@ -24,7 +26,7 @@ interface ProductSheetProps {
  * so quantity is the only choice here.
  */
 export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onClose }) => {
-  const { cart, addToCart, updateCartQuantity, navigateTo, currentRoute, selectedStoreId } = useApp();
+  const { cart, addToCart, updateCartQuantity, currentRoute, selectedStoreId } = useApp();
   const { language, t } = useLanguage();
   const { labelsFor } = usePromotions();
   const copy = t.screens.product;
@@ -92,15 +94,9 @@ export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onC
               </Button>
             )}
             {!isOnOwnStorePage && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onClose();
-                  navigateTo('store', { storeId: product.storeId });
-                }}
-              >
+              <LinkButton to={pathFor('store', { storeId: product.storeId })} variant="outline" onClick={onClose}>
                 {copy.openStore}
-              </Button>
+              </LinkButton>
             )}
           </div>
         </div>

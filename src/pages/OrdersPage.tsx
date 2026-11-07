@@ -1,4 +1,5 @@
 import React from 'react';
+import { useParams } from 'react-router';
 import { Bike, MapPin, MessageSquare, Phone, RefreshCw, Store, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -6,6 +7,8 @@ import { useToast } from '../context/ToastContext';
 import { MOCK_PAST_ORDERS, MOCK_PRODUCTS } from '../data/mockData';
 import { resolveRepeatOrder } from '../data/cartRules';
 import { Order } from '../types';
+import { NotFoundView } from './NotFoundPage';
+import { pathFor } from '../router/paths';
 import { formatWindow } from '../data/deliverySlots';
 import { Button } from '../components/ui/Button';
 import { NotebookPage, NotebookStep, NotebookSteps } from '../components/collage/NotebookPage';
@@ -30,6 +33,7 @@ export const OrdersPage: React.FC = () => {
   const { language, t, formatCurrency, formatMinutes } = useLanguage();
   const { showToast } = useToast();
   const copy = t.screens.orders;
+  const { orderId } = useParams();
 
   const handleCallCourier = () => {
     showToast({
@@ -56,6 +60,17 @@ export const OrdersPage: React.FC = () => {
     );
     navigateTo('cart');
   };
+
+  if (orderId && activeOrder.id !== orderId) {
+    return (
+      <NotFoundView
+        title={t.demo.notFound.orderTitle}
+        description={t.demo.notFound.orderDesc}
+        actionText={t.demo.notFound.toOrders}
+        actionTo={pathFor('orders')}
+      />
+    );
+  }
 
   const isDelivered = activeOrder.status === 'delivered';
   const isOnTheWay = activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way';
@@ -265,7 +280,7 @@ export const OrdersPage: React.FC = () => {
                   </h3>
                 </div>
                 <span className="text-lg font-black whitespace-nowrap">{formatCurrency(order.totalAmount)}</span>
-                <Button variant="outline" size="sm" onClick={() => navigateTo('orders', { orderId: order.id })}>
+                <Button variant="outline" size="sm" onClick={() => navigateTo('order', { orderId: order.id })}>
                   {t.collage.orders.open}
                 </Button>
               </Panel>

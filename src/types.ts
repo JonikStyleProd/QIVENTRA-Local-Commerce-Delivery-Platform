@@ -6,14 +6,19 @@ export type AppRoute =
   | 'catalog'
   | 'search'
   | 'orders'
+  | 'order'
   | 'cart'
   | 'delivery'
   | 'profile'
-  | 'auth'
   | 'store'
+  | 'product'
   | 'vendor'
   | 'courier'
-  | 'admin';
+  | 'admin'
+  | 'privacy'
+  | 'terms'
+  | 'accessibility'
+  | 'notFound';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText } from '../types';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_USER } from '../data/mockData';
 import { DeliveryWindow } from '../data/deliverySlots';
@@ -6,13 +7,7 @@ import { collageTranslations } from '../i18n/collage';
 import { OrderCalculation, OrderStoreLine, calculateOrder } from '../data/cartRules';
 import { useLanguage } from './LanguageContext';
 import { PromotionsProvider, usePromotions } from './PromotionsContext';
-
-interface NavigationOptions {
-  storeId?: string;
-  categorySlug?: string;
-  searchQuery?: string;
-  orderId?: string;
-}
+import { NavigationOptions, pathFor, routeOfPath } from '../router/paths';
 
 interface AppContextType {
   currentRoute: AppRoute;
@@ -24,10 +19,6 @@ interface AppContextType {
   pickStore: (id: string) => void;
   /** Shops in the current order, with each one's fee and distance from its minimum. */
   orderStores: OrderStoreLine[];
-  selectedCategorySlug: string | null;
-  setSelectedCategorySlug: (slug: string | null) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
   currentAddress: string;
   setCurrentAddress: (address: string) => void;
   
@@ -89,15 +80,19 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 function AppStateProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
   const { promotions, now } = usePromotions();
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>('home');
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { route: currentRoute, params: routeParams } = routeOfPath(pathname);
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>('store-3');
   const [pickedStoreId, setPickedStoreId] = useState<string | null>(null);
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+
+  // A shop opened by its address becomes the selected one, as if it was picked in the list.
+  useEffect(() => {
+    if (routeParams.storeId) setSelectedStoreId(routeParams.storeId);
+  }, [routeParams.storeId]);
 
   const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USER);
   const [demoOrder, setDemoOrder] = useState<Order>(MOCK_ACTIVE_ORDER);
-  const [focusedOrderId, setFocusedOrderId] = useState<string | null>(null);
   const [placedOrders, setPlacedOrders] = useState<Order[]>(() => {
     try {
       const saved = typeof window !== 'undefined' ? window.localStorage.getItem('qiventra_orders') : null;
@@ -111,7 +106,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   });
 
   const trackedOrders = useMemo(() => [...placedOrders, demoOrder], [placedOrders, demoOrder]);
-  const activeOrder = trackedOrders.find((order) => order.id === focusedOrderId) ?? trackedOrders[0];
+  const activeOrder = trackedOrders.find((order) => order.id === routeParams.orderId) ?? trackedOrders[0];
 
   // Address localization and selection state
   const [selectedAddressId, setSelectedAddressId] = useState<string>('addr-1');
@@ -269,19 +264,13 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     setPickedStoreId(id);
   }, []);
 
-  const navigateTo = (route: AppRoute, options?: NavigationOptions) => {
-    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    if (options?.storeId) setSelectedStoreId(options.storeId);
-    if (options?.categorySlug !== undefined) setSelectedCategorySlug(options.categorySlug);
-    if (options?.searchQuery !== undefined) setSearchQuery(options.searchQuery);
-    if (options?.orderId) setFocusedOrderId(options.orderId);
-
-    setCurrentRoute(route);
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-  };
+  const navigateTo = useCallback(
+    (route: AppRoute, options: NavigationOptions = {}) => {
+      if (options.storeId) setSelectedStoreId(options.storeId);
+      navigate(pathFor(route, options));
+    },
+    [navigate]
+  );
 
   const addToCart = (product: Product, quantity = 1) => {
     setCart((prev) => {
@@ -395,7 +384,6 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     };
 
     setPlacedOrders((prev) => [placed, ...prev]);
-    setFocusedOrderId(placed.id);
     setPickedStoreId(null);
     clearCart();
     return placed;
@@ -411,10 +399,6 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         selectedStore,
         pickStore,
         orderStores,
-        selectedCategorySlug,
-        setSelectedCategorySlug,
-        searchQuery,
-        setSearchQuery,
         currentAddress,
         setCurrentAddress,
         cart,

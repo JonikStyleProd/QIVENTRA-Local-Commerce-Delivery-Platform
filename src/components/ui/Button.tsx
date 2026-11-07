@@ -11,6 +11,32 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
+export type ButtonVariant = NonNullable<ButtonProps['variant']>;
+export type ButtonSize = NonNullable<ButtonProps['size']>;
+
+const BASE_STYLES =
+  'btn-tilt relative inline-flex items-center justify-center text-center select-none rounded-[14px] border-2 border-ink cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+
+// Every size keeps the 44px minimum. "lg" is the 19px bold that white on #E8473B needs for contrast.
+const SIZE_STYLES: Record<ButtonSize, string> = {
+  sm: 'text-sm font-extrabold min-h-11 px-4 gap-1.5',
+  md: 'text-base font-extrabold min-h-11 px-5 gap-2',
+  lg: 'text-[19px] font-black min-h-[52px] px-6 py-2 gap-2.5',
+};
+
+/** The look of a button, shared with links that look like one. */
+export const buttonClasses = (variant: ButtonVariant, size: ButtonSize, fullWidth = false): string => {
+  const variants: Record<ButtonVariant, string> = {
+    primary: `${size === 'lg' ? 'bg-action' : 'bg-action-strong'} text-white shadow-hard-3`,
+    accent: 'bg-accent text-ink shadow-hard-3',
+    secondary: 'bg-link text-white shadow-hard-3',
+    outline: 'bg-card text-ink',
+    ghost: 'bg-transparent text-ink border-transparent hover:bg-paper-dot/40',
+    danger: 'bg-[#C53030] text-white shadow-hard-3',
+  };
+  return `${BASE_STYLES} ${SIZE_STYLES[size]} ${variants[variant]} ${fullWidth ? 'w-full' : ''}`;
+};
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -30,25 +56,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles =
-      'btn-tilt relative inline-flex items-center justify-center text-center select-none rounded-[14px] border-2 border-ink cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
-
-    // Every size keeps the 44px minimum. "lg" is the 19px bold that white on #E8473B needs for contrast.
-    const sizeStyles = {
-      sm: 'text-sm font-extrabold min-h-11 px-4 gap-1.5',
-      md: 'text-base font-extrabold min-h-11 px-5 gap-2',
-      lg: 'text-[19px] font-black min-h-[52px] px-6 py-2 gap-2.5',
-    };
-
-    const variantStyles = {
-      primary: `${size === 'lg' ? 'bg-action' : 'bg-action-strong'} text-white shadow-hard-3`,
-      accent: 'bg-accent text-ink shadow-hard-3',
-      secondary: 'bg-link text-white shadow-hard-3',
-      outline: 'bg-card text-ink',
-      ghost: 'bg-transparent text-ink border-transparent hover:bg-paper-dot/40',
-      danger: 'bg-[#C53030] text-white shadow-hard-3',
-    };
-
     const errorStyles = isError ? 'border-danger bg-tint-food text-danger' : '';
 
     return (
@@ -58,8 +65,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled}
         aria-busy={isLoading || undefined}
         onClick={isLoading ? undefined : onClick}
-        className={`${baseStyles} ${sizeStyles[size]} ${errorStyles || variantStyles[variant]} ${
-          fullWidth ? 'w-full' : ''
+        className={`${
+          errorStyles
+            ? `${BASE_STYLES} ${SIZE_STYLES[size]} ${errorStyles} ${fullWidth ? 'w-full' : ''}`
+            : buttonClasses(variant, size, fullWidth)
         } ${className}`}
         {...props}
       >

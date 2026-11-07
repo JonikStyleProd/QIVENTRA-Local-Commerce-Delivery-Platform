@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { Bike, MessageSquare, ShieldCheck, Store as StoreIcon, User } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { AppRoute } from '../../types';
+import { pathFor } from '../../router/paths';
 import { IconButton } from '../ui/IconButton';
 
 const ITEM =
@@ -10,7 +12,7 @@ const ITEM =
 
 /** Profile button with the secondary destinations: profile page, chat and the workspaces. */
 export const ProfileMenu: React.FC = () => {
-  const { navigateTo, openChatWithParticipant } = useApp();
+  const { openChatWithParticipant } = useApp();
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -57,11 +59,6 @@ export const ProfileMenu: React.FC = () => {
     }
   };
 
-  const goTo = (route: AppRoute) => {
-    close(false);
-    navigateTo(route);
-  };
-
   const portals: { label: string; route: AppRoute; icon: React.ReactNode }[] = [
     { label: t.nav.vendorPortal, route: 'vendor', icon: <StoreIcon aria-hidden="true" className="w-4 h-4 shrink-0" /> },
     { label: t.nav.courierHub, route: 'courier', icon: <Bike aria-hidden="true" className="w-4 h-4 shrink-0" /> },
@@ -94,10 +91,10 @@ export const ProfileMenu: React.FC = () => {
           onKeyDown={handleMenuKeyDown}
           className="anim-drop absolute end-0 z-30 w-72 mt-2 py-2 bg-card text-ink border-[3px] border-ink rounded-2xl shadow-hard-4 overflow-hidden"
         >
-          <button type="button" role="menuitem" tabIndex={-1} onClick={() => goTo('profile')} className={ITEM}>
+          <Link to={pathFor('profile')} role="menuitem" tabIndex={-1} onClick={() => close(false)} className={ITEM}>
             <User aria-hidden="true" className="w-4 h-4 shrink-0" />
             {t.nav.profile}
-          </button>
+          </Link>
           <button
             type="button"
             role="menuitem"
@@ -114,17 +111,17 @@ export const ProfileMenu: React.FC = () => {
 
           <p className="hand mt-1 px-3 text-2xl leading-tight text-link-text">{t.screens.menu.portals}</p>
           {portals.map((portal) => (
-            <button
+            <Link
               key={portal.route}
-              type="button"
+              to={pathFor(portal.route)}
               role="menuitem"
               tabIndex={-1}
-              onClick={() => goTo(portal.route)}
+              onClick={() => close(false)}
               className={ITEM}
             >
               {portal.icon}
               {portal.label}
-            </button>
+            </Link>
           ))}
         </div>
       )}

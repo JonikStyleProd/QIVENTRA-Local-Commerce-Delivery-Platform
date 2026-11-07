@@ -1,10 +1,11 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES } from '../data/mockData';
 import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfDay } from '../data/deliverySlots';
+import { pathFor } from '../router/paths';
 import { Button } from '../components/ui/Button';
-import { EmptyState } from '../components/ui/EmptyState';
 import { HandCheck } from '../components/collage/HandMarks';
 import { DiscountChoiceNote, PromotionHints, PromotionRows } from '../components/collage/OrderPromotions';
 import { SummaryRow } from '../components/collage/SummaryRow';
@@ -42,8 +43,11 @@ export const DeliveryPage: React.FC = () => {
   const [activeDay, setActiveDay] = useState(0);
   const [now, setNow] = useState(() => new Date());
   const [note, setNote] = useState('');
-  const [phase, setPhase] = useState<Phase>('form');
-  const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  // Kept in the history entry, so a reload still shows what was just sent.
+  const placedOrderId = (location.state as { placedOrderId?: string } | null)?.placedOrderId ?? null;
+  const [phase, setPhase] = useState<Phase>(placedOrderId ? 'done' : 'form');
   const timer = useRef<number | undefined>(undefined);
   const noteId = useId();
 
@@ -142,7 +146,7 @@ export const DeliveryPage: React.FC = () => {
       if (placedOrder) {
         updateOrder(placedOrder.id, { deliveryWindow: chosenWindow, note: note.trim() || undefined });
       } else {
-        setPlacedOrderId(placeOrder({ deliveryWindow: chosenWindow, note }).id);
+        navigate(pathFor('delivery'), { replace: true, state: { placedOrderId: placeOrder({ deliveryWindow: chosenWindow, note }).id } });
       }
       setPhase('done');
     }, SENDING_TIME_MS);
@@ -160,22 +164,7 @@ export const DeliveryPage: React.FC = () => {
   );
 
   if (cart.length === 0 && !placedOrder) {
-    return (
-      <div className="paper-dots min-h-screen pb-16">
-        <StepHeader step={copy.step} title={copy.title} backLabel={copy.backMobile} onBack={backToStores} />
-        <div className="hidden desk:block max-w-[1200px] mx-auto px-10 pt-8 pb-6">
-          <h1 className="text-[46px] font-black tracking-[-0.02em]">{copy.title}</h1>
-        </div>
-        <div className="px-4 pt-6">
-          <EmptyState
-            title={t.cart.emptyTitle}
-            description={t.cart.emptyDesc}
-            actionText={t.collage.landing.toShops}
-            onAction={backToStores}
-          />
-        </div>
-      </div>
-    );
+    return <Navigate to={pathFor('cart')} replace state={{ notice: 'emptyForDelivery' }} />;
   }
 
   const windowLine = `${copy.windowWord}: ${formatWindow(chosenWindow, t.collage.slots, language, now)}`;
@@ -300,7 +289,7 @@ export const DeliveryPage: React.FC = () => {
 
   const doneActions = (
     <>
-      <Button variant="secondary" size="lg" onClick={() => navigateTo('orders', { orderId: placedOrderId ?? undefined })}>
+      <Button variant="secondary" size="lg" onClick={() => navigateTo('order', { orderId: placedOrderId ?? undefined })}>
         {copy.toOrder}
       </Button>
       <Button variant="outline" size="lg" onClick={() => navigateTo('home')}>

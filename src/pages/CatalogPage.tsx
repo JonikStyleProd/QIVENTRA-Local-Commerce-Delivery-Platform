@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { Leaf, Zap, Search, Store as StoreIcon } from 'lucide-react';
 import { usePromotions } from '../context/PromotionsContext';
 import { ProductLabel, filterProductsByLabels } from '../data/promotions';
@@ -14,14 +15,13 @@ import { Button } from '../components/ui/Button';
 import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { StepHeader } from '../components/collage/StepHeader';
+import { pathFor } from '../router/paths';
 
 type SortKey = 'deliveryTime' | 'minOrder';
 
 /** Step 1 of the path: shop picker (N9-Stores / M9-Stores) with the existing filters and products tab. */
 export const CatalogPage: React.FC = () => {
   const {
-    selectedCategorySlug,
-    setSelectedCategorySlug,
     selectedStoreId,
     pickStore,
     navigateTo,
@@ -34,7 +34,23 @@ export const CatalogPage: React.FC = () => {
   const { labelsFor } = usePromotions();
   const copy = t.collage.stores;
 
-  const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategorySlug = searchParams.get('category');
+  const activeTab: 'stores' | 'products' = searchParams.get('tab') === 'products' ? 'products' : 'stores';
+
+  // Category and tab live in the address, so a shared link and "Back" return to the same view.
+  const updateParam = (key: string, value: string | null) =>
+    setSearchParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true, preventScrollReset: true }
+    );
+  const setSelectedCategorySlug = (slug: string | null) => updateParam('category', slug);
+  const setActiveTab = (tab: 'stores' | 'products') => updateParam('tab', tab === 'products' ? tab : null);
   const [filterEcoOnly, setFilterEcoOnly] = useState(false);
   const [filterFreeDeliveryOnly, setFilterFreeDeliveryOnly] = useState(false);
   const [filterKosher, setFilterKosher] = useState(false);
@@ -185,14 +201,13 @@ export const CatalogPage: React.FC = () => {
               <option value="minOrder">{t.catalog.sortMinOrder}</option>
             </select>
           </label>
-          <button
-            type="button"
-            onClick={() => navigateTo('search')}
+          <Link
+            to={pathFor('search')}
             className="desk:hidden inline-flex items-center gap-1.5 shrink-0 min-h-11 px-2 text-sm font-extrabold underline cursor-pointer"
           >
             <Search aria-hidden="true" className="w-4 h-4" />
             {t.nav.search}
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -244,20 +259,20 @@ export const CatalogPage: React.FC = () => {
             </>
           }
         >
-          <button
-            type="button"
-            onClick={() => navigateTo('store', { storeId: pickedStore.id })}
+          <Link
+            to={pathFor('store', { storeId: pickedStore.id })}
             aria-label={`${copy.openStore}: ${pickedName}`}
             className="chip-tilt inline-flex items-center justify-center gap-1.5 min-w-11 min-h-[52px] px-2.5 desk:px-4 bg-card border-2 border-ink rounded-[14px] font-extrabold cursor-pointer"
           >
             <StoreIcon aria-hidden="true" className="w-5 h-5 shrink-0" />
             <span className="hidden desk:inline whitespace-nowrap">{copy.openStore}</span>
-          </button>
+          </Link>
           <Button
             size="lg"
             onClick={() => {
               pickStore(pickedStore.id);
-              navigateTo('delivery');
+              // With an empty basket there is nothing to deliver yet, so the next step is the shop's goods.
+              navigateTo(cart.length > 0 ? 'delivery' : 'store', { storeId: pickedStore.id });
             }}
             className="whitespace-nowrap px-3.5 desk:px-6"
           >
