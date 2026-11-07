@@ -6,6 +6,7 @@ import { usePromotions } from '../../context/PromotionsContext';
 import { tiltFor } from '../../data/collageCatalog';
 import { Tape } from '../collage/Tape';
 import { PolaroidPhoto } from '../collage/PolaroidPhoto';
+import { FactLabels, PromoLabels } from '../collage/ProductLabelChips';
 import { ProductPrice } from '../collage/ProductPrice';
 import { ProductSheet } from '../collage/ProductSheet';
 import { QuantityStepper } from '../collage/QuantityStepper';
@@ -50,15 +51,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         className="relative block w-full cursor-pointer"
       >
         <PolaroidPhoto src={product.imageUrl} alt="" noteClassName="text-[22px]" />
-        {labels.length > 0 && (
-          <span className="absolute top-1.5 inset-x-1.5 flex flex-wrap gap-1">
-            {labels.map((label) => (
-              <span key={label} className="px-2 py-0.5 bg-accent border-2 border-ink rounded-lg text-xs font-black">
-                {t.promotions.labels[label]}
-              </span>
-            ))}
-          </span>
-        )}
+        <PromoLabels labels={labels} className="absolute top-1.5 inset-x-1.5" />
       </button>
 
       <div className="flex-1 min-w-0 pt-2 px-1">
@@ -68,6 +61,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <h3 className="mt-0.5 text-sm desk:text-base font-black leading-snug line-clamp-2">{displayName}</h3>
         <p className="mt-1 text-xs font-semibold text-ink-3 line-clamp-2">{displayDesc}</p>
         <p className="mt-1 text-xs font-bold text-ink-2">{displayUnit}</p>
+        <FactLabels labels={labels} className="mt-1.5" />
       </div>
 
       <div className="relative flex flex-wrap items-center justify-between gap-1.5 mt-2 px-1">

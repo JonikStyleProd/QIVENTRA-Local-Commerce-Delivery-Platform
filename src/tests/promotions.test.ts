@@ -3,10 +3,13 @@ import { calculateOrder, summarizeOrderStores } from '../data/cartRules';
 import { MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 import {
   DEMO_PRODUCT_LABELS,
+  FACT_LABELS,
   PRODUCT_LABELS,
   Promotion,
   bestPromotion,
   buildDemoPromotions,
+  filterProductsByLabels,
+  isFactLabel,
   isLive,
   israelClock,
   localizedText,
@@ -425,7 +428,7 @@ describe('demo data', () => {
   });
 
   it('offers only the agreed labels, and none that claim popularity', () => {
-    expect([...PRODUCT_LABELS]).toEqual(['new', 'hot', 'storePick', 'eco', 'seasonal', 'limited']);
+    expect([...PRODUCT_LABELS]).toEqual(['new', 'hot', 'storePick', 'eco', 'seasonal', 'limited', 'kosher', 'vegan']);
     expect(translations.ru.promotions.labels.storePick).toBe('Выбор лавки');
     expect(translations.ru.promotions.labels.hot).toBe('С пылу с жару');
     const labels = JSON.stringify([
@@ -435,5 +438,63 @@ describe('demo data', () => {
     ]);
     ['Хит', 'популярн', 'покупателей', 'Best', 'Popular'].forEach((text) => expect(labels).not.toContain(text));
     Object.values(DEMO_PRODUCT_LABELS).flat().forEach((label) => expect(PRODUCT_LABELS).toContain(label));
+  });
+});
+
+describe('kosher and vegan labels', () => {
+  it('has them in all three languages', () => {
+    expect(translations.ru.promotions.labels.kosher).toBe('Кошер');
+    expect(translations.ru.promotions.labels.vegan).toBe('Веган');
+    expect(translations.en.promotions.labels.kosher).toBe('Kosher');
+    expect(translations.en.promotions.labels.vegan).toBe('Vegan');
+    expect(translations.he.promotions.labels.kosher).toBe('כשר');
+    expect(translations.he.promotions.labels.vegan).toBe('טבעוני');
+  });
+
+  it('gives them only to the one product that had the combined label', () => {
+    const withLabel = Object.entries(DEMO_PRODUCT_LABELS)
+      .filter(([, labels]) => labels.includes('kosher') || labels.includes('vegan'))
+      .map(([id]) => id);
+    expect(withLabel).toEqual(['prod-12']);
+    expect(DEMO_PRODUCT_LABELS['prod-12']).toEqual(['kosher', 'vegan']);
+  });
+
+  it('treats kosher, vegan and eco as facts, and the rest as promotion', () => {
+    expect([...FACT_LABELS].sort()).toEqual(['eco', 'kosher', 'vegan']);
+    expect(isFactLabel('kosher')).toBe(true);
+    expect(isFactLabel('storePick')).toBe(false);
+    expect(isFactLabel('new')).toBe(false);
+  });
+
+  it('reminds the seller in every language, and says nothing about certification to buyers', () => {
+    (['ru', 'en', 'he'] as const).forEach((language) => {
+      const copy = translations[language].promotions;
+      expect(copy.seller.factLabelsHint).toBeTruthy();
+      expect(`${copy.labels.kosher} ${copy.labels.vegan}`).not.toMatch(/сертифик|надзор|certif|supervis|השגחה|תעודה/i);
+    });
+  });
+});
+
+describe('filtering products by labels', () => {
+  const labels = (id: string) => DEMO_PRODUCT_LABELS[id] ?? [];
+
+  it('keeps everything when no filter is on', () => {
+    expect(filterProductsByLabels(MOCK_PRODUCTS, [], labels)).toHaveLength(MOCK_PRODUCTS.length);
+  });
+
+  it('finds the labelled product', () => {
+    expect(filterProductsByLabels(MOCK_PRODUCTS, ['kosher'], labels).map((p) => p.id)).toEqual(['prod-12']);
+    expect(filterProductsByLabels(MOCK_PRODUCTS, ['vegan'], labels).map((p) => p.id)).toEqual(['prod-12']);
+    expect(filterProductsByLabels(MOCK_PRODUCTS, ['eco'], labels).map((p) => p.id)).toEqual(['prod-3', 'prod-9']);
+  });
+
+  it('needs all the selected labels at once', () => {
+    expect(filterProductsByLabels(MOCK_PRODUCTS, ['kosher', 'vegan'], labels).map((p) => p.id)).toEqual(['prod-12']);
+    expect(filterProductsByLabels(MOCK_PRODUCTS, ['kosher', 'eco'], labels)).toHaveLength(0);
+  });
+
+  it('follows what the seller has set', () => {
+    const edited = (id: string) => (id === 'prod-4' ? (['kosher'] as const).slice() : labels(id));
+    expect(filterProductsByLabels(MOCK_PRODUCTS, ['kosher'], edited).map((p) => p.id)).toEqual(['prod-4', 'prod-12']);
   });
 });

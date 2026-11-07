@@ -41,6 +41,12 @@ export interface PromotionStrings {
     note: string;
     title: string;
   };
+  filters: {
+    label: string;
+    emptyTitle: string;
+    emptyDesc: string;
+    reset: string;
+  };
   order: {
     promotion: string;
     gift: string;
@@ -68,6 +74,7 @@ export interface PromotionStrings {
     labelsNote: string;
     labelsTitle: string;
     labelsHint: string;
+    factLabelsHint: string;
     create: string;
     edit: string;
     pause: string;
@@ -122,6 +129,8 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       eco: 'Эко',
       seasonal: 'Сезонное',
       limited: 'Ограниченное количество',
+      kosher: 'Кошер',
+      vegan: 'Веган',
     },
     types: {
       percent: 'Скидка, %',
@@ -164,6 +173,12 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       notNow: 'сейчас не действует',
     },
     shop: { note: 'выгодно', title: 'Акции лавки' },
+    filters: {
+      label: 'Фильтр по меткам',
+      emptyTitle: 'ничего нет',
+      emptyDesc: 'Нет товаров со всеми выбранными метками.',
+      reset: 'Сбросить фильтр',
+    },
     order: {
       promotion: 'Акция',
       gift: 'Подарок',
@@ -184,7 +199,8 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       listTitle: 'Акции лавки',
       labelsNote: 'на карточках',
       labelsTitle: 'Метки товаров',
-      labelsHint: 'Метки отражают мнение продавца, это не статистика продаж.',
+      labelsHint: 'Метки ставит продавец, это не статистика продаж.',
+      factLabelsHint: 'Кошер и Веган: ставьте, только если это подтверждено.',
       create: 'Новая акция',
       edit: 'Изменить',
       pause: 'На паузу',
@@ -236,6 +252,8 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       eco: 'Eco',
       seasonal: 'Seasonal',
       limited: 'Limited quantity',
+      kosher: 'Kosher',
+      vegan: 'Vegan',
     },
     types: {
       percent: 'Discount, %',
@@ -278,6 +296,12 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       notNow: 'not available right now',
     },
     shop: { note: 'good deals', title: 'Shop promotions' },
+    filters: {
+      label: 'Filter by label',
+      emptyTitle: 'nothing here',
+      emptyDesc: 'No products have all the selected labels.',
+      reset: 'Reset filter',
+    },
     order: {
       promotion: 'Promotion',
       gift: 'Gift',
@@ -298,7 +322,8 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       listTitle: 'Shop promotions',
       labelsNote: 'on the cards',
       labelsTitle: 'Product labels',
-      labelsHint: "Labels are the seller's opinion, not sales statistics.",
+      labelsHint: 'The seller sets the labels; they are not sales statistics.',
+      factLabelsHint: 'Kosher and Vegan: set them only if this is confirmed.',
       create: 'New promotion',
       edit: 'Edit',
       pause: 'Pause',
@@ -350,6 +375,8 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       eco: 'אקו',
       seasonal: 'עונתי',
       limited: 'כמות מוגבלת',
+      kosher: 'כשר',
+      vegan: 'טבעוני',
     },
     types: {
       percent: 'הנחה, %',
@@ -392,6 +419,12 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       notNow: 'לא בתוקף כרגע',
     },
     shop: { note: 'משתלם', title: 'מבצעי החנות' },
+    filters: {
+      label: 'סינון לפי תוויות',
+      emptyTitle: 'אין כלום',
+      emptyDesc: 'אין מוצרים עם כל התוויות שנבחרו.',
+      reset: 'איפוס הסינון',
+    },
     order: {
       promotion: 'מבצע',
       gift: 'מתנה',
@@ -412,7 +445,8 @@ export const promotionTranslations: Record<'ru' | 'en' | 'he', PromotionStrings>
       listTitle: 'מבצעי החנות',
       labelsNote: 'על הכרטיסים',
       labelsTitle: 'תוויות מוצרים',
-      labelsHint: 'התוויות משקפות את דעת המוכר, הן אינן נתוני מכירות.',
+      labelsHint: 'המוכר קובע את התוויות, הן אינן נתוני מכירות.',
+      factLabelsHint: 'כשר וטבעוני: סמנו רק אם הדבר מאושר.',
       create: 'מבצע חדש',
       edit: 'עריכה',
       pause: 'השהיה',

@@ -304,12 +304,31 @@ export const buildDemoPromotions = (now: Date): Promotion[] => {
 /* ------------------------------ Product labels ------------------------------ */
 
 /** The fixed list a seller picks from. Nothing here claims sales numbers or buyers' opinions. */
-export const PRODUCT_LABELS = ['new', 'hot', 'storePick', 'eco', 'seasonal', 'limited'] as const;
+export const PRODUCT_LABELS = ['new', 'hot', 'storePick', 'eco', 'seasonal', 'limited', 'kosher', 'vegan'] as const;
 export type ProductLabel = (typeof PRODUCT_LABELS)[number];
+
+/** Facts about the product rather than promotion. They look different and can be filtered by. */
+export const FACT_LABELS: ProductLabel[] = ['eco', 'kosher', 'vegan'];
+export const isFactLabel = (label: ProductLabel): boolean => FACT_LABELS.includes(label);
 
 export const DEMO_PRODUCT_LABELS: Record<string, ProductLabel[]> = {
   'prod-3': ['eco'],
   'prod-4': ['hot'],
   'prod-5': ['storePick'],
   'prod-9': ['eco'],
+  // The only product that carried "Кошер & Веган" in the earlier data.
+  'prod-12': ['kosher', 'vegan'],
 };
+
+/** Products carrying all the requested labels. No labels requested means all of them. */
+export const filterProductsByLabels = <T extends { id: string }>(
+  products: T[],
+  required: ProductLabel[],
+  labelsFor: (productId: string) => ProductLabel[]
+): T[] =>
+  required.length === 0
+    ? products
+    : products.filter((product) => {
+        const labels = labelsFor(product.id);
+        return required.every((label) => labels.includes(label));
+      });

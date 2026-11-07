@@ -3,9 +3,10 @@ import { RotateCcw } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePromotions } from '../../context/PromotionsContext';
 import { MOCK_PRODUCTS } from '../../data/mockData';
-import { PRODUCT_LABELS } from '../../data/promotions';
+import { PRODUCT_LABELS, isFactLabel } from '../../data/promotions';
 import { Button } from '../ui/Button';
 import { CategoryChip } from '../collage/CategoryChip';
+import { FACT_LABEL_ICON } from '../collage/ProductLabelChips';
 import { Panel } from '../collage/Panel';
 import { SectionHeading } from '../collage/Page';
 
@@ -43,7 +44,7 @@ export const ProductLabelManager: React.FC<{ storeId: string }> = ({ storeId }) 
                 {product.units?.[language] || product.unit} · {formatCurrency(product.price)}
               </p>
               <div role="group" aria-label={`${copy.labelsTitle}: ${name}`} className="flex flex-wrap gap-2 mt-2.5">
-                {PRODUCT_LABELS.map((label) => (
+                {PRODUCT_LABELS.filter((label) => !isFactLabel(label)).map((label) => (
                   <CategoryChip
                     key={label}
                     label={t.promotions.labels[label]}
@@ -52,6 +53,19 @@ export const ProductLabelManager: React.FC<{ storeId: string }> = ({ storeId }) 
                   />
                 ))}
               </div>
+              <div role="group" aria-label={`${copy.labelsTitle}: ${name}`} className="flex flex-wrap gap-2 mt-2.5 pt-2.5 border-t-2 border-paper-dot">
+                {PRODUCT_LABELS.filter(isFactLabel).map((label) => (
+                  <CategoryChip
+                    key={label}
+                    label={t.promotions.labels[label]}
+                    icon={FACT_LABEL_ICON[label]}
+                    tintClassName="bg-tint-tech"
+                    isActive={labels.includes(label)}
+                    onClick={() => toggleProductLabel(product.id, label)}
+                  />
+                ))}
+              </div>
+              <p className="mt-1.5 text-sm font-bold text-ink-2">{copy.factLabelsHint}</p>
             </Panel>
           );
         })}

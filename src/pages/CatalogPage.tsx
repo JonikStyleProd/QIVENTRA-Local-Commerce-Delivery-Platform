@@ -1,5 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Leaf, Zap, Search, Store as StoreIcon } from 'lucide-react';
+import { usePromotions } from '../context/PromotionsContext';
+import { ProductLabel, filterProductsByLabels } from '../data/promotions';
+import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
@@ -28,11 +31,14 @@ export const CatalogPage: React.FC = () => {
   } = useApp();
 
   const { language, t, formatTimeRange } = useLanguage();
+  const { labelsFor } = usePromotions();
   const copy = t.collage.stores;
 
   const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
   const [filterEcoOnly, setFilterEcoOnly] = useState(false);
   const [filterFreeDeliveryOnly, setFilterFreeDeliveryOnly] = useState(false);
+  const [filterKosher, setFilterKosher] = useState(false);
+  const [filterVegan, setFilterVegan] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>('deliveryTime');
 
   const activeGroup = groupFromSlug(selectedCategorySlug);
@@ -59,10 +65,19 @@ export const CatalogPage: React.FC = () => {
     return list;
   }, [activeGroup, filterEcoOnly, filterFreeDeliveryOnly, sortBy]);
 
+  const requiredLabels = useMemo(() => {
+    const required: ProductLabel[] = [];
+    if (filterEcoOnly) required.push('eco');
+    if (filterKosher) required.push('kosher');
+    if (filterVegan) required.push('vegan');
+    return required;
+  }, [filterEcoOnly, filterKosher, filterVegan]);
+
   const filteredProducts = useMemo(() => {
-    if (activeGroup === 'all') return MOCK_PRODUCTS;
-    return MOCK_PRODUCTS.filter((p) => groupOfCategoryName(p.category) === activeGroup);
-  }, [activeGroup]);
+    const inGroup =
+      activeGroup === 'all' ? MOCK_PRODUCTS : MOCK_PRODUCTS.filter((p) => groupOfCategoryName(p.category) === activeGroup);
+    return filterProductsByLabels(inGroup, requiredLabels, labelsFor);
+  }, [activeGroup, requiredLabels, labelsFor]);
 
   const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
@@ -70,6 +85,8 @@ export const CatalogPage: React.FC = () => {
     setSelectedCategorySlug(null);
     setFilterEcoOnly(false);
     setFilterFreeDeliveryOnly(false);
+    setFilterKosher(false);
+    setFilterVegan(false);
   };
 
   // The panel follows the mockups: it shows only while the picked shop is on screen.
@@ -126,18 +143,37 @@ export const CatalogPage: React.FC = () => {
               </button>
             ))}
           </div>
-          <CategoryChip
-            label={t.catalog.filterFreeDelivery}
-            isActive={filterFreeDeliveryOnly}
-            onClick={() => setFilterFreeDeliveryOnly(!filterFreeDeliveryOnly)}
-            icon={<Zap aria-hidden="true" className="w-4 h-4" />}
-          />
+          {/* A delivery fee belongs to a shop, so this filter has no meaning on the products tab. */}
+          {activeTab === 'stores' && (
+            <CategoryChip
+              label={t.catalog.filterFreeDelivery}
+              isActive={filterFreeDeliveryOnly}
+              onClick={() => setFilterFreeDeliveryOnly(!filterFreeDeliveryOnly)}
+              icon={<Zap aria-hidden="true" className="w-4 h-4" />}
+            />
+          )}
           <CategoryChip
             label={t.catalog.filterEco}
             isActive={filterEcoOnly}
             onClick={() => setFilterEcoOnly(!filterEcoOnly)}
             icon={<Leaf aria-hidden="true" className="w-4 h-4" />}
           />
+          {activeTab === 'products' && (
+            <>
+              <CategoryChip
+                label={t.promotions.labels.kosher}
+                isActive={filterKosher}
+                onClick={() => setFilterKosher(!filterKosher)}
+                icon={FACT_LABEL_ICON.kosher}
+              />
+              <CategoryChip
+                label={t.promotions.labels.vegan}
+                isActive={filterVegan}
+                onClick={() => setFilterVegan(!filterVegan)}
+                icon={FACT_LABEL_ICON.vegan}
+              />
+            </>
+          )}
           <label className="inline-flex items-center gap-1.5 shrink-0 text-sm font-extrabold whitespace-nowrap">
             <span>{t.catalog.sortLabel}:</span>
             <select
@@ -179,9 +215,9 @@ export const CatalogPage: React.FC = () => {
           )
         ) : filteredProducts.length === 0 ? (
           <EmptyState
-            title={copy.emptyT}
-            description={t.catalog.emptyProductsDesc}
-            actionText={copy.showAll}
+            title={requiredLabels.length > 0 ? t.promotions.filters.emptyTitle : copy.emptyT}
+            description={requiredLabels.length > 0 ? t.promotions.filters.emptyDesc : t.catalog.emptyProductsDesc}
+            actionText={requiredLabels.length > 0 ? t.promotions.filters.reset : copy.showAll}
             onAction={resetFilters}
           />
         ) : (

@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePromotions } from '../context/PromotionsContext';
 import { useToast } from '../context/ToastContext';
-import { isLive, visiblePromotions } from '../data/promotions';
+import { FACT_LABELS, ProductLabel, filterProductsByLabels, isLive, visiblePromotions } from '../data/promotions';
 import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 import { GROUP_TINT_CLASS, groupOfCategoryName, tiltFor } from '../data/collageCatalog';
 import { CollageGroupId } from '../i18n/collage';
@@ -13,6 +13,8 @@ import { Button } from '../components/ui/Button';
 import { IconButton } from '../components/ui/IconButton';
 import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
+import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
+import { EmptyState } from '../components/ui/EmptyState';
 import { PageShell, SectionHeading } from '../components/collage/Page';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { PromotionSticker } from '../components/collage/PromotionSticker';
@@ -25,8 +27,9 @@ export const StoreDetailPage: React.FC = () => {
   const { selectedStoreId, navigateTo, addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const { showToast } = useToast();
-  const { promotions, now } = usePromotions();
+  const { promotions, now, labelsFor } = usePromotions();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [requiredLabels, setRequiredLabels] = useState<ProductLabel[]>([]);
 
   const store = useMemo(() => MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0], [selectedStoreId]);
   const storeProducts = useMemo(() => MOCK_PRODUCTS.filter((p) => p.storeId === store.id), [store.id]);
@@ -38,9 +41,13 @@ export const StoreDetailPage: React.FC = () => {
   }, [storeProducts]);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'all') return storeProducts;
-    return storeProducts.filter((p) => p.category === selectedCategory);
-  }, [storeProducts, selectedCategory]);
+    const inCategory =
+      selectedCategory === 'all' ? storeProducts : storeProducts.filter((p) => p.category === selectedCategory);
+    return filterProductsByLabels(inCategory, requiredLabels, labelsFor);
+  }, [storeProducts, selectedCategory, requiredLabels, labelsFor]);
+
+  const toggleRequiredLabel = (label: ProductLabel) =>
+    setRequiredLabels((prev) => (prev.includes(label) ? prev.filter((entry) => entry !== label) : [...prev, label]));
 
   const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
@@ -192,17 +199,42 @@ export const StoreDetailPage: React.FC = () => {
         </div>
       )}
 
-      <div className="product-grid pt-2">
-        {filteredProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            inCartQuantity={getInCartQuantity(product.id)}
-            onAddToCart={addToCart}
-            onUpdateQuantity={updateCartQuantity}
+      <div
+        role="group"
+        aria-label={t.promotions.filters.label}
+        className="scroll-row flex desk:flex-wrap gap-2 -mx-4 px-4 desk:mx-0 desk:px-0 pb-4 overflow-x-auto desk:overflow-visible"
+      >
+        {FACT_LABELS.map((label) => (
+          <CategoryChip
+            key={label}
+            label={t.promotions.labels[label]}
+            icon={FACT_LABEL_ICON[label]}
+            isActive={requiredLabels.includes(label)}
+            onClick={() => toggleRequiredLabel(label)}
           />
         ))}
       </div>
+
+      {filteredProducts.length === 0 ? (
+        <EmptyState
+          title={t.promotions.filters.emptyTitle}
+          description={t.promotions.filters.emptyDesc}
+          actionText={t.promotions.filters.reset}
+          onAction={() => setRequiredLabels([])}
+        />
+      ) : (
+        <div className="product-grid pt-2">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              inCartQuantity={getInCartQuantity(product.id)}
+              onAddToCart={addToCart}
+              onUpdateQuantity={updateCartQuantity}
+            />
+          ))}
+        </div>
+      )}
 
       {cartTotalCount > 0 && (
         <BottomPanel

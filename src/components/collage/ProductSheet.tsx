@@ -8,6 +8,7 @@ import { tiltFor } from '../../data/collageCatalog';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { PolaroidPhoto } from './PolaroidPhoto';
+import { FactLabels, PromoLabels } from './ProductLabelChips';
 import { ProductPrice } from './ProductPrice';
 import { QuantityStepper } from './QuantityStepper';
 import { Tape } from './Tape';
@@ -50,16 +51,9 @@ export const ProductSheet: React.FC<ProductSheetProps> = ({ product, isOpen, onC
         </div>
 
         <div className="min-w-0">
-          {labelsFor(product.id).length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {labelsFor(product.id).map((label) => (
-                <span key={label} className="px-2 py-0.5 bg-accent border-2 border-ink rounded-lg text-xs font-black">
-                  {t.promotions.labels[label]}
-                </span>
-              ))}
-            </div>
-          )}
+          <PromoLabels labels={labelsFor(product.id)} className="mb-2" />
           <p className="font-bold text-ink-2">{description}</p>
+          <FactLabels labels={labelsFor(product.id)} className="mt-2" />
           <dl className="mt-3 space-y-1 text-sm">
             <div className="flex flex-wrap gap-x-2">
               <dt className="font-bold text-ink-3">{copy.unit}:</dt>
