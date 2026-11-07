@@ -72,7 +72,7 @@ export const VendorPortalPage: React.FC = () => {
   };
 
   const storeTitle = language === 'he' ? 'שוק הכרמל - חנות טרייה' : language === 'en' ? 'Carmel Fresh Market' : 'Carmel Fresh Market';
-  const storeAddress = language === 'he' ? 'תל אביב, רחוב הכרמל 18 • דירוג 4.96 ★' : language === 'en' ? 'Tel Aviv, 18 HaCarmel St • Rating 4.96 ★' : 'Тель-Авив, ул. Кармель 18 • Рейтинг 4.96 ★';
+  const storeAddress = language === 'he' ? 'תל אביב, רחוב הכרמל 18' : language === 'en' ? 'Tel Aviv, 18 HaCarmel St' : 'Тель-Авив, ул. Кармель 18';
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -118,7 +118,7 @@ export const VendorPortalPage: React.FC = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
           <span className="text-xs text-secondary block">{t.vendor.revenueToday}</span>
           <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
@@ -149,15 +149,6 @@ export const VendorPortalPage: React.FC = () => {
           </span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
-          <span className="text-xs text-secondary block">{t.vendor.ratingLabel}</span>
-          <span className="text-2xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans mt-1 block tabular-nums">
-            4.96 ★
-          </span>
-          <span className="text-[11px] text-muted mt-1 block">
-            98.5% {t.vendor.posReviews}
-          </span>
-        </div>
       </div>
 
       {/* Live Orders Board */}

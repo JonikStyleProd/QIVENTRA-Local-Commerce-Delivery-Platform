@@ -12,7 +12,7 @@ import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { StepHeader } from '../components/collage/StepHeader';
 
-type SortKey = 'rating' | 'deliveryTime' | 'minOrder';
+type SortKey = 'deliveryTime' | 'minOrder';
 
 /** Step 1 of the path: shop picker (N9-Stores / M9-Stores) with the existing filters and products tab. */
 export const CatalogPage: React.FC = () => {
@@ -33,7 +33,7 @@ export const CatalogPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
   const [filterEcoOnly, setFilterEcoOnly] = useState(false);
   const [filterFreeDeliveryOnly, setFilterFreeDeliveryOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<SortKey>('rating');
+  const [sortBy, setSortBy] = useState<SortKey>('deliveryTime');
 
   const activeGroup = groupFromSlug(selectedCategorySlug);
 
@@ -50,9 +50,7 @@ export const CatalogPage: React.FC = () => {
       list = list.filter((s) => s.deliveryFee === 0);
     }
 
-    if (sortBy === 'rating') {
-      list.sort((a, b) => b.rating - a.rating);
-    } else if (sortBy === 'deliveryTime') {
+    if (sortBy === 'deliveryTime') {
       list.sort((a, b) => a.deliveryTimeMin - b.deliveryTimeMin);
     } else if (sortBy === 'minOrder') {
       list.sort((a, b) => a.minOrder - b.minOrder);
@@ -150,7 +148,6 @@ export const CatalogPage: React.FC = () => {
               onChange={(e) => setSortBy(e.target.value as SortKey)}
               className="min-h-11 px-2 bg-white border-2 border-ink rounded-xl font-extrabold cursor-pointer"
             >
-              <option value="rating">{t.catalog.sortRating}</option>
               <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
               <option value="minOrder">{t.catalog.sortMinOrder}</option>
             </select>

@@ -2,57 +2,6 @@ import React from 'react';
 import { Star, Clock, MapPin } from 'lucide-react';
 
 /**
- * 1. RatingBadge
- * Strictly standardized to:
- * - height: 24px (h-6)
- * - min-width: 58px
- * - padding-inline: 8px
- * - star icon: exactly 14px (w-3.5 h-3.5)
- * - gap: 4px
- * - absolute positioning in top-right of relative image container:
- *   top: 10px; inset-inline-end: 10px (inset-block-start: 10px; inset-inline-end: 10px;)
- * - numbers & stars are NOT mirrored in RTL
- */
-export interface RatingBadgeProps {
-  rating: number;
-  reviewsCount?: number;
-  isAbsolute?: boolean;
-  className?: string;
-}
-
-export const RatingBadge: React.FC<RatingBadgeProps> = ({
-  rating,
-  reviewsCount,
-  isAbsolute = false,
-  className = '',
-}) => {
-  const formattedRating = Number.isInteger(rating) ? `${rating}.0` : rating.toFixed(rating < 4.95 ? 1 : 2);
-
-  return (
-    <div
-      dir="ltr"
-      className={`
-        inline-flex items-center justify-center gap-1 h-6 min-w-[58px] px-2 rounded-full
-        bg-[#1E1E1E]/85 backdrop-blur-xs text-[#FFF8EC] border border-white/20 shadow-xs
-        text-xs font-bold whitespace-nowrap select-none shrink-0 pointer-events-none
-        ${isAbsolute ? 'absolute top-2.5 end-2.5 z-10' : ''}
-        ${className}
-      `}
-      style={isAbsolute ? { insetBlockStart: '10px', insetInlineEnd: '10px' } : undefined}
-      aria-label={`Рейтинг ${formattedRating}`}
-    >
-      <Star className="w-3.5 h-3.5 fill-[#FFD84D] text-[#FFD84D] shrink-0" aria-hidden="true" />
-      <span className="tabular-nums leading-none tracking-tight">{formattedRating}</span>
-      {reviewsCount !== undefined && (
-        <span className="text-[10px] font-normal text-[#FFF8EC]/75 tabular-nums leading-none ps-0.5">
-          ({reviewsCount})
-        </span>
-      )}
-    </div>
-  );
-};
-
-/**
  * 2. DeliveryTimeBadge
  * Consistent 24px height badge for store delivery ETA
  */

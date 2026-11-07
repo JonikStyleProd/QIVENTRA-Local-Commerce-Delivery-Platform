@@ -69,9 +69,6 @@ export const CourierPortalPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-primary">{t.courier.courierLabel}: {courierName}</h1>
-              <Badge variant="pistachio" size="sm">
-                4.98 ★
-              </Badge>
             </div>
             <p className="text-xs text-secondary mt-0.5">
               {vehicleName} • {shiftTime}

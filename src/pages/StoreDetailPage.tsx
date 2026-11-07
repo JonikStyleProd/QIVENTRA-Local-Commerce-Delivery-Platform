@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
-  Star,
   Clock,
   MapPin,
   CheckCircle,
@@ -166,19 +165,7 @@ export const StoreDetailPage: React.FC = () => {
         </div>
 
         {/* Store Metrics Bar */}
-        <div className="p-4 sm:p-6 bg-surface grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs divide-y sm:divide-y-0 sm:divide-x divide-theme/60 rtl:divide-x-reverse">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#1E1E1E]/10 dark:bg-[#FFD84D]/10 text-[#1E1E1E] dark:text-[#FFD84D] flex items-center justify-center shrink-0">
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-            <div>
-              <span className="text-[10px] text-secondary block">{t.store.ratingLabel}</span>
-              <span className="font-bold text-primary text-sm tabular-nums">
-                {store.rating.toFixed(2)} <span className="text-muted font-normal text-xs">({store.reviewsCount})</span>
-              </span>
-            </div>
-          </div>
-
+        <div className="p-4 sm:p-6 bg-surface grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs divide-y sm:divide-y-0 sm:divide-x divide-theme/60 rtl:divide-x-reverse">
           <div className="flex items-center gap-2.5 pt-2 sm:pt-0 sm:ps-4">
             <div className="w-9 h-9 rounded-xl bg-[#1E1E1E]/10 dark:bg-[#FFD84D]/10 text-[#1E1E1E] dark:text-[#FFD84D] flex items-center justify-center shrink-0">
               <Clock className="w-4 h-4" />

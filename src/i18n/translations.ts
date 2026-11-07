@@ -140,10 +140,8 @@ export interface Translations {
     filterFreeDelivery: string;
     sortBy: string;
     sortLabel: string;
-    sortRating: string;
     sortDeliverySpeed: string;
     sortMinOrder: string;
-    byRating: string;
     byDeliveryTime: string;
     byMinOrder: string;
     noStoresTitle: string;
@@ -291,7 +289,6 @@ export interface Translations {
     ecoCertified: string;
     shareStore: string;
     linkCopied: string;
-    ratingLabel: string;
     courierDeliveryLabel: string;
     deliveryCostLabel: string;
     minOrderPrefix: string;
@@ -312,8 +309,6 @@ export interface Translations {
     avgPrepTime: string;
     avgTicket: string;
     optRange: string;
-    ratingLabel: string;
-    posReviews: string;
     liveOrdersQueue: string;
     autoRefresh: string;
     statusAssembling: string;
@@ -634,10 +629,8 @@ export const translations: Record<Language, Translations> = {
       filterFreeDelivery: 'משלוח חינם',
       sortBy: 'מיון:',
       sortLabel: 'מיון',
-      sortRating: 'לפי דירוג',
       sortDeliverySpeed: 'לפי מהירות',
       sortMinOrder: 'לפי מינימום הזמנה',
-      byRating: 'לפי דירוג',
       byDeliveryTime: 'לפי מהירות',
       byMinOrder: 'לפי מינימום הזמנה',
       noStoresTitle: 'לא נמצאו חנויות',
@@ -785,7 +778,6 @@ export const translations: Record<Language, Translations> = {
       ecoCertified: 'מוסמך אקו וירוק',
       shareStore: 'שתף חנות',
       linkCopied: 'הקישור הועתק ללוח',
-      ratingLabel: 'דירוג',
       courierDeliveryLabel: 'משלוח שליחים',
       deliveryCostLabel: 'עלות משלוח',
       minOrderPrefix: 'מינימום הזמנה',
@@ -806,8 +798,6 @@ export const translations: Record<Language, Translations> = {
       avgPrepTime: 'ממוצע 2.8 דק׳ להכנה',
       avgTicket: 'סל ממוצע',
       optRange: 'טווח אופטימלי',
-      ratingLabel: 'דירוג בית עסק',
-      posReviews: 'ביקורות חיוביות',
       liveOrdersQueue: 'תור הזמנות פעיל',
       autoRefresh: 'עדכון אוטומטי כל 15 שניות',
       statusAssembling: 'באריזה',
@@ -1126,10 +1116,8 @@ export const translations: Record<Language, Translations> = {
       filterFreeDelivery: 'Free Delivery',
       sortBy: 'Sort by:',
       sortLabel: 'Sort',
-      sortRating: 'By Rating',
       sortDeliverySpeed: 'By Speed',
       sortMinOrder: 'By Min Order',
-      byRating: 'By Rating',
       byDeliveryTime: 'By Speed',
       byMinOrder: 'By Min Order',
       noStoresTitle: 'No stores found',
@@ -1277,7 +1265,6 @@ export const translations: Record<Language, Translations> = {
       ecoCertified: 'Eco-certified',
       shareStore: 'Share store',
       linkCopied: 'Link copied',
-      ratingLabel: 'Rating',
       courierDeliveryLabel: 'Courier delivery',
       deliveryCostLabel: 'Delivery fee',
       minOrderPrefix: 'Min order',
@@ -1298,8 +1285,6 @@ export const translations: Record<Language, Translations> = {
       avgPrepTime: 'Avg. 2.8 min preparation',
       avgTicket: 'Average Order',
       optRange: 'Optimal range',
-      ratingLabel: 'Merchant Rating',
-      posReviews: 'positive reviews',
       liveOrdersQueue: 'Live Store Order Queue',
       autoRefresh: 'Auto updates every 15s',
       statusAssembling: 'Assembling',
@@ -1618,10 +1603,8 @@ export const translations: Record<Language, Translations> = {
       filterFreeDelivery: 'Бесплатная доставка',
       sortBy: 'Сортировка:',
       sortLabel: 'Сортировка',
-      sortRating: 'По рейтингу',
       sortDeliverySpeed: 'По скорости',
       sortMinOrder: 'По мин. заказу',
-      byRating: 'По рейтингу',
       byDeliveryTime: 'По скорости доставки',
       byMinOrder: 'По минимальному чеку',
       noStoresTitle: 'Магазины не найдены',
@@ -1769,7 +1752,6 @@ export const translations: Record<Language, Translations> = {
       ecoCertified: 'Эко-сертифицирован',
       shareStore: 'Поделиться магазином',
       linkCopied: 'Ссылка скопирована',
-      ratingLabel: 'Рейтинг',
       courierDeliveryLabel: 'Доставка курьером',
       deliveryCostLabel: 'Стоимость доставки',
       minOrderPrefix: 'Минимальный заказ',
@@ -1790,8 +1772,6 @@ export const translations: Record<Language, Translations> = {
       avgPrepTime: 'В среднем 2.8 мин на сборку',
       avgTicket: 'Средний чек',
       optRange: 'Оптимальный диапазон',
-      ratingLabel: 'Рейтинг мерчанта',
-      posReviews: 'положительных отзывов',
       liveOrdersQueue: 'Очередь текущих заказов точки',
       autoRefresh: 'Автоматическое обновление каждые 15 сек',
       statusAssembling: 'В сборке',

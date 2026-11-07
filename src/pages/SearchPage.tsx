@@ -22,7 +22,6 @@ export const SearchPage: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [onlyEco, setOnlyEco] = useState<boolean>(false);
-  const [sortBy] = useState<'rating' | 'price' | 'delivery'>('rating');
 
   const query = searchQuery.trim().toLowerCase();
 
@@ -59,13 +58,8 @@ export const SearchPage: React.FC = () => {
     if (selectedCategory !== 'all') {
       products = products.filter((p) => p.category.toLowerCase().includes(selectedCategory.toLowerCase()));
     }
-    if (sortBy === 'price') {
-      products = [...products].sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'rating') {
-      products = [...products].sort((a, b) => b.rating - a.rating);
-    }
     return products;
-  }, [query, selectedCategory, sortBy]);
+  }, [query, selectedCategory]);
 
   const getInCartQuantity = (productId: string) => {
     const item = cart.find((i) => i.product.id === productId);

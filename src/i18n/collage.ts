@@ -167,7 +167,7 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       toShops: 'К лавкам →',
       caps: ['хала!', 'букет', 'лабне'],
       steps: [
-        ['Адрес', 'Пишете улицу — показываем лавки, которые туда возят.'],
+        ['Адрес', 'Пишете улицу — показываем лавки рядом с вашим адресом.'],
         ['Корзина', 'Кладёте товары, итог считается сразу, без сюрпризов.'],
         ['Окно', 'Как можно скорее или ко времени — на три дня вперёд.'],
       ],
@@ -311,7 +311,7 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       toShops: 'To the shops →',
       caps: ['challah!', 'flowers', 'labneh'],
       steps: [
-        ['Address', 'Type your street — we show the shops that deliver there.'],
+        ['Address', 'Type your street — we show the shops near your address.'],
         ['Basket', 'Add items — the total updates right away, no surprises.'],
         ['Window', 'As soon as possible or at a set time — up to three days ahead.'],
       ],
@@ -455,7 +455,7 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       toShops: 'לחנויות ←',
       caps: ['חלה!', 'זר', 'לבנה'],
       steps: [
-        ['כתובת', 'מקלידים רחוב — ואנחנו מראים את החנויות שמגיעות אליו.'],
+        ['כתובת', 'מקלידים רחוב — ואנחנו מראים חנויות ליד הכתובת שלכם.'],
         ['סל', 'מוסיפים מוצרים — הסכום מתעדכן מיד, בלי הפתעות.'],
         ['חלון', 'בהקדם האפשרי או בשעה שתבחרו — עד שלושה ימים קדימה.'],
       ],

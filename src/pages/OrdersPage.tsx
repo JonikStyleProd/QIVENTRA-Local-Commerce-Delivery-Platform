@@ -179,9 +179,6 @@ export const OrdersPage: React.FC = () => {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-primary truncate">{activeOrder.courier.names?.[language] || activeOrder.courier.name}</span>
-                  <Badge variant="pistachio" size="sm">
-                    ★ {activeOrder.courier.rating}
-                  </Badge>
                 </div>
                 <p className="text-xs text-secondary mt-0.5 truncate">
                   {activeOrder.courier.vehicleName?.[language] || activeOrder.courier.vehicle} • {activeOrder.courier.completedDeliveries} {t.orders.deliveriesCount}
