@@ -1,33 +1,20 @@
-import React, { useState } from 'react';
-import {
-  Search,
-  ShoppingBag,
-  ChevronDown,
-  Store as StoreIcon,
-  Bike,
-  ShieldCheck,
-  MessageSquare,
-  Moon,
-  Sun,
-  User,
-} from 'lucide-react';
+import React from 'react';
+import { Search, ShoppingBag, Moon, Sun } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { BrandLogo } from '../ui/BrandLogo';
 import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 import { AppRoute } from '../../types';
 import { AddressButton, CartCountBadge } from '../collage/HeaderControls';
-
-const ICON_BUTTON =
-  'chip-tilt relative grid place-items-center w-11 h-11 shrink-0 bg-card text-ink border-2 border-ink rounded-xl cursor-pointer';
+import { ProfileMenu } from './ProfileMenu';
 
 export const DesktopHeader: React.FC = () => {
-  const { currentRoute, navigateTo, cartTotalCount, setIsCartDrawerOpen, setIsChatOpen } = useApp();
+  const { currentRoute, navigateTo, cartTotalCount, setIsCartDrawerOpen } = useApp();
   const { t } = useLanguage();
   const { resolvedTheme, toggleTheme } = useTheme();
-  const [isPortalsMenuOpen, setIsPortalsMenuOpen] = useState(false);
 
   const navLinks: { label: string; route: AppRoute }[] = [
     { label: t.collage.tabs.shops, route: 'catalog' },
@@ -35,11 +22,7 @@ export const DesktopHeader: React.FC = () => {
     { label: t.nav.search, route: 'search' },
   ];
 
-  const portals: { label: string; route: AppRoute; icon: React.ReactNode }[] = [
-    { label: t.nav.vendorPortal, route: 'vendor', icon: <StoreIcon aria-hidden="true" className="w-4 h-4 shrink-0" /> },
-    { label: t.nav.courierHub, route: 'courier', icon: <Bike aria-hidden="true" className="w-4 h-4 shrink-0" /> },
-    { label: t.nav.adminHub, route: 'admin', icon: <ShieldCheck aria-hidden="true" className="w-4 h-4 shrink-0" /> },
-  ];
+  const themeLabel = resolvedTheme === 'dark' ? t.nav.toggleThemeLight : t.nav.toggleThemeDark;
 
   return (
     <div className="flex items-center justify-between gap-3 max-w-[1360px] mx-auto px-6 xl:px-10 py-2.5">
@@ -75,46 +58,6 @@ export const DesktopHeader: React.FC = () => {
               </button>
             );
           })}
-
-          <div
-            className="relative"
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setIsPortalsMenuOpen(false);
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setIsPortalsMenuOpen(!isPortalsMenuOpen)}
-              aria-expanded={isPortalsMenuOpen}
-              className="inline-flex items-center gap-1 min-h-11 px-2.5 rounded-xl text-[15px] font-extrabold cursor-pointer whitespace-nowrap hover:bg-paper-dot/50"
-            >
-              {t.nav.portals}
-              <ChevronDown aria-hidden="true" className="w-3.5 h-3.5" />
-            </button>
-
-            {isPortalsMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-20" onClick={() => setIsPortalsMenuOpen(false)} />
-                <div className="absolute start-0 z-30 w-60 mt-2 py-2 bg-card border-[3px] border-ink rounded-2xl shadow-hard-4">
-                  <p className="hand px-3 text-2xl text-link-text">{t.profile.partnerPortalsTitle}</p>
-                  {portals.map((portal) => (
-                    <button
-                      key={portal.route}
-                      type="button"
-                      onClick={() => {
-                        navigateTo(portal.route);
-                        setIsPortalsMenuOpen(false);
-                      }}
-                      className="flex items-center gap-2.5 w-full min-h-11 px-3 text-sm font-extrabold text-start cursor-pointer hover:bg-tint-gift"
-                    >
-                      {portal.icon}
-                      {portal.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
         </nav>
       </div>
 
@@ -122,56 +65,39 @@ export const DesktopHeader: React.FC = () => {
         <AddressButton className="max-w-[170px] xl:max-w-[210px]" />
         <LanguageSwitcher />
 
-        <button
-          type="button"
+        <IconButton
           onClick={toggleTheme}
-          aria-label={resolvedTheme === 'dark' ? t.nav.toggleThemeLight : t.nav.toggleThemeDark}
-          title={resolvedTheme === 'dark' ? t.nav.toggleThemeLight : t.nav.toggleThemeDark}
-          className={ICON_BUTTON}
-        >
-          {resolvedTheme === 'dark' ? (
-            <Sun aria-hidden="true" className="w-5 h-5" />
-          ) : (
-            <Moon aria-hidden="true" className="w-5 h-5" />
-          )}
-        </button>
+          aria-label={themeLabel}
+          title={themeLabel}
+          icon={
+            resolvedTheme === 'dark' ? (
+              <Sun aria-hidden="true" className="w-5 h-5" />
+            ) : (
+              <Moon aria-hidden="true" className="w-5 h-5" />
+            )
+          }
+        />
 
-        <button
-          type="button"
-          onClick={() => setIsChatOpen(true)}
-          aria-label={t.chat?.title}
-          title={t.chat?.title}
-          className={ICON_BUTTON}
-        >
-          <MessageSquare aria-hidden="true" className="w-5 h-5" />
-        </button>
-
-        <button
-          type="button"
+        <IconButton
           onClick={() => {
             setIsCartDrawerOpen(false);
             navigateTo('cart');
           }}
           aria-label={`${t.collage.common.cartItems} ${cartTotalCount}`}
           title={t.collage.tabs.cart}
-          className={ICON_BUTTON}
-        >
-          <ShoppingBag aria-hidden="true" className="w-5 h-5" />
-          <CartCountBadge count={cartTotalCount} className="absolute -top-2 -end-2" />
-        </button>
+          icon={
+            <>
+              <ShoppingBag aria-hidden="true" className="w-5 h-5" />
+              <CartCountBadge count={cartTotalCount} className="absolute -top-2 -end-2" />
+            </>
+          }
+        />
 
-        <button
-          type="button"
-          onClick={() => navigateTo('profile')}
-          aria-label={t.nav.profile}
-          title={t.nav.profile}
-          className={ICON_BUTTON}
-        >
-          <User aria-hidden="true" className="w-5 h-5" />
-        </button>
+        <ProfileMenu />
 
-        {currentRoute === 'home' && (
-          <div className="hidden min-[1320px]:block shrink-0">
+        {/* The picker itself and the narrowest desktop widths do without it; "Shops" goes to the same place. */}
+        {currentRoute !== 'catalog' && (
+          <div className="hidden min-[1200px]:block shrink-0">
             <Button size="lg" onClick={() => navigateTo('catalog')} className="whitespace-nowrap">
               {t.collage.landing.cta}
             </Button>

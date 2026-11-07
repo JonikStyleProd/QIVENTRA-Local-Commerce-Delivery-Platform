@@ -1,23 +1,24 @@
 import React from 'react';
-import { Mail, Phone, Clock, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { AppRoute } from '../../types';
-
-const COPYRIGHT = 'Produced and developed by JonikStyle Production. All rights reserved by JonikStyle Production.';
+import { MadeBy } from '../collage/MadeBy';
+import { Tape } from '../collage/Tape';
 
 const FOOTER_LINK =
   'inline-flex items-center gap-1 min-h-11 text-sm font-bold text-start cursor-pointer hover:underline';
 
+/** Keeps the end of the page clear of what floats over it: phone tabs, and the yellow panel on these screens. */
+const bottomSpace = (route: AppRoute): string => {
+  if (route === 'delivery') return 'pb-[calc(env(safe-area-inset-bottom,0px)+24px)] desk:pb-8';
+  if (route === 'catalog' || route === 'store') return 'pb-[calc(env(safe-area-inset-bottom,0px)+190px)] desk:pb-[130px]';
+  return 'pb-[calc(env(safe-area-inset-bottom,0px)+88px)] desk:pb-8';
+};
+
 export const Footer: React.FC = () => {
   const { navigateTo, currentRoute } = useApp();
-  const { t, language } = useLanguage();
-
-  const accessibilityLabel = language === 'he' ? 'נגישות' : language === 'ru' ? 'Доступность' : 'Accessibility';
-  const contactsTitle =
-    language === 'he' ? 'יצירת קשר ותמיכה' : language === 'ru' ? 'Контакты и поддержка' : 'Contact & Support';
-  const hoursLabel =
-    language === 'he' ? 'מדי יום: 07:00 – 01:00' : language === 'ru' ? 'Ежедневно: 07:00 – 01:00' : 'Daily: 07:00 – 01:00';
+  const { t } = useLanguage();
 
   const customerLinks: { label: string; route: AppRoute }[] = [
     { label: t.footer.categoriesCatalog, route: 'catalog' },
@@ -31,11 +32,8 @@ export const Footer: React.FC = () => {
     { label: t.footer.adminHub, route: 'admin' },
   ];
 
-  // Room for the fixed phone tabs, which the delivery window does not have.
-  const phoneBottomSpace = currentRoute === 'delivery' ? 'pb-6' : 'pb-24';
-
   return (
-    <footer className={`w-full pt-8 desk:pb-8 border-t-2 border-ink text-ink ${phoneBottomSpace}`}>
+    <footer className={`w-full pt-8 border-t-2 border-ink text-ink ${bottomSpace(currentRoute)}`}>
       <div className="max-w-[1360px] mx-auto px-4 desk:px-10">
         <p className="pb-6 text-[15px] font-extrabold">
           <bdi>QIVENTRA</bdi> · {t.collage.common.demoInline}
@@ -72,30 +70,15 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h2 className="hand mb-1 text-[26px] leading-none text-link-text">{contactsTitle}</h2>
-            <ul className="space-y-2 text-sm font-bold">
-              <li className="flex items-center gap-2">
-                <Phone aria-hidden="true" className="w-4 h-4 shrink-0" />
-                <span dir="ltr">+972 (3) 890-1200</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail aria-hidden="true" className="w-4 h-4 shrink-0" />
-                <bdi>support@qiventra.com</bdi>
-              </li>
-              <li className="flex items-center gap-2">
-                <Clock aria-hidden="true" className="w-4 h-4 shrink-0" />
-                <span>{hoursLabel}</span>
-              </li>
-            </ul>
+            <h2 className="hand mb-3 text-[26px] leading-none text-link-text">{t.screens.footer.contactsTitle}</h2>
+            <p className="relative max-w-[280px] p-3 pt-4 bg-tint-gift border-2 border-ink rounded-xl text-sm font-extrabold -rotate-1">
+              <Tape tone="blue" small />
+              {t.screens.footer.contactsDemo}
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-4 text-[13px] font-bold text-ink-3">
-          <p dir="ltr">{COPYRIGHT}</p>
-          <p>
-            {t.footer.privacy} · {t.footer.terms} · {accessibilityLabel}
-          </p>
-        </div>
+        <MadeBy className="pt-4" />
       </div>
     </footer>
   );
