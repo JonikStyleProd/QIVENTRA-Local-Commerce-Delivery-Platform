@@ -14,6 +14,8 @@
   --color-action: #E8473B;
   /* Same red for text smaller than 19px bold: white on #E8473B is only 3.9:1. */
   --color-action-strong: #D4352A;
+  /* Red as text and outlines; the dark theme needs a lighter one than the button colour. */
+  --color-action-text: #D4352A;
   --color-link: #2E5BFF;
   /* Blue as text; the dark theme needs a lighter one than the button colour. */
   --color-link-text: #2E5BFF;
@@ -131,6 +133,7 @@
   --color-ink-3: #C2BBAB;
   --color-ink-4: #C2BBAB;
   --color-link-text: #9DB2FF;
+  --color-action-text: #FF9A8F;
   --color-focus: #FFD84D;
   --color-focus-on-ink: #2E5BFF;
   --color-accent-on-ink: #1E1E1E;
@@ -185,6 +188,7 @@
   --color-ink-3: #6E685C;
   --color-ink-4: #7A7466;
   --color-link-text: #2E5BFF;
+  --color-action-text: #D4352A;
   --color-focus: #2E5BFF;
   --color-focus-on-ink: #FFD84D;
   --color-success: #1E824C;
@@ -202,6 +206,14 @@
   --text-secondary: #5A554C;
   --text-muted: #6E685C;
   --border-color: #E9DFCB;
+}
+
+/* Author logo: the same file in both themes. In the dark theme a soft light edge keeps it readable. */
+.dark .made-by-logo {
+  filter:
+    drop-shadow(0 0 0.75px rgba(255, 248, 236, 0.95))
+    drop-shadow(0 0 4px rgba(255, 248, 236, 0.45))
+    drop-shadow(0 0 10px rgba(255, 248, 236, 0.2));
 }
 
 /* Custom Utilities for Design System */

@@ -6,6 +6,7 @@ import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfD
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HandCheck } from '../components/collage/HandMarks';
+import { NotebookPage } from '../components/collage/NotebookPage';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { StepHeader } from '../components/collage/StepHeader';
 import { Tape } from '../components/collage/Tape';
@@ -328,13 +329,7 @@ export const DeliveryPage: React.FC = () => {
 
       <section className="grid desk:grid-cols-2 gap-10 items-start max-w-[1200px] mx-auto px-4 desk:px-10 pt-3 desk:pt-2.5 pb-5">
         {/* ---------- Notebook page ---------- */}
-        <div
-          className={`anim-page relative bg-card border-2 border-ink rounded-md shadow-hard-5 desk:shadow-hard-8 py-4 desk:py-[34px] ps-[46px] desk:ps-[70px] pe-3.5 desk:pe-[34px] [background-image:repeating-linear-gradient(transparent_0_43px,var(--color-notebook-line)_43px_44px)] [background-position:0_16px] desk:[background-position:0_30px] ${
-            isDone ? 'hidden desk:block' : ''
-          }`}
-        >
-          <span aria-hidden="true" className="absolute inset-y-0 start-8 desk:start-[50px] w-0.5 bg-notebook-margin" />
-
+        <NotebookPage className={isDone ? 'hidden desk:block' : ''}>
           <p className="hand hidden desk:block text-[30px] leading-[44px] text-action">{isDone ? copy.done : copy.step}</p>
           <h1 className="hidden desk:block mb-2 text-[46px] font-black tracking-[-0.02em] leading-[1.05]">
             {isDone ? copy.titleDone : copy.title}
@@ -365,7 +360,7 @@ export const DeliveryPage: React.FC = () => {
           ) : (
             form
           )}
-        </div>
+        </NotebookPage>
 
         {/* ---------- Phone: done screen ---------- */}
         {isDone && (

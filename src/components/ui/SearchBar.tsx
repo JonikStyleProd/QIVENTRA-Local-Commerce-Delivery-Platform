@@ -1,111 +1,43 @@
-import React, { useState } from 'react';
-import { Search, X, SlidersHorizontal, ArrowRight, ArrowLeft } from 'lucide-react';
+import React from 'react';
+import { Search, X } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 
 interface SearchBarProps {
-  value?: string;
-  onChange?: (val: string) => void;
-  onSearch?: (query: string) => void;
+  value: string;
+  onChange: (value: string) => void;
   placeholder?: string;
-  autoFocus?: boolean;
-  showFiltersButton?: boolean;
-  onFiltersClick?: () => void;
+  label: string;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({
-  value = '',
-  onChange,
-  onSearch,
-  placeholder,
-  autoFocus = false,
-  showFiltersButton = false,
-  onFiltersClick,
-  className = '',
-  size = 'md',
-}) => {
-  const [internalValue, setInternalValue] = useState<string>(value);
-  const { t, isRTL } = useLanguage();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInternalValue(val);
-    onChange?.(val);
-  };
-
-  const handleClear = () => {
-    setInternalValue('');
-    onChange?.('');
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      onSearch?.(internalValue);
-    }
-  };
-
-  const sizeStyles = {
-    sm: 'h-9 text-xs px-3',
-    md: 'h-11 text-xs sm:text-sm px-3.5',
-    lg: 'h-13 text-sm sm:text-base px-4',
-  };
+/** Search field; the value lives with the caller, so sample queries show up in the input. */
+export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, placeholder, label, className = '' }) => {
+  const { t } = useLanguage();
 
   return (
-    <div className={`relative flex items-center w-full ${className}`}>
-      <div
-        className={`
-          flex items-center w-full rounded-2xl bg-surface border border-theme
-          focus-within:border-ink
-          focus-within:ring-2 focus-within:ring-ink/15
-          transition-all duration-150 shadow-xs
-          ${sizeStyles[size]}
-        `}
-      >
-        <Search className="w-4 h-4 text-muted shrink-0 me-2.5" />
-
-        <input
-          type="text"
-          value={internalValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder || t.nav.searchPlaceholder}
-          autoFocus={autoFocus}
-          className="w-full bg-transparent text-primary placeholder:text-muted focus:outline-none"
-        />
-
-        {internalValue && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="p-1 rounded-full text-muted hover:text-primary transition hover:bg-surface-elevated shrink-0 me-1"
-            aria-label={t.nav.clear}
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-
-        {internalValue ? (
-          <button
-            type="button"
-            onClick={() => onSearch?.(internalValue)}
-            className="flex items-center justify-center w-8 h-8 rounded-xl bg-ink text-paper hover:bg-ink transition ms-1 shrink-0"
-            aria-label={t.nav.search}
-          >
-            {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-          </button>
-        ) : showFiltersButton ? (
-          <button
-            type="button"
-            onClick={onFiltersClick}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-elevated text-secondary text-xs font-medium hover:text-primary border border-theme transition shrink-0"
-            aria-label={t.catalog.title}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{t.catalog.title}</span>
-          </button>
-        ) : null}
-      </div>
+    <div
+      role="search"
+      className={`flex items-center gap-2 w-full min-h-[56px] ps-3.5 pe-1.5 bg-card border-[3px] border-ink rounded-2xl shadow-hard-4 focus-within:outline-3 focus-within:outline-offset-3 focus-within:outline-focus ${className}`}
+    >
+      <Search aria-hidden="true" className="w-5 h-5 shrink-0 text-ink-3" />
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+        placeholder={placeholder || t.nav.searchPlaceholder}
+        className="flex-1 min-w-0 bg-transparent font-bold text-ink placeholder:text-ink-3 placeholder:font-semibold outline-none focus-visible:outline-none [&::-webkit-search-cancel-button]:appearance-none"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          aria-label={t.nav.clear}
+          className="grid place-items-center w-11 h-11 shrink-0 rounded-xl cursor-pointer hover:bg-tint-pets"
+        >
+          <X aria-hidden="true" className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 };

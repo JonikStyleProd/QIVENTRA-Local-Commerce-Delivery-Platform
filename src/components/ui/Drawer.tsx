@@ -1,94 +1,73 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import { useDialogFocus } from '../collage/useDialogFocus';
 import { IconButton } from './IconButton';
 
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  position?: 'right' | 'bottom';
   title?: string;
   subtitle?: string;
   children: React.ReactNode;
-  width?: string;
 }
 
-export const Drawer: React.FC<DrawerProps> = ({
-  isOpen,
-  onClose,
-  position = 'right',
-  title,
-  subtitle,
-  children,
-  width = 'max-w-md',
-}) => {
+/** Side sheet on the inline-end edge; full width on a phone. */
+export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtitle, children }) => {
+  const { t } = useLanguage();
+  const titleId = useId();
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  useDialogFocus(sheetRef, isOpen);
+
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const isBottom = position === 'bottom';
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex">
+      <div className="fixed inset-0 bg-[rgba(30,30,30,0.6)]" onClick={onClose} aria-hidden="true" />
 
-  return (
-    <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Drawer Container with CSS Logical Properties */}
-      <div
-        className={`
-          relative z-10 bg-surface border-theme shadow-2xl flex flex-col
-          transition-transform duration-300 ease-out
-          ${
-            isBottom
-              ? 'mt-auto w-full max-h-[85vh] rounded-t-3xl border-t animate-in slide-in-from-bottom'
-              : `ms-auto h-full w-full ${width} border-s animate-in slide-in-from-end`
-          }
-        `}
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        tabIndex={-1}
+        className="anim-in relative ms-auto flex flex-col w-full max-w-md h-[100dvh] paper-dots bg-paper text-ink border-s-[3px] border-ink"
       >
-        {/* Handle for bottom sheet */}
-        {isBottom && (
-          <div className="w-12 h-1.5 bg-muted/40 rounded-full mx-auto mt-3 mb-1" />
-        )}
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-theme shrink-0">
-          <div>
+        <div className="flex items-start justify-between gap-3 px-4 py-3 desk:px-5 bg-card border-b-[3px] border-ink shrink-0">
+          <div className="min-w-0">
             {title && (
-              <h3 className="text-lg font-bold tracking-tight text-primary">{title}</h3>
+              <h2 id={titleId} className="text-xl font-black tracking-tight leading-tight">
+                {title}
+              </h2>
             )}
-            {subtitle && (
-              <p className="text-xs text-secondary mt-0.5">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-sm font-bold text-ink-2">{subtitle}</p>}
           </div>
           <IconButton
-            size="sm"
-            variant="ghost"
-            icon={<X className="w-4 h-4" />}
+            icon={<X aria-hidden="true" className="w-5 h-5" />}
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t.screens.common.close}
           />
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 desk:p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

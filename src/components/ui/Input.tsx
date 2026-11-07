@@ -1,84 +1,49 @@
-import React, { InputHTMLAttributes, forwardRef } from 'react';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import React, { InputHTMLAttributes, forwardRef, useId } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  hint?: string;
   error?: string;
   leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  isLoading?: boolean;
 }
 
+/** Outlined field. The icon uses logical insets, so it follows the reading direction. */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      label,
-      hint,
-      error,
-      leftIcon,
-      rightIcon,
-      isLoading = false,
-      disabled,
-      className = '',
-      id,
-      ...props
-    },
-    ref
-  ) => {
-    const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+  ({ label, error, leftIcon, className = '', id, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = id || generatedId;
+    const errorId = `${inputId}-error`;
 
     return (
-      <div className="w-full flex flex-col gap-1.5 text-left">
+      <div className="w-full flex flex-col gap-1">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="text-xs font-semibold uppercase tracking-wider text-secondary"
-          >
+          <label htmlFor={inputId} className="text-sm font-extrabold">
             {label}
           </label>
         )}
-
         <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-3.5 flex items-center pointer-events-none text-muted">
+            <span aria-hidden="true" className="absolute start-3 flex text-ink-3 pointer-events-none">
               {leftIcon}
-            </div>
+            </span>
           )}
-
           <input
             ref={ref}
             id={inputId}
-            disabled={disabled || isLoading}
-            className={`
-              w-full h-11 rounded-xl bg-surface border text-primary text-sm placeholder:text-muted/60
-              transition-all duration-150
-              focus:outline-none focus:border-ink focus:ring-2 focus:ring-accent/30
-              disabled:opacity-50 disabled:bg-surface-elevated disabled:cursor-not-allowed
-              ${leftIcon ? 'pl-10' : 'pl-3.5'}
-              ${rightIcon || isLoading || error ? 'pr-10' : 'pr-3.5'}
-              ${error ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-theme'}
-              ${className}
-            `}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
+            className={`w-full min-h-11 ${leftIcon ? 'ps-10' : 'ps-3'} pe-3 bg-card text-ink border-2 rounded-xl font-bold placeholder:text-ink-3 placeholder:font-semibold disabled:opacity-50 ${
+              error ? 'border-danger' : 'border-ink'
+            } ${className}`}
             {...props}
           />
-
-          <div className="absolute right-3.5 flex items-center gap-1.5 pointer-events-none">
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted" />}
-            {error && !isLoading && <AlertCircle className="w-4 h-4 text-danger" />}
-            {rightIcon && !isLoading && !error && (
-              <span className="text-muted">{rightIcon}</span>
-            )}
-          </div>
         </div>
-
-        {error ? (
-          <p className="text-xs text-danger font-medium flex items-center gap-1">
+        {error && (
+          <p id={errorId} className="flex items-center gap-1 text-sm font-bold text-danger">
+            <AlertCircle aria-hidden="true" className="w-4 h-4 shrink-0" />
             {error}
           </p>
-        ) : hint ? (
-          <p className="text-xs text-muted">{hint}</p>
-        ) : null}
+        )}
       </div>
     );
   }

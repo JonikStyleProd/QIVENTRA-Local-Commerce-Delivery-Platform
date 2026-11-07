@@ -1,4 +1,7 @@
 import React, { ErrorInfo, ReactNode } from 'react';
+import { translations, Language } from '../../i18n/translations';
+import { MadeByView } from '../collage/MadeBy';
+import { ErrorState } from './ErrorState';
 
 interface Props {
   children: ReactNode;
@@ -8,6 +11,17 @@ interface State {
   hasError: boolean;
   error?: Error;
 }
+
+/** This screen sits outside every provider, so it reads the saved language itself. */
+const savedLanguage = (): Language => {
+  try {
+    const saved = localStorage.getItem('qiventra_language');
+    if (saved === 'en' || saved === 'he' || saved === 'ru') return saved;
+  } catch {
+    // Without storage the default language is fine.
+  }
+  return 'ru';
+};
 
 export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -32,26 +46,16 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   public render(): ReactNode {
     if (this.state.hasError) {
+      const copy = translations[savedLanguage()].screens;
       return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-paper text-ink">
-          <div className="max-w-md w-full p-6 sm:p-8 rounded-3xl bg-card shadow-xl border border-paper-dot text-center space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-ink text-accent-on-ink flex items-center justify-center mx-auto text-xl font-bold">
-              Q
-            </div>
-            <h1 className="text-xl font-extrabold text-ink">
-              Что-то пошло не так
-            </h1>
-            <p className="text-xs text-ink-2 leading-relaxed">
-              Произошла непредвиденная ошибка при отображении страницы. Нажмите кнопку ниже для перезагрузки.
-            </p>
-            <button
-              type="button"
-              onClick={this.handleReset}
-              className="w-full py-3 px-4 rounded-xl bg-ink hover:bg-ink text-paper font-bold text-xs transition active:scale-98 shadow-sm cursor-pointer"
-            >
-              Перезагрузить приложение
-            </button>
-          </div>
+        <div className="paper-dots min-h-screen flex flex-col items-center justify-center gap-8 p-6 bg-paper text-ink">
+          <ErrorState
+            title={copy.error.title}
+            message={copy.error.message}
+            retryLabel={copy.error.retry}
+            onRetry={this.handleReset}
+          />
+          <MadeByView copy={copy.madeBy} className="justify-center text-center" />
         </div>
       );
     }

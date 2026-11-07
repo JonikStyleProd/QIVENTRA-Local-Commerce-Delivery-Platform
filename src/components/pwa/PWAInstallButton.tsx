@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Download, Smartphone, Share, PlusSquare, X } from 'lucide-react';
+import { Download, Smartphone, Share, PlusSquare } from 'lucide-react';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { useLanguage } from '../../context/LanguageContext';
+import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
 
 export const PWAInstallButton: React.FC = () => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
+  const { t } = useLanguage();
+  const copy = t.screens.pwa;
   const [showIOSGuide, setShowIOSGuide] = useState(false);
 
   // Suppress when already installed as standalone
@@ -14,14 +19,16 @@ export const PWAInstallButton: React.FC = () => {
   // Chromium / Android / Desktop flow
   if (isInstallable) {
     return (
-      <button
+      <Button
+        variant="accent"
+        size="sm"
         onClick={install}
-        className="inline-flex items-center gap-2 rounded-xl bg-accent px-3.5 py-2 text-xs font-semibold text-ink shadow-xs hover:bg-accent transition-all active:scale-95 select-none"
-        aria-label="Установить приложение QIVENTRA"
+        aria-label={copy.installLabel}
+        leftIcon={<Download aria-hidden="true" className="w-4 h-4" />}
+        className="shrink-0"
       >
-        <Download className="w-4 h-4 text-ink" />
-        <span>Установить PWA</span>
-      </button>
+        {copy.install}
+      </Button>
     );
   }
 
@@ -29,53 +36,32 @@ export const PWAInstallButton: React.FC = () => {
   if (isIOS) {
     return (
       <>
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setShowIOSGuide(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-theme bg-surface-elevated px-3 py-1.5 text-xs font-medium text-primary hover:bg-surface transition select-none"
-          aria-label="Установить на iPhone"
+          aria-label={copy.iosLabel}
+          leftIcon={<Smartphone aria-hidden="true" className="w-4 h-4" />}
+          className="shrink-0"
         >
-          <Smartphone className="w-3.5 h-3.5 text-ink" />
-          <span>Установить на iOS</span>
-        </button>
+          {copy.ios}
+        </Button>
 
-        {showIOSGuide && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-            <div className="w-full max-w-sm rounded-3xl bg-surface p-6 shadow-2xl border border-theme text-left animate-in zoom-in-95">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-ink text-paper flex items-center justify-center font-bold text-sm">
-                    Q
-                  </div>
-                  <h3 className="text-base font-bold text-primary">Установка на iPhone / iPad</h3>
-                </div>
-                <button
-                  onClick={() => setShowIOSGuide(false)}
-                  className="p-1 rounded-lg text-muted hover:text-primary transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="space-y-3 text-xs text-secondary leading-relaxed">
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface-elevated border border-theme">
-                  <Share className="w-4 h-4 text-ink shrink-0 mt-0.5" />
-                  <p>1. Нажмите кнопку <strong>«Поделиться»</strong> в нижней панели Safari.</p>
-                </div>
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-surface-elevated border border-theme">
-                  <PlusSquare className="w-4 h-4 text-ink shrink-0 mt-0.5" />
-                  <p>2. Прокрутите список и выберите <strong>«На экран "Домой"»</strong>.</p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowIOSGuide(false)}
-                className="mt-5 w-full rounded-xl bg-ink text-paper py-2.5 text-xs font-semibold hover:bg-ink transition"
-              >
-                Понятно
-              </button>
-            </div>
-          </div>
-        )}
+        <Modal isOpen={showIOSGuide} onClose={() => setShowIOSGuide(false)} title={copy.iosTitle} maxWidth="sm">
+          <ol className="space-y-2.5 font-bold">
+            <li className="flex items-start gap-2.5 p-3 bg-tint-health border-2 border-ink rounded-xl">
+              <Share aria-hidden="true" className="w-5 h-5 shrink-0" />
+              <span>{copy.iosStep1}</span>
+            </li>
+            <li className="flex items-start gap-2.5 p-3 bg-tint-gift border-2 border-ink rounded-xl">
+              <PlusSquare aria-hidden="true" className="w-5 h-5 shrink-0" />
+              <span>{copy.iosStep2}</span>
+            </li>
+          </ol>
+          <Button fullWidth variant="secondary" onClick={() => setShowIOSGuide(false)} className="mt-4">
+            {copy.gotIt}
+          </Button>
+        </Modal>
       </>
     );
   }

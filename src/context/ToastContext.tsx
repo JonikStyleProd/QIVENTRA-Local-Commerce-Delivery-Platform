@@ -34,7 +34,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {/* Toast floating container */}
       <div
         id="qiventra-toast-container"
-        className="fixed bottom-20 desk:bottom-6 inset-x-4 desk:inset-x-auto desk:end-4 z-50 flex flex-col gap-2 desk:w-96 max-w-full pointer-events-none"
+        className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] desk:bottom-6 inset-x-3 desk:inset-x-auto desk:end-5 z-[70] flex flex-col gap-2 desk:w-96 pointer-events-none"
         aria-live="polite"
       >
         {toasts.map((t) => (

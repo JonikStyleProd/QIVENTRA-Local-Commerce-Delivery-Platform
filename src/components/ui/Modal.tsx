@@ -1,90 +1,93 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
+import { Tape } from '../collage/Tape';
+import { useDialogFocus } from '../collage/useDialogFocus';
 import { IconButton } from './IconButton';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  /** Short handwritten note above the title. */
+  note?: string;
   subtitle?: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  subtitle,
-  children,
-  maxWidth = 'md',
-}) => {
+const MAX_WIDTH = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-2xl',
+};
+
+/**
+ * Sheet taped over the dimmed page. Rendered in a portal because many callers sit inside tilted
+ * cards, where a transform would otherwise trap fixed positioning.
+ */
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, note, subtitle, children, maxWidth = 'md' }) => {
+  const { t } = useLanguage();
+  const titleId = useId();
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  useDialogFocus(sheetRef, isOpen);
+
   useEffect(() => {
+    if (!isOpen) return;
+    // Capture phase, so Escape closes only this dialog when it opens over another one (the chat).
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
         onClose();
       }
     };
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown, true);
     return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const maxWidthStyles = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-2xl',
-  };
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-end desk:items-center justify-center p-3 desk:p-6">
+      <div className="fixed inset-0 bg-[rgba(30,30,30,0.6)]" onClick={onClose} aria-hidden="true" />
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-      role="dialog"
-      aria-modal="true"
-    >
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Modal Card */}
-      <div
-        className={`
-          relative w-full ${maxWidthStyles[maxWidth]} rounded-3xl bg-surface border border-theme shadow-2xl
-          p-5 sm:p-7 z-10 max-h-[85dvh] overflow-y-auto
-          animate-in zoom-in-95 fade-in duration-200
-        `}
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        tabIndex={-1}
+        className={`anim-drop relative w-full ${MAX_WIDTH[maxWidth]} mb-[env(safe-area-inset-bottom,0px)] bg-card text-ink border-[3px] border-ink rounded-3xl shadow-hard-6 max-h-[88dvh] flex flex-col`}
       >
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div>
+        <Tape tone="yellow" />
+        <div className="flex items-start justify-between gap-3 px-4 pt-4 desk:px-6 desk:pt-6 shrink-0">
+          <div className="min-w-0">
+            {note && <p className="hand text-2xl leading-none text-action">{note}</p>}
             {title && (
-              <h2 className="text-xl font-bold tracking-tight text-primary">{title}</h2>
+              <h2 id={titleId} className="text-2xl desk:text-[28px] font-black tracking-tight leading-tight">
+                {title}
+              </h2>
             )}
-            {subtitle && (
-              <p className="text-xs text-secondary mt-1">{subtitle}</p>
-            )}
+            {subtitle && <p className="mt-1 text-sm font-bold text-ink-2">{subtitle}</p>}
           </div>
           <IconButton
-            size="sm"
-            variant="ghost"
-            icon={<X className="w-4 h-4" />}
+            icon={<X aria-hidden="true" className="w-5 h-5" />}
             onClick={onClose}
-            aria-label="Закрыть модальное окно"
+            aria-label={t.screens.common.close}
           />
         </div>
 
-        <div className="mt-2">{children}</div>
+        <div className="mt-3 px-4 pb-4 desk:px-6 desk:pb-6 overflow-y-auto overscroll-contain">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
