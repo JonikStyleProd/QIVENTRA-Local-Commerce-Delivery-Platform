@@ -1,5 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { BrandAssetRecord, BrandAssetVariant } from '../types';
+import { BRAND_ASSETS, BRAND_ASSETS_BUCKET, CANONICAL_PATHS, notifyBrandAssetUpdated } from './brandAssets';
+
+export { BRAND_ASSETS, BRAND_ASSETS_BUCKET };
 
 /* =========================================================================
    1. Supabase Environment Configuration & Initialization
@@ -48,24 +51,17 @@ export const isSupabaseConfigured = !isMissingConfig;
    2. Official Brand Assets Specification & Checksums
    ========================================================================= */
 
-export const BRAND_ASSETS_BUCKET = 'brand-assets';
-
-/**
- * Three official Supabase Storage hosted brand assets directly from public storage:
- * - mark: mobile header, favicon, PWA icon, and compact areas (2048x2048)
- * - lightLockup: light lettering for dark background (4096x1120)
- * - darkLockup: dark lettering for light background (4096x1120)
- */
-export const BRAND_ASSETS = {
-  mark: "https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-mark-transparent-2k.png",
-  lightLockup: "https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-lockup-light-transparent-4k.png",
-  darkLockup: "https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-lockup-dark-transparent-4k.png",
-} as const;
-
+/** Where the live file is served from. The interface reads these addresses, whatever the version. */
 export const FIXED_STORAGE_PATHS: Record<BrandAssetVariant, string> = {
-  mark: 'qiventra/v1/qiventra-mark-transparent-2k.png',
-  lockup: 'qiventra/v1/qiventra-lockup-dark-transparent-4k.png',
+  mark: CANONICAL_PATHS.mark,
+  lockup: CANONICAL_PATHS.darkLockup,
 };
+
+const EXTENSIONS: Record<string, string> = { 'image/png': 'png', 'image/webp': 'webp', 'image/svg+xml': 'svg' };
+
+/** Each version keeps its own file, so storage_path stays unique and a rollback has a file to restore. */
+export const versionedStoragePath = (variant: BrandAssetVariant, version: number, sha256: string, mime: string): string =>
+  `qiventra/history/${variant}/v${version}-${sha256.slice(0, 12)}.${EXTENSIONS[mime] ?? 'bin'}`;
 
 export const ALLOWED_BRAND_MIME_TYPES = [
   'image/png',
@@ -179,27 +175,6 @@ export function getBrandAssetPublicUrl(variant: BrandAssetVariant): string {
 /* =========================================================================
    4. Brand Assets Service: Fetch, Upload, Versioning, Rollback
    ========================================================================= */
-
-// Event emitter to notify mounted BrandLogo components when assets change
-type BrandAssetListener = () => void;
-const listeners: Set<BrandAssetListener> = new Set();
-
-export function subscribeToBrandAssetUpdates(listener: BrandAssetListener): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
-function notifyBrandAssetUpdated() {
-  listeners.forEach((listener) => {
-    try {
-      listener();
-    } catch {
-      // Ignore listener errors
-    }
-  });
-}
 
 /**
  * Fetches all brand asset records from Supabase `brand_assets` table.
@@ -347,27 +322,13 @@ export async function uploadBrandAsset(params: {
     };
   }
 
-  // 5. Fixed destination path in storage
-  const storagePath = FIXED_STORAGE_PATHS[variant];
+  // 5. The live file's address never changes; each version also keeps a file of its own
+  const canonicalPath = FIXED_STORAGE_PATHS[variant];
+  const storagePath = versionedStoragePath(variant, 2, sha256, mime);
 
   // 6. Upload to Supabase Storage if configured
   if (isSupabaseConfigured) {
     try {
-      const { error: storageError } = await supabase.storage
-        .from(BRAND_ASSETS_BUCKET)
-        .upload(storagePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: mime,
-        });
-
-      if (storageError) {
-        return {
-          success: false,
-          error: `Supabase Storage upload failed: ${storageError.message}`,
-        };
-      }
-
       // Fetch current max version for this variant
       const { data: existingRecords } = await supabase
         .from('brand_assets')
@@ -377,6 +338,30 @@ export async function uploadBrandAsset(params: {
         .limit(1);
 
       const nextVersion = existingRecords && existingRecords.length > 0 ? existingRecords[0].version + 1 : 2;
+      const nextPath = versionedStoragePath(variant, nextVersion, sha256, mime);
+
+      // The version's own file first: if this fails, nothing about the live logo has changed.
+      const { error: storageError } = await supabase.storage
+        .from(BRAND_ASSETS_BUCKET)
+        .upload(nextPath, file, { cacheControl: '31536000', upsert: false, contentType: mime });
+
+      if (storageError) {
+        return {
+          success: false,
+          error: `Supabase Storage upload failed: ${storageError.message}`,
+        };
+      }
+
+      const { error: liveError } = await supabase.storage
+        .from(BRAND_ASSETS_BUCKET)
+        .upload(canonicalPath, file, { cacheControl: '3600', upsert: true, contentType: mime });
+
+      if (liveError) {
+        return {
+          success: false,
+          error: `Supabase Storage upload failed: ${liveError.message}`,
+        };
+      }
 
       // Set previous records for this variant to inactive
       await supabase
@@ -388,7 +373,7 @@ export async function uploadBrandAsset(params: {
       const assetKey = `qiventra_${variant}_v${nextVersion}`;
       const newRecord = {
         asset_key: assetKey,
-        storage_path: storagePath,
+        storage_path: nextPath,
         variant,
         mime_type: mime as any,
         width: dimensions.width,
@@ -471,6 +456,35 @@ export async function rollbackBrandAsset(params: {
 
   if (isSupabaseConfigured) {
     try {
+      const { data: target, error: findError } = await supabase
+        .from('brand_assets')
+        .select('storage_path, mime_type')
+        .eq('variant', variant)
+        .eq('version', targetVersion)
+        .single();
+
+      if (findError || !target) {
+        return { success: false, error: findError?.message ?? 'This version does not exist.' };
+      }
+
+      // Put the old file back at the live address before touching any record: a missing file
+      // leaves the current logo and its record exactly as they were.
+      const { data: file, error: downloadError } = await supabase.storage
+        .from(BRAND_ASSETS_BUCKET)
+        .download(target.storage_path);
+
+      if (downloadError || !file) {
+        return { success: false, error: downloadError?.message ?? 'The file of this version is missing.' };
+      }
+
+      const { error: restoreError } = await supabase.storage
+        .from(BRAND_ASSETS_BUCKET)
+        .upload(FIXED_STORAGE_PATHS[variant], file, { cacheControl: '3600', upsert: true, contentType: target.mime_type });
+
+      if (restoreError) {
+        return { success: false, error: restoreError.message };
+      }
+
       // Set all for this variant to inactive
       await supabase
         .from('brand_assets')

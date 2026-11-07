@@ -1,19 +1,25 @@
 import { PromotionText, PromotionType } from './data/promotions';
 import type { DeliveryWindow } from './data/deliverySlots';
+import type { GeoPoint } from './data/addresses';
 
 export type AppRoute =
   | 'home'
   | 'catalog'
   | 'search'
   | 'orders'
+  | 'order'
   | 'cart'
   | 'delivery'
   | 'profile'
-  | 'auth'
   | 'store'
+  | 'product'
   | 'vendor'
   | 'courier'
-  | 'admin';
+  | 'admin'
+  | 'privacy'
+  | 'terms'
+  | 'accessibility'
+  | 'notFound';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -31,7 +37,6 @@ export interface Category {
   icon: string;
   description: string;
   descriptions?: LocalizedText;
-  storesCount: number;
   popularItems: string[];
   imageUrl?: string;
   imageAlt?: LocalizedText;
@@ -52,7 +57,9 @@ export interface Store {
   minOrder: number;
   address: string;
   addresses?: LocalizedText;
-  distanceKm: number;
+  coords: GeoPoint;
+  /** The shop delivers this far from its door, in a straight line. */
+  deliveryRadiusKm: number;
   isVerified: boolean;
   isEco: boolean;
   isFeatured?: boolean;
@@ -65,6 +72,15 @@ export interface Store {
   galleryUrls?: string[];
   imageAlt?: LocalizedText;
 }
+
+/** A choice inside one product: weight, volume, size or color, each with its own price. */
+export interface ProductVariant {
+  id: string;
+  labels: LocalizedText;
+  price: number;
+}
+
+export type VariantKind = 'weight' | 'volume' | 'size' | 'color';
 
 export interface Product {
   id: string;
@@ -88,11 +104,15 @@ export interface Product {
   imageUrl?: string;
   imageGallery?: string[];
   imageAlt?: LocalizedText;
+  /** The first variant matches `price` and `unit`. A product without variants has no choice to make. */
+  variants?: ProductVariant[];
+  variantKind?: VariantKind;
 }
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  variantId?: string;
 }
 
 export type OrderStatus =
@@ -110,6 +130,8 @@ export interface OrderItem {
   productId?: string;
   storeId?: string;
   imageUrl?: string;
+  variantId?: string;
+  variantLabels?: LocalizedText;
 }
 
 /** A promotion as it was applied to an order, kept with the order so its sums never change. */
@@ -136,7 +158,11 @@ export interface Order {
   deliveryFee: number;
   address: string;
   addresses?: LocalizedText;
+  /** Where it goes, for the courier's route. */
+  destination?: GeoPoint;
   etaMinutes: number;
+  /** The whole promised time, so the estimate can shrink step by step. */
+  etaTotalMinutes?: number;
   /** Set on orders placed in the app; the seed orders in mockData do not have these. */
   placedAt?: string;
   deliveryWindow?: DeliveryWindow;
@@ -144,6 +170,7 @@ export interface Order {
   subtotal?: number;
   /** The promo code's discount, if it beat the shop promotions. */
   discount?: number;
+  promoCode?: string;
   /** Each shop's regular fee; free delivery is taken off as a promotion line. */
   feeLines?: { storeId: string; fee: number }[];
   promotionLines?: OrderPromotionLine[];
@@ -168,6 +195,8 @@ export interface AddressItem {
   titles?: LocalizedText;
   address: string;
   addresses?: LocalizedText;
+  /** The address on the demo list, which has the coordinates. */
+  demoAddressId: string;
   isDefault: boolean;
 }
 
@@ -178,7 +207,6 @@ export interface UserProfile {
   phone: string;
   email: string;
   savedAddresses: AddressItem[];
-  favoriteStoreIds: string[];
   role: 'customer' | 'vendor' | 'courier' | 'admin';
   avatarUrl?: string;
 }

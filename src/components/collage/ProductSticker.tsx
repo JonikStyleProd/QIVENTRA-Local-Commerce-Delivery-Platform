@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Product } from '../../types';
+import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { smallPhoto } from './PolaroidPhoto';
 import { ProductPrice } from './ProductPrice';
 import { Tape } from './Tape';
 
@@ -11,11 +13,14 @@ interface ProductStickerProps {
   tape: 'yellow' | 'blue' | 'red';
   delay: string;
   onAdd: () => void;
+  /** The first stickers are on screen right away, so they should not wait. */
+  eager?: boolean;
 }
 
 /** Product sticker from the phone home screen: taped photo, short name, price and one add button. */
-export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart, tilt, tape, delay, onAdd }) => {
+export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart, tilt, tape, delay, onAdd, eager = false }) => {
   const { t, language } = useLanguage();
+  const { deliveryFor } = useApp();
   const [flash, setFlash] = useState(0);
 
   const label = t.collage.productLabels[product.id] || product.names?.[language] || product.name;
@@ -29,15 +34,21 @@ export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart,
       <div className="relative bg-card p-2 pb-2.5 shadow-sticker">
         <Tape tone={tape} small />
         <img
-          src={product.imageUrl}
+          src={product.imageUrl ? smallPhoto(product.imageUrl) : undefined}
           alt={label}
-          loading="lazy"
+          width={134}
+          height={134}
+          loading={eager ? 'eager' : 'lazy'}
+          fetchPriority={eager ? 'high' : undefined}
           decoding="async"
           className="block w-full aspect-square object-cover"
         />
         <p className="hand mt-1.5 text-[22px] leading-none">{label}</p>
         <div className="relative flex items-center justify-between mt-1">
-          <ProductPrice product={product} />
+          <ProductPrice product={product} variantId={product.variants?.[0]?.id ?? ''} />
+          {!deliveryFor(product.storeId).inRange ? (
+            <span className="text-xs font-extrabold text-action-text max-w-[70px] text-end leading-tight">{t.demo.delivery.cannotAdd}</span>
+          ) : (
           <button
             type="button"
             onClick={() => {
@@ -53,6 +64,7 @@ export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart,
           >
             {inCart ? '✓' : '+'}
           </button>
+          )}
           {flash > 0 && (
             <span
               key={flash}

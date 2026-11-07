@@ -1,19 +1,24 @@
 import React, { useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router';
 import { ChevronLeft, Leaf, MapPin, MessageSquare, Share2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePromotions } from '../context/PromotionsContext';
-import { useToast } from '../context/ToastContext';
+import { useShare } from '../hooks/useShare';
+import { pathFor } from '../router/paths';
+import { NotFoundView } from './NotFoundPage';
 import { FACT_LABELS, ProductLabel, filterProductsByLabels, isLive, visiblePromotions } from '../data/promotions';
 import { MOCK_CATEGORIES, MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 import { GROUP_TINT_CLASS, groupOfCategoryName, tiltFor } from '../data/collageCatalog';
 import { CollageGroupId } from '../i18n/collage';
 import { ProductCard } from '../components/ui/ProductCard';
 import { Button } from '../components/ui/Button';
+import { LinkButton } from '../components/ui/LinkButton';
 import { IconButton } from '../components/ui/IconButton';
 import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
+import { FavoriteButton } from '../components/collage/FavoriteButton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageShell, SectionHeading } from '../components/collage/Page';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
@@ -24,15 +29,16 @@ import { Tape } from '../components/collage/Tape';
 const FACT = 'min-w-0 px-3 py-2 border-2 border-ink rounded-xl';
 
 export const StoreDetailPage: React.FC = () => {
-  const { selectedStoreId, navigateTo, addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
+  const { storeId } = useParams();
+  const { deliveryFor, setIsAddressModalOpen, addToCart, updateCartQuantity, quantityInCart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
-  const { showToast } = useToast();
+  const share = useShare();
   const { promotions, now, labelsFor } = usePromotions();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [requiredLabels, setRequiredLabels] = useState<ProductLabel[]>([]);
 
-  const store = useMemo(() => MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0], [selectedStoreId]);
-  const storeProducts = useMemo(() => MOCK_PRODUCTS.filter((p) => p.storeId === store.id), [store.id]);
+  const store = useMemo(() => MOCK_STORES.find((s) => s.id === storeId), [storeId]);
+  const storeProducts = useMemo(() => MOCK_PRODUCTS.filter((p) => p.storeId === storeId), [storeId]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -49,34 +55,21 @@ export const StoreDetailPage: React.FC = () => {
   const toggleRequiredLabel = (label: ProductLabel) =>
     setRequiredLabels((prev) => (prev.includes(label) ? prev.filter((entry) => entry !== label) : [...prev, label]));
 
-  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
+  if (!store) {
+    return <NotFoundView title={t.demo.notFound.storeTitle} description={t.demo.notFound.storeDesc} />;
+  }
 
   const copy = t.collage.storeCopy[store.id];
   const displayName = copy?.name || store.names?.[language] || store.name;
   const displayKind = copy?.kind || store.categories?.[language] || store.category;
   const displayAddress = store.addresses?.[language] || store.address;
+  const delivery = deliveryFor(store.id);
   const shownPromotions = visiblePromotions(promotions, store.id, now);
 
   const categoryLabel = (name: string) =>
     MOCK_CATEGORIES.find((c) => c.name === name)?.names?.[language] || name;
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: displayName,
-          text: `QIVENTRA: ${displayName}`,
-          url: window.location.href,
-        })
-        .catch(() => {});
-    } else {
-      showToast({
-        type: 'success',
-        title: t.store.linkCopied,
-        message: displayName,
-      });
-    }
-  };
+  const handleShare = () => share({ title: displayName, path: pathFor('store', { storeId: store.id }) });
 
   const openStoreChat = () =>
     openChatWithParticipant({
@@ -89,14 +82,13 @@ export const StoreDetailPage: React.FC = () => {
 
   return (
     <PageShell>
-      <button
-        type="button"
-        onClick={() => navigateTo('catalog')}
+      <Link
+        to={pathFor('catalog')}
         className="inline-flex items-center gap-1 min-h-11 -ms-1 px-1 font-extrabold cursor-pointer hover:underline"
       >
         <ChevronLeft aria-hidden="true" className="w-5 h-5 rtl-flip" />
         {t.store.backToCatalog}
-      </button>
+      </Link>
 
       <section className="grid desk:grid-cols-[minmax(0,420px)_minmax(0,1fr)] gap-6 desk:gap-12 items-center mt-3 mb-9 desk:mb-14">
         <div
@@ -110,7 +102,7 @@ export const StoreDetailPage: React.FC = () => {
 
         <div className="min-w-0">
           <p className="hand anim-in inline-block text-[26px] desk:text-[30px] leading-tight text-action -rotate-2">
-            {t.screens.store.note}
+            {delivery.inRange ? t.screens.store.note : displayKind}
           </p>
           <h1 className="anim-in font-black tracking-[-0.03em] leading-[1.02] text-[clamp(32px,4.6vw,60px)] break-words">
             <bdi>{displayName}</bdi>
@@ -129,10 +121,26 @@ export const StoreDetailPage: React.FC = () => {
             </div>
           )}
 
+          {!delivery.inRange && (
+            <div role="status" className="mt-4 p-3 bg-tint-food border-2 border-ink rounded-xl">
+              <p className="font-black">{t.demo.delivery.outOfRange}</p>
+              <p className="text-sm font-bold">
+                {t.demo.delivery.outOfRangeDesc
+                  .replace('{distance}', formatDistance(delivery.km))
+                  .replace('{radius}', formatDistance(store.deliveryRadiusKm))}
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => setIsAddressModalOpen(true)} className="mt-2">
+                {t.demo.delivery.changeAddress}
+              </Button>
+            </div>
+          )}
+
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
             <div className={`${FACT} bg-tint-health`}>
               <dt className="text-xs font-bold text-ink-2">{t.store.courierDeliveryLabel}</dt>
-              <dd className="font-black tabular-nums">{formatTimeRange(store.deliveryTimeMin, store.deliveryTimeMax)}</dd>
+              <dd className="font-black tabular-nums">
+                {delivery.inRange ? formatTimeRange(delivery.timeMin, delivery.timeMax) : '—'}
+              </dd>
             </div>
             <div className={`${FACT} bg-tint-food`}>
               <dt className="text-xs font-bold text-ink-2">{t.store.deliveryCostLabel}</dt>
@@ -144,7 +152,7 @@ export const StoreDetailPage: React.FC = () => {
             </div>
             <div className={`${FACT} bg-tint-gift`}>
               <dt className="text-xs font-bold text-ink-2">{t.screens.store.distance}</dt>
-              <dd className="font-black tabular-nums">{formatDistance(store.distanceKm)}</dd>
+              <dd className="font-black tabular-nums">{formatDistance(delivery.km)}</dd>
             </div>
           </dl>
 
@@ -156,6 +164,7 @@ export const StoreDetailPage: React.FC = () => {
             >
               {t.chat.withStore}
             </Button>
+            <FavoriteButton kind="stores" id={store.id} name={displayName} />
             <IconButton
               onClick={handleShare}
               aria-label={t.store.shareStore}
@@ -228,7 +237,7 @@ export const StoreDetailPage: React.FC = () => {
             <ProductCard
               key={product.id}
               product={product}
-              inCartQuantity={getInCartQuantity(product.id)}
+              inCartQuantity={quantityInCart(product.id)}
               onAddToCart={addToCart}
               onUpdateQuantity={updateCartQuantity}
             />
@@ -245,9 +254,9 @@ export const StoreDetailPage: React.FC = () => {
             </span>
           }
         >
-          <Button size="lg" onClick={() => navigateTo('cart')} className="whitespace-nowrap px-3.5 desk:px-6">
+          <LinkButton to={pathFor('cart')} size="lg" className="whitespace-nowrap px-3.5 desk:px-6">
             {t.screens.store.toBasket}
-          </Button>
+          </LinkButton>
         </BottomPanel>
       )}
     </PageShell>

@@ -1,16 +1,19 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES } from '../data/mockData';
+import { hasVariantChoice, keyOfLine, priceOf, variantOf } from '../data/variants';
 import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfDay } from '../data/deliverySlots';
+import { pathFor } from '../router/paths';
 import { Button } from '../components/ui/Button';
-import { EmptyState } from '../components/ui/EmptyState';
 import { HandCheck } from '../components/collage/HandMarks';
 import { DiscountChoiceNote, PromotionHints, PromotionRows } from '../components/collage/OrderPromotions';
 import { SummaryRow } from '../components/collage/SummaryRow';
 import { NotebookPage } from '../components/collage/NotebookPage';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { StepHeader } from '../components/collage/StepHeader';
+import { UndeliverableNotice } from '../components/collage/UndeliverableNotice';
 import { Tape } from '../components/collage/Tape';
 import { focusPageHeading } from '../components/collage/focusHeading';
 
@@ -29,10 +32,11 @@ export const DeliveryPage: React.FC = () => {
     selectedStore,
     orderStores,
     setIsAddressModalOpen,
+    deliveryFor,
     navigateTo,
     placeOrder,
     updateOrder,
-    trackedOrders,
+    orders,
   } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const copy = t.collage.delivery;
@@ -42,8 +46,13 @@ export const DeliveryPage: React.FC = () => {
   const [activeDay, setActiveDay] = useState(0);
   const [now, setNow] = useState(() => new Date());
   const [note, setNote] = useState('');
-  const [phase, setPhase] = useState<Phase>('form');
-  const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  // Kept in the history entry, so a reload still shows what was just sent.
+  const savedOrderId = (location.state as { placedOrderId?: string } | null)?.placedOrderId ?? null;
+  const [justPlacedId, setJustPlacedId] = useState<string | null>(null);
+  const placedOrderId = justPlacedId ?? savedOrderId;
+  const [phase, setPhase] = useState<Phase>(placedOrderId ? 'done' : 'form');
   const timer = useRef<number | undefined>(undefined);
   const noteId = useId();
 
@@ -69,7 +78,7 @@ export const DeliveryPage: React.FC = () => {
   }, [phase, slot, slotDays]);
 
   // Once sent, the basket is empty: this screen shows the order that was placed instead.
-  const placedOrder = placedOrderId ? trackedOrders.find((order) => order.id === placedOrderId) : undefined;
+  const placedOrder = placedOrderId ? orders.find((candidate) => candidate.id === placedOrderId) : undefined;
 
   const isDone = phase === 'done';
   const isBusy = phase === 'busy';
@@ -80,12 +89,13 @@ export const DeliveryPage: React.FC = () => {
   // The shop on the polaroid: the picked one when it is part of the order, otherwise the first in it.
   const headStore = orderStoreList.find((store) => store.id === selectedStore?.id) ?? orderStoreList[0];
   const shortfalls = placedOrder ? [] : orderStores.filter((line) => line.shortfall > 0);
-  const canConfirm = shortfalls.length === 0;
+  const undeliverable = placedOrder ? [] : order.undeliverable;
+  const canConfirm = shortfalls.length === 0 && undeliverable.length === 0;
 
   const storeTime = orderStoreList.length
     ? formatTimeRange(
-        Math.min(...orderStoreList.map((store) => store.deliveryTimeMin)),
-        Math.max(...orderStoreList.map((store) => store.deliveryTimeMax))
+        Math.min(...orderStoreList.map((store) => deliveryFor(store.id).timeMin)),
+        Math.max(...orderStoreList.map((store) => deliveryFor(store.id).timeMax))
       )
     : '';
   const chosenWindow: DeliveryWindow = slot === 'asap' ? { kind: 'asap' } : { kind: 'slot', startsAt: slot };
@@ -101,8 +111,8 @@ export const DeliveryPage: React.FC = () => {
 
   const orderLines = placedOrder
     ? placedOrder.items.map((item) => ({
-        key: item.name,
-        name: item.names?.[language] || item.name,
+        key: `${item.name}-${item.variantId ?? ''}`,
+        name: `${item.names?.[language] || item.name}${item.variantLabels ? ` · ${item.variantLabels[language]}` : ''}`,
         quantity: item.quantity,
         lineTotal: item.price * item.quantity,
         imageUrl: item.imageUrl,
@@ -110,10 +120,12 @@ export const DeliveryPage: React.FC = () => {
         storeId: item.storeId ?? '',
       }))
     : cart.map((line) => ({
-        key: line.product.id,
-        name: line.product.names?.[language] || line.product.name,
+        key: keyOfLine(line),
+        name: `${line.product.names?.[language] || line.product.name}${
+          hasVariantChoice(line.product) ? ` · ${variantOf(line.product, line.variantId)?.labels[language]}` : ''
+        }`,
         quantity: line.quantity,
-        lineTotal: line.product.price * line.quantity,
+        lineTotal: priceOf(line.product, line.variantId) * line.quantity,
         imageUrl: line.product.imageUrl,
         label: t.collage.productLabels[line.product.id] || line.product.names?.[language] || line.product.name,
         storeId: line.product.storeId,
@@ -121,6 +133,8 @@ export const DeliveryPage: React.FC = () => {
 
   const orderSubtotal = placedOrder?.subtotal ?? order.itemsSubtotal;
   const orderDiscount = placedOrder?.discount ?? order.promoCodeDiscount;
+  const orderPromoCode = placedOrder?.promoCode ?? order.promoCode?.code ?? '';
+  const promoCodeLabel = <bdi>{t.demo.promo.active.replace('{code}', orderPromoCode)}</bdi>;
   const orderPromotionLines = placedOrder?.promotionLines ?? order.promotionLines;
   // Delivery rows show each shop's regular fee; free delivery is taken off in its own row.
   const orderFee = placedOrder?.deliveryFee ?? order.baseDeliveryFee;
@@ -142,7 +156,9 @@ export const DeliveryPage: React.FC = () => {
       if (placedOrder) {
         updateOrder(placedOrder.id, { deliveryWindow: chosenWindow, note: note.trim() || undefined });
       } else {
-        setPlacedOrderId(placeOrder({ deliveryWindow: chosenWindow, note }).id);
+        const placed = placeOrder({ deliveryWindow: chosenWindow, note });
+        setJustPlacedId(placed.id);
+        navigate(pathFor('delivery'), { replace: true, state: { placedOrderId: placed.id } });
       }
       setPhase('done');
     }, SENDING_TIME_MS);
@@ -160,22 +176,7 @@ export const DeliveryPage: React.FC = () => {
   );
 
   if (cart.length === 0 && !placedOrder) {
-    return (
-      <div className="paper-dots min-h-screen pb-16">
-        <StepHeader step={copy.step} title={copy.title} backLabel={copy.backMobile} onBack={backToStores} />
-        <div className="hidden desk:block max-w-[1200px] mx-auto px-10 pt-8 pb-6">
-          <h1 className="text-[46px] font-black tracking-[-0.02em]">{copy.title}</h1>
-        </div>
-        <div className="px-4 pt-6">
-          <EmptyState
-            title={t.cart.emptyTitle}
-            description={t.cart.emptyDesc}
-            actionText={t.collage.landing.toShops}
-            onAction={backToStores}
-          />
-        </div>
-      </div>
-    );
+    return <Navigate to={pathFor('cart')} replace state={{ notice: 'emptyForDelivery' }} />;
   }
 
   const windowLine = `${copy.windowWord}: ${formatWindow(chosenWindow, t.collage.slots, language, now)}`;
@@ -264,7 +265,7 @@ export const DeliveryPage: React.FC = () => {
   );
 
   const minOrderNotice = (id: string) =>
-    !isDone && !canConfirm ? (
+    !isDone && shortfalls.length > 0 ? (
       <ul id={id} className="grid gap-1 mb-2.5 text-sm font-extrabold">
         {shortfalls.map((line) => {
           const [before, after] = copy.addMore
@@ -300,7 +301,7 @@ export const DeliveryPage: React.FC = () => {
 
   const doneActions = (
     <>
-      <Button variant="secondary" size="lg" onClick={() => navigateTo('orders', { orderId: placedOrderId ?? undefined })}>
+      <Button variant="secondary" size="lg" onClick={() => navigateTo('order', { orderId: placedOrderId ?? undefined })}>
         {copy.toOrder}
       </Button>
       <Button variant="outline" size="lg" onClick={() => navigateTo('home')}>
@@ -408,7 +409,7 @@ export const DeliveryPage: React.FC = () => {
                 {headStore && (
                   <p className="mt-1 font-bold text-ink-2">
                     {pickedCopy?.area ? `${pickedCopy.area} · ` : ''}
-                    {formatDistance(headStore.distanceKm)} · {formatTimeRange(headStore.deliveryTimeMin, headStore.deliveryTimeMax)}
+                    {formatDistance(deliveryFor(headStore.id).km)} · {formatTimeRange(deliveryFor(headStore.id).timeMin, deliveryFor(headStore.id).timeMax)}
                   </p>
                 )}
               </>
@@ -441,7 +442,7 @@ export const DeliveryPage: React.FC = () => {
               <SummaryRow label={t.cart.itemsSubtotal} value={formatCurrency(orderSubtotal)} />
             )}
             <PromotionRows lines={orderPromotionLines} showStore={feeLines.length > 1} />
-            {orderDiscount > 0 && <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(orderDiscount)}`} />}
+            {orderDiscount > 0 && <SummaryRow label={promoCodeLabel} value={`− ${formatCurrency(orderDiscount)}`} />}
             {feeLines.length > 1 ? (
               feeLines.map((line) => (
                 <SummaryRow
@@ -466,6 +467,7 @@ export const DeliveryPage: React.FC = () => {
               <PromotionHints stores={orderStores} className="mb-2.5" />
             )}
             {!isDone && !placedOrder && <DiscountChoiceNote order={order} className="mb-2.5" />}
+            {!isDone && <UndeliverableNotice lines={undeliverable} className="mb-2.5" />}
             {minOrderNotice('min-order-desktop')}
             {!isDone && (
               <Button
@@ -516,11 +518,12 @@ export const DeliveryPage: React.FC = () => {
           )}
           {orderDiscount > 0 && (
             <div className="mb-2 text-sm">
-              <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(orderDiscount)}`} />
+              <SummaryRow label={promoCodeLabel} value={`− ${formatCurrency(orderDiscount)}`} />
             </div>
           )}
           {!placedOrder && order.discountChoice !== 'promoCode' && <PromotionHints stores={orderStores} className="mb-2" />}
           {!placedOrder && <DiscountChoiceNote order={order} className="mb-2" />}
+          <UndeliverableNotice lines={undeliverable} className="mb-2.5" />
           {minOrderNotice('min-order-phone')}
           <Button
             size="lg"

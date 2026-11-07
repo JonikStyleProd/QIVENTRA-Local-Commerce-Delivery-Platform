@@ -1,12 +1,17 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
-import { Button } from '../components/ui/Button';
+import { LinkButton } from '../components/ui/LinkButton';
+import { pathFor } from '../router/paths';
 import { StoreCard } from '../components/ui/StoreCard';
+import { smallPhoto } from '../components/collage/PolaroidPhoto';
 import { Tape } from '../components/collage/Tape';
 import { HandArrow, HandUnderline } from '../components/collage/HandMarks';
 import { ProductSticker } from '../components/collage/ProductSticker';
+import { ComingSoon } from '../components/collage/ComingSoon';
+import { AddressStrip } from '../components/collage/AddressStrip';
 
 /** Decorative collage around the desktop hero. `caption` indexes t.collage.landing.caps. */
 const HERO_STICKERS: {
@@ -51,12 +56,13 @@ const STEP_STYLES = [
 ];
 
 export const HomePage: React.FC = () => {
-  const { navigateTo, pickStore, addToCart, cart } = useApp();
+  const { navigateTo, pickStore, addToCart, cart, deliveryFor } = useApp();
   const { t } = useLanguage();
 
   const landing = t.collage.landing;
   const phone = t.collage.mobileHome;
   const storeCount = String(MOCK_STORES.length);
+  const nearCount = String(MOCK_STORES.filter((store) => deliveryFor(store.id).inRange).length);
 
   const boardStores = BOARD_ORDER.map((id) => MOCK_STORES.find((s) => s.id === id)).filter(
     (s): s is (typeof MOCK_STORES)[number] => Boolean(s)
@@ -66,6 +72,9 @@ export const HomePage: React.FC = () => {
     <>
       {/* ---------- Phone: M9-Home ---------- */}
       <div className="desk:hidden pb-5">
+        <div className="px-4 pt-3">
+          <AddressStrip />
+        </div>
         <section className="px-4 pt-2 pb-4">
           <p className="hand anim-in inline-block text-[26px] text-link-text -rotate-2">{phone.today}</p>
           <h1 className="anim-in text-[40px] font-black leading-[0.98] tracking-[-0.03em]" style={{ animationDelay: '0.1s' }}>
@@ -98,6 +107,7 @@ export const HomePage: React.FC = () => {
                   tape={item.tape}
                   delay={`${(0.15 + index * 0.1).toFixed(2)}s`}
                   onAdd={() => addToCart(product)}
+                  eager={index < 2}
                 />
               );
             })}
@@ -108,26 +118,24 @@ export const HomePage: React.FC = () => {
           <div className="flex items-baseline justify-between mb-2.5">
             <h2 id="home-shops" className="text-xl font-black">
               {phone.near}{' '}
-              <span className="hand font-bold text-link-text">{phone.count.replace('{n}', storeCount)}</span>
+              <span className="hand font-bold text-link-text">{phone.count.replace('{n}', nearCount)}</span>
             </h2>
-            <button
-              type="button"
-              onClick={() => navigateTo('catalog')}
-              className="min-w-11 min-h-11 text-sm font-extrabold underline cursor-pointer"
+            <Link
+              to={pathFor('catalog')}
+              className="inline-grid place-items-center min-w-11 min-h-11 text-sm font-extrabold underline cursor-pointer"
             >
               {phone.all}
-            </button>
+            </Link>
           </div>
-          <button
-            type="button"
-            onClick={() => navigateTo('catalog')}
+          <Link
+            to={pathFor('catalog')}
             className="on-blue block w-full p-4 bg-link text-white text-start border-[3px] border-ink rounded-[22px] shadow-hard-5 overflow-hidden cursor-pointer chip-tilt"
           >
             <span className="flex gap-2 mb-3">
               {PHONE_BOARD.map(({ store, tilt }) => (
                 <span key={store} className="w-[62px] h-[62px] p-1 bg-card shrink-0" style={{ rotate: tilt }}>
                   <img
-                    src={MOCK_STORES.find((s) => s.id === store)?.coverUrl}
+                    src={smallPhoto(MOCK_STORES.find((s) => s.id === store)?.coverUrl ?? '')}
                     alt=""
                     loading="lazy"
                     className="block w-full h-full object-cover"
@@ -137,7 +145,7 @@ export const HomePage: React.FC = () => {
             </span>
             <span className="block text-[22px] font-black leading-tight">{phone.kinds}</span>
             <span className="hand block mt-1 text-2xl text-accent">{phone.pick}</span>
-          </button>
+          </Link>
         </section>
 
         <section className="px-4">
@@ -145,29 +153,32 @@ export const HomePage: React.FC = () => {
             <p className="hand text-2xl text-action">{phone.howT}</p>
             <p className="mt-1 font-bold leading-normal">{phone.howD}</p>
           </div>
+          <ComingSoon className="mt-4" />
         </section>
 
         <section className="px-4 pt-7">
-          <button
-            type="button"
-            onClick={() => navigateTo('catalog')}
+          <Link
+            to={pathFor('catalog')}
             className="card-tilt relative block w-full p-2 pb-2.5 bg-card text-start shadow-polaroid cursor-pointer"
             style={{ '--tilt': '1.5deg' } as React.CSSProperties}
           >
             <Tape tone="red" />
             <img
-              src="/photos/hero-grocery-bag.webp"
+              src="/photos/480/hero-grocery-bag.webp"
               alt=""
               loading="lazy"
               className="block w-full aspect-[16/9] object-cover"
             />
             <span className="hand block mt-2 text-[26px] leading-none">{landing.wait}</span>
-          </button>
+          </Link>
         </section>
       </div>
 
       {/* ---------- Desktop: N9-Landing ---------- */}
       <div className="hidden desk:block overflow-hidden">
+        <div className="max-w-[1360px] mx-auto px-10 pt-4">
+          <AddressStrip className="max-w-[780px]" />
+        </div>
         <section className="relative max-w-[1360px] min-h-[760px] mx-auto px-10 pt-[30px] pb-20">
           <div className="relative z-[2] max-w-[56%] xl:max-w-[760px]">
             <p className="hand anim-in inline-block mb-1.5 text-[32px] text-link-text -rotate-3">{landing.hello}</p>
@@ -189,9 +200,9 @@ export const HomePage: React.FC = () => {
               {landing.lead}
             </p>
             <div className="anim-in flex flex-wrap items-center gap-3.5" style={{ animationDelay: '0.35s' }}>
-              <Button variant="secondary" size="lg" onClick={() => navigateTo('catalog')} className="shadow-hard-4 min-h-[60px]">
+              <LinkButton to={pathFor('catalog')} variant="secondary" size="lg" className="shadow-hard-4 min-h-[60px]">
                 {landing.start}
-              </Button>
+              </LinkButton>
               <span className="hand text-[28px] text-action -rotate-[4deg]">{landing.quick}</span>
             </div>
           </div>
@@ -220,8 +231,10 @@ export const HomePage: React.FC = () => {
                   >
                     <Tape tone="blue" />
                     <img
-                      src={`/photos/${sticker.photo}.webp`}
+                      src={`/photos/480/${sticker.photo}.webp`}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className={`block w-full aspect-square object-cover ${sticker.round ? 'rounded-full' : 'rounded-sm'}`}
                     />
                     {caption && <p className="hand mt-1.5 text-center text-2xl">{caption}</p>}
@@ -249,6 +262,7 @@ export const HomePage: React.FC = () => {
                     store={store}
                     detail="board"
                     tilt={BOARD_TILTS[index]}
+                    to={deliveryFor(store.id).inRange ? undefined : pathFor('store', { storeId: store.id })}
                     onClick={() => {
                       pickStore(store.id);
                       navigateTo('catalog');
@@ -257,6 +271,7 @@ export const HomePage: React.FC = () => {
                 </li>
               ))}
             </ul>
+            <ComingSoon className="mt-10 text-ink" />
           </div>
         </section>
 
@@ -306,9 +321,9 @@ export const HomePage: React.FC = () => {
                 className="block w-full aspect-[16/10] object-cover"
               />
             </div>
-            <Button size="lg" onClick={() => navigateTo('catalog')} className="shadow-hard-4 text-xl min-h-[64px]">
+            <LinkButton to={pathFor('catalog')} size="lg" className="shadow-hard-4 text-xl min-h-[64px]">
               {landing.toShops}
-            </Button>
+            </LinkButton>
           </div>
         </section>
       </div>

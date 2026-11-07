@@ -17,7 +17,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Fresh organic produce, boutique cheeses, olives and seasonal fruits from local farms',
       he: 'תוצרת אורגנית טרייה, גבינות בוטיק, זיתים ופירות העונה ממשקים מקומיים',
     },
-    storesCount: 28,
     popularItems: ['Авокадо Hass', 'Оливковое масло', 'Козий сыр', 'Свежие финики'],
   },
   {
@@ -36,7 +35,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Freshly baked challah, sourdough breads, almond croissants and specialty roast coffee',
       he: 'חלות טריות לשבת, לחמי מחמצת, קרואסונים חמים וקפה ספיישלטי מובחר',
     },
-    storesCount: 34,
     popularItems: ['Свежая хала', 'Миндальный круассан', 'Колдбрю кофе', 'Бабка с шоколадом'],
   },
   {
@@ -55,7 +53,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Wireless headphones, fast GaN chargers, smart home tech and daily accessories',
       he: 'אוזניות אלחוטיות, מטעני GaN מהירים, בית חכם ואביזרים במשלוח מהיר',
     },
-    storesCount: 16,
     popularItems: ['TWS наушники', 'Быстрая GaN зарядка 65W', 'Умная розетка', 'Магнитный кабель'],
   },
   {
@@ -74,7 +71,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Scented soy candles, handmade ceramics, diffusers and eco-friendly home living',
       he: 'נרות סויה ריחניים, קרמיקה בעבודת יד, מפיצי ריח ומוצרים ירוקים לבית',
     },
-    storesCount: 21,
     popularItems: ['Соевые свечи', 'Керамическая чашка', 'Льняной текстиль', 'Аромадиффузор'],
   },
   {
@@ -93,7 +89,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Vitamins, supplements, Dead Sea mineral skincare and wellness essentials',
       he: 'ויטמינים, תוספי תזונה, מוצרי ים המלח וטיפוח טבעי',
     },
-    storesCount: 18,
     popularItems: ['Магний Хелат', 'Витамин D3', 'Крем Мёртвого моря', 'Электролиты'],
   },
   {
@@ -112,7 +107,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Fresh designer bouquets, indoor plants, artisanal vases and gift hampers',
       he: 'זרי פרחים שזורים, צמחי בית וסוקולנטים, אגרטלים ומארזי שי',
     },
-    storesCount: 14,
     popularItems: ['Букет эвкалипт и розы', 'Оливковое дерево в кашпо', 'Пионы', 'Открытка'],
   },
   {
@@ -131,7 +125,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Premium holistic pet food, healthy treats and sustainable accessories',
       he: 'מזון הוליסטי איכותי לכלבים וחתולים, חטיפים טבעיים וצעצועים',
     },
-    storesCount: 12,
     popularItems: ['Холистик лосось', 'Органические лакомства', 'Эко-наполнитель', 'Шлейка'],
   },
   {
@@ -150,7 +143,6 @@ export const MOCK_CATEGORIES: Category[] = [
       en: 'Isotonics, plant protein snacks, premium yoga mats and beach fitness gear',
       he: 'איזוטוניק, חטיפי חלבון, מזרני יוגה וציוד לספורט ימי וחוף',
     },
-    storesCount: 10,
     popularItems: ['Протеин растительный', 'Коврик для йоги', 'Изотоник цитрус', 'Бутылка стальная'],
   },
 ];
@@ -183,7 +175,8 @@ export const MOCK_STORES: Store[] = [
       en: 'Tel Aviv, 18 HaCarmel St',
       he: 'תל אביב, רחוב הכרמל 18',
     },
-    distanceKm: 1.1,
+    coords: { lat: 32.0686, lng: 34.7686 },
+    deliveryRadiusKm: 3.5,
     isVerified: true,
     isEco: true,
     isFeatured: true,
@@ -219,7 +212,8 @@ export const MOCK_STORES: Store[] = [
       en: 'Tel Aviv, Sarona Complex, 34 Kaplan St',
       he: 'תל אביב, מתחם שרונה, רחוב קפלן 34',
     },
-    distanceKm: 1.8,
+    coords: { lat: 32.0722, lng: 34.7875 },
+    deliveryRadiusKm: 5,
     isVerified: true,
     isEco: false,
     isFeatured: true,
@@ -254,7 +248,8 @@ export const MOCK_STORES: Store[] = [
       en: 'Tel Aviv, 41 Levinsky St (Florentin)',
       he: 'תל אביב, רחוב לוינסקי 41 (פלורנטין)',
     },
-    distanceKm: 0.9,
+    coords: { lat: 32.0585, lng: 34.774 },
+    deliveryRadiusKm: 3,
     isVerified: true,
     isEco: true,
     isFeatured: true,
@@ -290,7 +285,8 @@ export const MOCK_STORES: Store[] = [
       en: 'Jaffa, 22 Yefet St',
       he: 'יפו, רחוב יפת 22',
     },
-    distanceKm: 2.4,
+    coords: { lat: 32.053, lng: 34.753 },
+    deliveryRadiusKm: 2.5,
     isVerified: true,
     isEco: true,
     tags: ['Авторские букеты', 'Оливковые деревья', 'Открытка в подарок'],
@@ -325,7 +321,8 @@ export const MOCK_STORES: Store[] = [
       en: 'Tel Aviv, 28 Shabazi St (Neve Tzedek)',
       he: 'תל אביב, רחוב שבזי 28 (נווה צדק)',
     },
-    distanceKm: 1.5,
+    coords: { lat: 32.0618, lng: 34.765 },
+    deliveryRadiusKm: 3,
     isVerified: true,
     isEco: true,
     tags: ['Ручная работа', 'Натуральные ткани', 'Керамика'],
@@ -360,7 +357,8 @@ export const MOCK_STORES: Store[] = [
       en: 'Tel Aviv, 82 Dizengoff St',
       he: 'תל אביב, רחוב דיזנגוף 82',
     },
-    distanceKm: 1.3,
+    coords: { lat: 32.077, lng: 34.7745 },
+    deliveryRadiusKm: 6,
     isVerified: true,
     isEco: true,
     tags: ['Витамины', 'Сертификат GMP', '24/7 Экспресс'],
@@ -410,6 +408,11 @@ export const MOCK_PRODUCTS: Product[] = [
       en: 'Upper Galilee Boutique Farm',
       he: 'משק בוטיק בגליל העליון',
     },
+    variantKind: 'weight',
+    variants: [
+      { id: '250g', labels: { ru: '250 г', en: '250 g', he: '250 גרם' }, price: 24 },
+      { id: '500g', labels: { ru: '500 г', en: '500 g', he: '500 גרם' }, price: 44 },
+    ],
     imageUrl: '/photos/labneh.webp',
   },
   {
@@ -481,6 +484,17 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewsCount: 112,
     inStock: true,
     origin: 'Оливковые рощи Галилеи',
+    origins: {
+      ru: 'Оливковые рощи Галилеи',
+      en: 'Galilee olive groves',
+      he: 'מטעי הזיתים של הגליל',
+    },
+    variantKind: 'volume',
+    variants: [
+      { id: '750ml', labels: { ru: '750 мл', en: '750 ml', he: '750 מ״ל' }, price: 48 },
+      { id: '500ml', labels: { ru: '500 мл', en: '500 ml', he: '500 מ״ל' }, price: 36 },
+      { id: '250ml', labels: { ru: '250 мл', en: '250 ml', he: '250 מ״ל' }, price: 22 },
+    ],
     imageUrl: '/photos/olive-oil.webp'
   },
   {
@@ -516,6 +530,11 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 310,
     inStock: true,
+    variantKind: 'weight',
+    variants: [
+      { id: '500g', labels: { ru: '500 г', en: '500 g', he: '500 גרם' }, price: 16 },
+      { id: '800g', labels: { ru: '800 г', en: '800 g', he: '800 גרם' }, price: 24 },
+    ],
     imageUrl: '/photos/challah.webp'
   },
   {
@@ -586,6 +605,11 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.91,
     reviewsCount: 88,
     inStock: true,
+    variantKind: 'volume',
+    variants: [
+      { id: '330ml', labels: { ru: '330 мл', en: '330 ml', he: '330 מ״ל' }, price: 20 },
+      { id: '1l', labels: { ru: '1 л', en: '1 l', he: '1 ליטר' }, price: 52 },
+    ],
     imageUrl: '/photos/cold-brew.webp'
   },
   {
@@ -726,6 +750,12 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.94,
     reviewsCount: 54,
     inStock: true,
+    variantKind: 'color',
+    variants: [
+      { id: 'seafoam', labels: { ru: 'морская пена', en: 'sea foam', he: 'קצף ים' }, price: 65 },
+      { id: 'terracotta', labels: { ru: 'терракота', en: 'terracotta', he: 'טרקוטה' }, price: 65 },
+      { id: 'sand', labels: { ru: 'песок', en: 'sand', he: 'חול' }, price: 70 },
+    ],
     imageUrl: '/photos/mug-seafoam.webp'
   },
   {
@@ -761,6 +791,12 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.99,
     reviewsCount: 92,
     inStock: true,
+    variantKind: 'size',
+    variants: [
+      { id: 'standard', labels: { ru: 'стандартный', en: 'standard', he: 'רגיל' }, price: 160 },
+      { id: 'small', labels: { ru: 'маленький', en: 'small', he: 'קטן' }, price: 110 },
+      { id: 'large', labels: { ru: 'большой', en: 'large', he: 'גדול' }, price: 220 },
+    ],
     imageUrl: '/photos/bouquet.webp'
   },
   {
@@ -825,6 +861,10 @@ export const MOCK_ACTIVE_ORDER: Order = {
         en: 'Fresh Goat Labneh with Za\'atar',
         he: 'לאבנה עיזים טרייה עם זעתר',
       },
+      productId: 'prod-1',
+      variantId: '250g',
+      storeId: 'store-1',
+      imageUrl: '/photos/labneh.webp',
       quantity: 2,
       price: 24,
     },
@@ -835,6 +875,9 @@ export const MOCK_ACTIVE_ORDER: Order = {
         en: 'Ripe Organic Israeli Hass Avocado',
         he: 'אבוקדו האס אורגני מוכן לאכילה',
       },
+      productId: 'prod-2',
+      storeId: 'store-1',
+      imageUrl: '/photos/avocado.webp',
       quantity: 1,
       price: 18,
     },
@@ -845,18 +888,39 @@ export const MOCK_ACTIVE_ORDER: Order = {
         en: 'Boutique Extra Virgin Olive Oil',
         he: 'שמן זית בוטיק כתית מעולה',
       },
+      productId: 'prod-3',
+      variantId: '750ml',
+      storeId: 'store-1',
+      imageUrl: '/photos/olive-oil.webp',
       quantity: 1,
       price: 48,
     },
   ],
+  subtotal: 114,
+  // Carmel charges 15 ₪, and its free delivery promotion takes that off from 80 ₪.
+  feeLines: [{ storeId: 'store-1', fee: 15 }],
+  promotionLines: [
+    {
+      promotionId: 'demo-carmel-delivery',
+      storeId: 'store-1',
+      type: 'freeDelivery',
+      saving: 15,
+      title: {
+        ru: 'Бесплатная доставка от 80 ₪',
+        en: 'Free delivery from 80 ₪',
+        he: 'משלוח חינם מ-80 ₪',
+      },
+    },
+  ],
   totalAmount: 114,
-  deliveryFee: 0,
+  deliveryFee: 15,
   address: 'Тель-Авив, бул. Ротшильд, 42, кв. 14',
   addresses: {
     ru: 'Тель-Авив, бул. Ротшильд, 42, кв. 14',
     en: 'Tel Aviv, 42 Rothschild Blvd, Apt 14',
     he: 'תל אביב, שדרות רוטשילד 42, דירה 14',
   },
+  destination: { lat: 32.0636, lng: 34.7736 },
   etaMinutes: 14,
   courier: {
     name: 'Томер Леви (תומר לוי)',
@@ -866,7 +930,6 @@ export const MOCK_ACTIVE_ORDER: Order = {
       he: 'תומר לוי',
     },
     id: 'courier-1',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
     phone: '+972 50 312 8840',
     vehicle: 'электровелосипед',
     vehicleName: {
@@ -1004,6 +1067,7 @@ export const MOCK_USER: UserProfile = {
         en: 'Tel Aviv, 42 Rothschild Blvd, Apt 14',
         he: 'תל אביב, שדרות רוטשילד 42, דירה 14',
       },
+      demoAddressId: 'rothschild-42',
       isDefault: true,
     },
     {
@@ -1020,10 +1084,9 @@ export const MOCK_USER: UserProfile = {
         en: 'Herzliya Pituach, 8 HaManofim St',
         he: 'הרצליה פיתוח, רחוב המנופים 8',
       },
+      demoAddressId: 'herzliya-manofim-8',
       isDefault: false,
     },
   ],
-  favoriteStoreIds: ['store-1', 'store-3'],
   role: 'customer',
-  avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
 };

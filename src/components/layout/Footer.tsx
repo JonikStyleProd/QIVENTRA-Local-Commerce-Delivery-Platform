@@ -1,13 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router';
 import { ArrowUpRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { AppRoute } from '../../types';
+import { pathFor } from '../../router/paths';
 import { MadeBy } from '../collage/MadeBy';
 import { Tape } from '../collage/Tape';
 
 const FOOTER_LINK =
-  'inline-flex items-center gap-1 min-h-11 text-sm font-bold text-start cursor-pointer hover:underline';
+  'inline-flex items-center gap-1 min-w-11 min-h-11 text-sm font-bold text-start cursor-pointer hover:underline';
 
 /** Keeps the end of the page clear of what floats over it: phone tabs, and the yellow panel on these screens. */
 const bottomSpace = (route: AppRoute): string => {
@@ -17,7 +19,7 @@ const bottomSpace = (route: AppRoute): string => {
 };
 
 export const Footer: React.FC = () => {
-  const { navigateTo, currentRoute } = useApp();
+  const { currentRoute } = useApp();
   const { t } = useLanguage();
 
   const customerLinks: { label: string; route: AppRoute }[] = [
@@ -47,9 +49,9 @@ export const Footer: React.FC = () => {
             <ul>
               {customerLinks.map((link) => (
                 <li key={link.route}>
-                  <button type="button" onClick={() => navigateTo(link.route)} className={FOOTER_LINK}>
+                  <Link to={pathFor(link.route)} className={FOOTER_LINK}>
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -60,10 +62,10 @@ export const Footer: React.FC = () => {
             <ul>
               {businessLinks.map((link) => (
                 <li key={link.route}>
-                  <button type="button" onClick={() => navigateTo(link.route)} className={FOOTER_LINK}>
+                  <Link to={pathFor(link.route)} className={FOOTER_LINK}>
                     {link.label}
                     <ArrowUpRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0 rtl-flip" />
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -77,6 +79,14 @@ export const Footer: React.FC = () => {
             </p>
           </div>
         </div>
+
+        <nav aria-label={t.demo.legal.links} className="flex flex-wrap gap-x-5 pt-3">
+          {(['privacy', 'terms', 'accessibility'] as const).map((route) => (
+            <Link key={route} to={pathFor(route)} className={FOOTER_LINK}>
+              {t.demo.titles[route]}
+            </Link>
+          ))}
+        </nav>
 
         <MadeBy className="pt-4" />
       </div>

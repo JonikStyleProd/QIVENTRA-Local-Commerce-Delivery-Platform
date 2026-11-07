@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router';
 import { Bike, Camera, ChevronRight, LogOut, MapPin, MessageSquare, Moon, ShieldCheck, Smartphone, Store, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { AppRoute } from '../types';
+import { pathFor } from '../router/paths';
+import { MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 import { Button } from '../components/ui/Button';
+import { EmptyState } from '../components/ui/EmptyState';
+import { LinkButton } from '../components/ui/LinkButton';
+import { ProductCard } from '../components/ui/ProductCard';
+import { StoreCard } from '../components/ui/StoreCard';
 import { IconButton } from '../components/ui/IconButton';
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
 import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
@@ -15,28 +22,77 @@ import { Panel } from '../components/collage/Panel';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { Stamp } from '../components/collage/Stamp';
 
+/** Everything hearted, on the profile. Empty until the first heart. */
+const FavoritesSection: React.FC = () => {
+  const { favorites, addToCart, updateCartQuantity, quantityInCart } = useApp();
+  const { t } = useLanguage();
+  const copy = t.demo.favorites;
+  const stores = MOCK_STORES.filter((store) => favorites.stores.includes(store.id));
+  const products = MOCK_PRODUCTS.filter((product) => favorites.products.includes(product.id));
+
+  return (
+    <section id="favorites" className="mt-8 desk:mt-10">
+      <SectionHeading note={copy.note} title={copy.title} />
+      {stores.length === 0 && products.length === 0 ? (
+        <EmptyState title={copy.emptyTitle} description={copy.emptyDesc}>
+          <LinkButton to={pathFor('catalog')} variant="secondary">
+            {copy.toShops}
+          </LinkButton>
+        </EmptyState>
+      ) : (
+        <div className="space-y-6">
+          {stores.length > 0 && (
+            <div>
+              <h3 className="mb-3 text-lg font-black">{copy.stores}</h3>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] desk:grid-cols-3 desk:gap-x-[26px]">
+                {stores.map((store) => (
+                  <li key={store.id}>
+                    <StoreCard store={store} to={pathFor('store', { storeId: store.id })} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {products.length > 0 && (
+            <div>
+              <h3 className="mb-3 text-lg font-black">{copy.products}</h3>
+              <div className="product-grid">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    inCartQuantity={quantityInCart(product.id)}
+                    onAddToCart={addToCart}
+                    onUpdateQuantity={updateCartQuantity}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+};
+
 const ROW = 'flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3 first:pt-0 last:pb-0';
 const TILE =
   'chip-tilt flex items-start gap-3 w-full p-3.5 border-2 border-ink rounded-2xl shadow-hard-3 text-start cursor-pointer';
 
 export const ProfilePage: React.FC = () => {
   const { resolvedTheme, toggleTheme } = useTheme();
-  const { currentUser, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, navigateTo, openChatWithParticipant } = useApp();
+  const { currentAddress, currentUser, isSignedIn, signOut, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, openChatWithParticipant } = useApp();
   const { language, t } = useLanguage();
   const { showToast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const copy = t.screens.profile;
 
   const handleLogout = () => {
-    showToast({
-      type: 'info',
-      title: t.profile.logout,
-      message: t.auth.demoNotice,
-    });
-    setIsAuthModalOpen(true);
+    signOut();
+    showToast({ type: 'info', title: t.demo.auth.signedOutTitle, message: t.demo.auth.signedOutMsg });
   };
 
-  const displayName = currentUser.names?.[language] || currentUser.name;
+  const displayName = isSignedIn ? currentUser.names?.[language] || currentUser.name : t.demo.auth.guestName;
 
   const workspaces: { route: AppRoute; title: string; desc: string; icon: React.ReactNode; tint: string }[] = [
     {
@@ -77,18 +133,27 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         <div className="flex-1 min-w-[220px]">
-          <PageHeading note={copy.note} title={displayName} />
+          <PageHeading note={isSignedIn ? copy.note : t.demo.auth.guestNote} title={displayName} />
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            <Stamp tone="action">{copy.demoProfile}</Stamp>
-            <span className="text-sm font-bold text-ink-2">{copy.demoProfileDesc}</span>
+            <Stamp tone="action">{isSignedIn ? copy.demoProfile : t.demo.auth.guestName}</Stamp>
+            <span className="text-sm font-bold text-ink-2">{isSignedIn ? copy.demoProfileDesc : t.demo.auth.guestDesc}</span>
           </div>
+          <p className="mt-1 text-sm font-bold text-ink-2">{t.demo.auth.note}</p>
           <div className="flex flex-wrap gap-2 mt-3">
-            <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
-              {t.profile.switchAccount}
-            </Button>
-            <Button variant="ghost" size="sm" leftIcon={<LogOut aria-hidden="true" className="w-4 h-4" />} onClick={handleLogout}>
-              {t.profile.logout}
-            </Button>
+            {isSignedIn ? (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                  {t.profile.switchAccount}
+                </Button>
+                <Button variant="ghost" size="sm" leftIcon={<LogOut aria-hidden="true" className="w-4 h-4" />} onClick={handleLogout}>
+                  {t.demo.auth.signOut}
+                </Button>
+              </>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                {t.demo.auth.signIn}
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -118,6 +183,7 @@ export const ProfilePage: React.FC = () => {
                 <p className="text-sm font-bold text-ink-2 break-words">{addr.addresses?.[language] || addr.address}</p>
               </li>
             ))}
+            {currentUser.savedAddresses.length === 0 && <li className="font-bold">{currentAddress}</li>}
           </ul>
         </Panel>
 
@@ -168,6 +234,8 @@ export const ProfilePage: React.FC = () => {
         </Panel>
       </div>
 
+      <FavoritesSection />
+
       <section className="mt-8 desk:mt-10">
         <SectionHeading note={copy.moreNote} title={copy.workspaces} />
         <ul className="grid sm:grid-cols-2 desk:grid-cols-4 gap-3.5">
@@ -182,14 +250,14 @@ export const ProfilePage: React.FC = () => {
           </li>
           {workspaces.map((space) => (
             <li key={space.route}>
-              <button type="button" onClick={() => navigateTo(space.route)} className={`${TILE} ${space.tint} h-full`}>
+              <Link to={pathFor(space.route)} className={`${TILE} ${space.tint} h-full`}>
                 {space.icon}
                 <span className="min-w-0 flex-1">
                   <span className="block font-black leading-snug">{space.title}</span>
                   <span className="block mt-0.5 text-sm font-bold text-ink-2">{space.desc}</span>
                 </span>
                 <ChevronRight aria-hidden="true" className="w-4 h-4 shrink-0 mt-1 rtl-flip" />
-              </button>
+              </Link>
             </li>
           ))}
         </ul>

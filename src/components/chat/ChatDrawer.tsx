@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useId, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Send, Image as ImageIcon, ArrowLeft, Check, CheckCheck, Store, Bike } from 'lucide-react';
 import { chatService } from '../../services/ChatService';
@@ -53,6 +53,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen, onClose, initial
   const [isTyping, setIsTyping] = useState(false);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
+  const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -195,7 +196,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen, onClose, initial
           ref={panelRef}
           role="dialog"
           aria-modal="true"
-          aria-label={t.chat.title}
+          aria-labelledby={titleId}
           tabIndex={-1}
           className="anim-in relative ms-auto flex flex-col w-full desk:w-[420px] h-[100dvh] paper-dots bg-paper text-ink desk:border-s-[3px] border-ink"
         >
@@ -213,7 +214,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen, onClose, initial
                 />
                 <ParticipantAvatar conversation={activeConversation} alt="" size="w-11 h-11" />
                 <div className="flex-1 min-w-0">
-                  <h2 className="font-black leading-tight truncate">
+                  <h2 id={titleId} className="font-black leading-tight truncate">
                     <bdi>{nameOf(activeConversation)}</bdi>
                   </h2>
                   <p className="text-[13px] font-bold text-ink-2 truncate">
@@ -231,7 +232,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen, onClose, initial
             ) : (
               <div className="flex-1 min-w-0">
                 <p className="hand text-2xl leading-none text-action">{copy.note}</p>
-                <h2 className="text-xl font-black leading-tight">{t.screens.menu.messages}</h2>
+                <h2 id={titleId} className="text-xl font-black leading-tight">
+                  {t.screens.menu.messages}
+                </h2>
               </div>
             )}
             <IconButton onClick={onClose} aria-label={copy.close} icon={<X aria-hidden="true" className="w-5 h-5" />} />

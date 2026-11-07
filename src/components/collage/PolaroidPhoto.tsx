@@ -9,7 +9,15 @@ interface PolaroidPhotoProps {
   /** Size of the "photo soon" note, as Tailwind text classes. */
   noteClassName?: string;
   eager?: boolean;
+  /** How wide the photo is on screen, so the browser can take the smaller copy. */
+  sizes?: string;
 }
+
+/** Local photos also come as a 480 px copy for cards and phones. */
+export const smallPhoto = (src: string): string => src.replace(/^\/photos\/([^/]+\.webp)$/, '/photos/480/$1');
+
+const photoSrcSet = (src: string): string | undefined =>
+  smallPhoto(src) === src ? undefined : `${smallPhoto(src)} 480w, ${src} 1024w`;
 
 /** Photo area of a polaroid, including the "no photo" state for missing or broken images. */
 export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
@@ -18,6 +26,7 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
   aspectClassName = 'aspect-square',
   noteClassName = 'text-[22px] desk:text-[32px]',
   eager = false,
+  sizes = '(min-width: 1024px) 320px, 50vw',
 }) => {
   const { t } = useLanguage();
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -28,6 +37,8 @@ export const PolaroidPhoto: React.FC<PolaroidPhotoProps> = ({
       {showPhoto ? (
         <img
           src={src}
+          srcSet={src ? photoSrcSet(src) : undefined}
+          sizes={sizes}
           alt={alt}
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { Leaf, Zap, Search, Store as StoreIcon } from 'lucide-react';
 import { usePromotions } from '../context/PromotionsContext';
 import { ProductLabel, filterProductsByLabels } from '../data/promotions';
@@ -6,7 +7,8 @@ import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
-import { COLLAGE_GROUPS, GROUP_TINT_CLASS, groupFromSlug, groupOfCategoryName } from '../data/collageCatalog';
+import { GROUP_TINT_CLASS, groupFromSlug, groupOfCategoryName, visibleGroups } from '../data/collageCatalog';
+import { ComingSoon } from '../components/collage/ComingSoon';
 import { StoreCard } from '../components/ui/StoreCard';
 import { ProductCard } from '../components/ui/ProductCard';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -14,19 +16,22 @@ import { Button } from '../components/ui/Button';
 import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { StepHeader } from '../components/collage/StepHeader';
+import { pathFor } from '../router/paths';
+import { Store } from '../types';
 
-type SortKey = 'deliveryTime' | 'minOrder';
+type SortKey = 'distance' | 'deliveryTime' | 'minOrder';
 
 /** Step 1 of the path: shop picker (N9-Stores / M9-Stores) with the existing filters and products tab. */
 export const CatalogPage: React.FC = () => {
   const {
-    selectedCategorySlug,
-    setSelectedCategorySlug,
     selectedStoreId,
     pickStore,
+    deliveryFor,
+    currentAddressId,
     navigateTo,
     addToCart,
     updateCartQuantity,
+    quantityInCart,
     cart,
   } = useApp();
 
@@ -34,14 +39,31 @@ export const CatalogPage: React.FC = () => {
   const { labelsFor } = usePromotions();
   const copy = t.collage.stores;
 
-  const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategorySlug = searchParams.get('category');
+  const activeTab: 'stores' | 'products' = searchParams.get('tab') === 'products' ? 'products' : 'stores';
+
+  // Category and tab live in the address, so a shared link and "Back" return to the same view.
+  const updateParam = (key: string, value: string | null) =>
+    setSearchParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true, preventScrollReset: true }
+    );
+  const setSelectedCategorySlug = (slug: string | null) => updateParam('category', slug);
+  const setActiveTab = (tab: 'stores' | 'products') => updateParam('tab', tab === 'products' ? tab : null);
   const [filterEcoOnly, setFilterEcoOnly] = useState(false);
   const [filterFreeDeliveryOnly, setFilterFreeDeliveryOnly] = useState(false);
   const [filterKosher, setFilterKosher] = useState(false);
   const [filterVegan, setFilterVegan] = useState(false);
-  const [sortBy, setSortBy] = useState<SortKey>('deliveryTime');
+  const [sortBy, setSortBy] = useState<SortKey>('distance');
 
   const activeGroup = groupFromSlug(selectedCategorySlug);
+  const isComingSoon = activeGroup !== 'all' && !visibleGroups.includes(activeGroup as (typeof visibleGroups)[number]);
 
   const filteredStores = useMemo(() => {
     let list = [...MOCK_STORES];
@@ -56,14 +78,16 @@ export const CatalogPage: React.FC = () => {
       list = list.filter((s) => s.deliveryFee === 0);
     }
 
-    if (sortBy === 'deliveryTime') {
-      list.sort((a, b) => a.deliveryTimeMin - b.deliveryTimeMin);
-    } else if (sortBy === 'minOrder') {
-      list.sort((a, b) => a.minOrder - b.minOrder);
-    }
-
-    return list;
-  }, [activeGroup, filterEcoOnly, filterFreeDeliveryOnly, sortBy]);
+    // Whatever the sort, shops that cannot reach the address come after the ones that can.
+    const rank = (a: Store, b: Store) => {
+      const [first, second] = [deliveryFor(a.id), deliveryFor(b.id)];
+      if (first.inRange !== second.inRange) return first.inRange ? -1 : 1;
+      if (sortBy === 'distance') return first.km - second.km;
+      if (sortBy === 'deliveryTime') return first.timeMin - second.timeMin;
+      return a.minOrder - b.minOrder;
+    };
+    return list.sort(rank);
+  }, [activeGroup, filterEcoOnly, filterFreeDeliveryOnly, sortBy, deliveryFor, currentAddressId]);
 
   const requiredLabels = useMemo(() => {
     const required: ProductLabel[] = [];
@@ -79,8 +103,6 @@ export const CatalogPage: React.FC = () => {
     return filterProductsByLabels(inGroup, requiredLabels, labelsFor);
   }, [activeGroup, requiredLabels, labelsFor]);
 
-  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
-
   const resetFilters = () => {
     setSelectedCategorySlug(null);
     setFilterEcoOnly(false);
@@ -90,7 +112,7 @@ export const CatalogPage: React.FC = () => {
   };
 
   // The panel follows the mockups: it shows only while the picked shop is on screen.
-  const pickedStore = filteredStores.find((s) => s.id === selectedStoreId);
+  const pickedStore = filteredStores.find((s) => s.id === selectedStoreId && deliveryFor(s.id).inRange);
   const pickedName = pickedStore
     ? t.collage.storeCopy[pickedStore.id]?.name || pickedStore.names?.[language] || pickedStore.name
     : '';
@@ -115,7 +137,7 @@ export const CatalogPage: React.FC = () => {
           aria-label={copy.catLabel}
           className="scroll-row flex desk:flex-wrap gap-2 desk:gap-2.5 overflow-x-auto desk:overflow-visible px-4 desk:px-0 pt-3 pb-2 desk:py-0"
         >
-          {COLLAGE_GROUPS.map((group) => (
+          {visibleGroups.map((group) => (
             <CategoryChip
               key={group}
               label={t.collage.groups[group]}
@@ -174,39 +196,48 @@ export const CatalogPage: React.FC = () => {
               />
             </>
           )}
-          <label className="inline-flex items-center gap-1.5 shrink-0 text-sm font-extrabold whitespace-nowrap">
-            <span>{t.catalog.sortLabel}:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortKey)}
-              className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
-            >
-              <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
-              <option value="minOrder">{t.catalog.sortMinOrder}</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => navigateTo('search')}
+          {activeTab === 'stores' && (
+            <label className="inline-flex items-center gap-1.5 shrink-0 text-sm font-extrabold whitespace-nowrap">
+              <span>{t.catalog.sortLabel}:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortKey)}
+                className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
+              >
+                <option value="distance">{t.demo.delivery.sortNear}</option>
+                <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
+                <option value="minOrder">{t.catalog.sortMinOrder}</option>
+              </select>
+            </label>
+          )}
+          <Link
+            to={pathFor('search')}
             className="desk:hidden inline-flex items-center gap-1.5 shrink-0 min-h-11 px-2 text-sm font-extrabold underline cursor-pointer"
           >
             <Search aria-hidden="true" className="w-4 h-4" />
             {t.nav.search}
-          </button>
+          </Link>
         </div>
       </section>
 
       <section className="max-w-[1360px] mx-auto px-4 desk:px-10 pt-2.5 desk:pt-[30px]">
+        <ComingSoon className="mb-4" />
         {activeTab === 'stores' ? (
           filteredStores.length === 0 ? (
-            <EmptyState title={copy.emptyT} description={copy.emptyD} actionText={copy.showAll} onAction={resetFilters} />
+            <EmptyState
+              title={isComingSoon ? t.demo.coming.emptyTitle : copy.emptyT}
+              description={isComingSoon ? t.demo.coming.emptyDesc : copy.emptyD}
+              actionText={copy.showAll}
+              onAction={resetFilters}
+            />
           ) : (
             <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] desk:gap-x-[34px] desk:gap-y-[46px] desk:grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))]">
               {filteredStores.map((store, index) => (
                 <li key={store.id} className="anim-drop" style={{ animationDelay: `${(index * 0.08).toFixed(2)}s` }}>
                   <StoreCard
                     store={store}
-                    isSelected={store.id === selectedStoreId}
+                    isSelected={store.id === selectedStoreId && deliveryFor(store.id).inRange}
+                    to={deliveryFor(store.id).inRange ? undefined : pathFor('store', { storeId: store.id })}
                     onClick={() => pickStore(store.id)}
                   />
                 </li>
@@ -226,7 +257,7 @@ export const CatalogPage: React.FC = () => {
               <ProductCard
                 key={product.id}
                 product={product}
-                inCartQuantity={getInCartQuantity(product.id)}
+                inCartQuantity={quantityInCart(product.id)}
                 onAddToCart={addToCart}
                 onUpdateQuantity={updateCartQuantity}
               />
@@ -240,24 +271,24 @@ export const CatalogPage: React.FC = () => {
           note={copy.chosen}
           title={
             <>
-              <bdi>{pickedName}</bdi> · {formatTimeRange(pickedStore.deliveryTimeMin, pickedStore.deliveryTimeMax)}
+              <bdi>{pickedName}</bdi> · {formatTimeRange(deliveryFor(pickedStore.id).timeMin, deliveryFor(pickedStore.id).timeMax)}
             </>
           }
         >
-          <button
-            type="button"
-            onClick={() => navigateTo('store', { storeId: pickedStore.id })}
+          <Link
+            to={pathFor('store', { storeId: pickedStore.id })}
             aria-label={`${copy.openStore}: ${pickedName}`}
             className="chip-tilt inline-flex items-center justify-center gap-1.5 min-w-11 min-h-[52px] px-2.5 desk:px-4 bg-card border-2 border-ink rounded-[14px] font-extrabold cursor-pointer"
           >
             <StoreIcon aria-hidden="true" className="w-5 h-5 shrink-0" />
             <span className="hidden desk:inline whitespace-nowrap">{copy.openStore}</span>
-          </button>
+          </Link>
           <Button
             size="lg"
             onClick={() => {
               pickStore(pickedStore.id);
-              navigateTo('delivery');
+              // With an empty basket there is nothing to deliver yet, so the next step is the shop's goods.
+              navigateTo(cart.length > 0 ? 'delivery' : 'store', { storeId: pickedStore.id });
             }}
             className="whitespace-nowrap px-3.5 desk:px-6"
           >

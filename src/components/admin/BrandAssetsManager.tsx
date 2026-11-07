@@ -311,7 +311,7 @@ export const BrandAssetsManager: React.FC = () => {
               <div className="flex flex-col items-center gap-2 p-4 bg-[#FFF8EC] text-[#5A554C] border-2 border-[#1E1E1E] rounded-xl">
                 <span className="text-xs font-extrabold">{copy.previewLight}</span>
                 <img
-                  src={BRAND_ASSETS.darkLockup}
+                  src={BRAND_ASSETS.darkLockup || '/brand/qiventra-full.webp'}
                   alt="QIVENTRA"
                   style={PREVIEW_LOGO}
                   onError={(e) => {
@@ -322,7 +322,7 @@ export const BrandAssetsManager: React.FC = () => {
               <div className="flex flex-col items-center gap-2 p-4 bg-[#1E1E1E] text-[#FFD84D] border-2 border-[#1E1E1E] rounded-xl">
                 <span className="text-xs font-extrabold">{copy.previewDark}</span>
                 <img
-                  src={BRAND_ASSETS.lightLockup}
+                  src={BRAND_ASSETS.lightLockup || '/brand/qiventra-full.webp'}
                   alt="QIVENTRA"
                   style={PREVIEW_LOGO}
                   onError={(e) => {
@@ -335,7 +335,7 @@ export const BrandAssetsManager: React.FC = () => {
             <div className="flex flex-col items-center gap-2 p-6 bg-[#FFF8EC] text-[#5A554C] border-2 border-[#1E1E1E] rounded-xl">
               <span className="text-xs font-extrabold">{copy.previewMark}</span>
               <img
-                src={BRAND_ASSETS.mark}
+                src={BRAND_ASSETS.mark || '/brand/qiventra-mark.webp'}
                 alt="QIVENTRA"
                 style={{ maxWidth: '100%', maxHeight: '64px', aspectRatio: '1 / 1' }}
                 onError={(e) => {

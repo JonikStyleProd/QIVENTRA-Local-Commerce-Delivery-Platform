@@ -1,18 +1,17 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
-import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText } from '../types';
-import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_USER } from '../data/mockData';
+import { useLocation, useNavigate } from 'react-router';
+import { AppRoute, CartItem, Product, Store, Order, UserProfile } from '../types';
+import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_PAST_ORDERS, MOCK_USER } from '../data/mockData';
+import { advanceOrder } from '../data/orderTracker';
+import { hasVariantChoice, keyOfLine, lineKey, normalizeVariantId, priceOf, variantOf } from '../data/variants';
+import { DEFAULT_ADDRESS_ID, DEMO_ADDRESSES, StoreDelivery, addressById, storeDelivery } from '../data/addresses';
 import { DeliveryWindow } from '../data/deliverySlots';
 import { collageTranslations } from '../i18n/collage';
 import { OrderCalculation, OrderStoreLine, calculateOrder } from '../data/cartRules';
 import { useLanguage } from './LanguageContext';
+import { findPromoCode } from '../data/promotions';
 import { PromotionsProvider, usePromotions } from './PromotionsContext';
-
-interface NavigationOptions {
-  storeId?: string;
-  categorySlug?: string;
-  searchQuery?: string;
-  orderId?: string;
-}
+import { NavigationOptions, pathFor, routeOfPath } from '../router/paths';
 
 interface AppContextType {
   currentRoute: AppRoute;
@@ -24,28 +23,37 @@ interface AppContextType {
   pickStore: (id: string) => void;
   /** Shops in the current order, with each one's fee and distance from its minimum. */
   orderStores: OrderStoreLine[];
-  selectedCategorySlug: string | null;
-  setSelectedCategorySlug: (slug: string | null) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
   currentAddress: string;
-  setCurrentAddress: (address: string) => void;
+  currentAddressId: string;
+  /** Picks an address from the demo list by its id. */
+  setCurrentAddress: (addressId: string) => void;
+  /** Distance, time and reach of a shop for the chosen address. */
+  deliveryFor: (storeId: string) => StoreDelivery;
+  removeStoreItems: (storeId: string) => void;
   
   // Cart
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  updateCartQuantity: (productId: string, quantity: number) => void;
-  removeFromCart: (productId: string) => void;
+  /** Adds a product in the given variant, or in its first one. Each variant is its own line. */
+  addToCart: (product: Product, quantity?: number, variantId?: string) => void;
+  /** `key` is the line's key: the product id, plus the variant if it has one. */
+  updateCartQuantity: (key: string, quantity: number) => void;
+  removeFromCart: (key: string) => void;
+  /** All units of a product in the basket, across its variants. */
+  quantityInCart: (productId: string) => number;
   clearCart: () => void;
   cartTotalCount: number;
   cartSubtotal: number;
-  /** The value of the promo code entered on the cart page. Whether it applies is up to `order`. */
-  cartDiscount: number;
-  setCartDiscount: (amount: number) => void;
+  /** Enters a promo code. Whether it gives a discount is up to `order`. */
+  applyPromoCode: (raw: string) => 'applied' | 'already' | 'invalid';
+  removePromoCode: () => void;
   /** The whole calculation: promotions, the promo code, fees and the total. */
   order: OrderCalculation;
   deliveryFee: number;
   totalAmount: number;
+
+  /** Hearts on shops and products. They stay in this browser. */
+  favorites: Favorites;
+  toggleFavorite: (kind: keyof Favorites, id: string) => void;
 
   // Modals & Drawers
   isAuthModalOpen: boolean;
@@ -74,11 +82,18 @@ interface AppContextType {
   // Domain state
   currentUser: UserProfile;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
-  /** The order the tracker shows: the one asked for, else the newest placed, else the demo order. */
-  activeOrder: Order;
-  /** Every order still tracked, newest placed first, the demo order last. */
-  trackedOrders: Order[];
-  advanceOrderSimulation: () => void;
+  isSignedIn: boolean;
+  /** Demo sign-in: nothing is checked. */
+  signIn: (role: UserProfile['role']) => void;
+  /** Back to the guest state: the demo profile and its orders are hidden. */
+  signOut: () => void;
+  setDemoRole: (role: UserProfile['role']) => void;
+  /** The orders this visitor can see: placed ones first, then the demo profile's, if signed in. */
+  orders: Order[];
+  /** One step along the order's flow. It stops at "delivered". */
+  advanceOrderStatus: (id: string) => void;
+  /** A fresh order at "received" for trying the courier flow, without going through a basket. */
+  createDemoOrder: () => Order;
   /** Turns the basket into an order with status "received", then empties the basket. */
   placeOrder: (details: { deliveryWindow: DeliveryWindow; note: string }) => Order;
   updateOrder: (id: string, changes: Partial<Order>) => void;
@@ -86,91 +101,145 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+export interface Favorites {
+  stores: string[];
+  products: string[];
+}
+
+const FAVORITES_KEY = 'qiventra_favorites';
+
+const readFavorites = (): Favorites => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? 'null');
+    const clean = (list: unknown) => (Array.isArray(list) ? list.filter((id) => typeof id === 'string') : []);
+    return { stores: clean(parsed?.stores), products: clean(parsed?.products) };
+  } catch {
+    return { stores: [], products: [] };
+  }
+};
+
+const ORDERS_KEY = 'qiventra_orders';
+const ADDRESS_KEY = 'qiventra_address';
+const DEMO_ORDER_KEY = 'qiventra_demo_order';
+const SESSION_KEY = 'qiventra_session';
+
+interface StoredSession {
+  signedIn: boolean;
+  role: UserProfile['role'];
+}
+
+const ROLES: UserProfile['role'][] = ['customer', 'vendor', 'courier', 'admin'];
+
+/** The demo starts signed in as the sample profile, so its orders and addresses are there to look at. */
+const readSession = (): StoredSession => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null');
+    if (parsed && typeof parsed.signedIn === 'boolean' && ROLES.includes(parsed.role)) return parsed;
+  } catch {
+    // Fall through to the default.
+  }
+  return { signedIn: true, role: 'customer' };
+};
+
+const readOrders = (key: string): Order[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) ?? '[]');
+    return Array.isArray(parsed)
+      ? parsed.filter((order) => order && typeof order.id === 'string' && Array.isArray(order.items))
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+const GUEST_USER: UserProfile = {
+  id: 'guest',
+  name: '',
+  phone: '',
+  email: '',
+  savedAddresses: [],
+  role: 'customer',
+};
+
 function AppStateProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
   const { promotions, now } = usePromotions();
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>('home');
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { route: currentRoute, params: routeParams } = routeOfPath(pathname);
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>('store-3');
   const [pickedStoreId, setPickedStoreId] = useState<string | null>(null);
-  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USER);
-  const [demoOrder, setDemoOrder] = useState<Order>(MOCK_ACTIVE_ORDER);
-  const [focusedOrderId, setFocusedOrderId] = useState<string | null>(null);
-  const [placedOrders, setPlacedOrders] = useState<Order[]>(() => {
+  // A shop opened by its address becomes the selected one, as if it was picked in the list.
+  useEffect(() => {
+    if (routeParams.storeId) setSelectedStoreId(routeParams.storeId);
+  }, [routeParams.storeId]);
+
+  const [session, setSession] = useState<StoredSession>(readSession);
+  const isSignedIn = session.signedIn;
+  const [profile, setProfile] = useState<UserProfile>(() => ({ ...MOCK_USER, role: session.role }));
+  const [placedOrders, setPlacedOrders] = useState<Order[]>(() => readOrders(ORDERS_KEY));
+  const [demoOrder, setDemoOrder] = useState<Order>(() => readOrders(DEMO_ORDER_KEY)[0] ?? MOCK_ACTIVE_ORDER);
+
+  useEffect(() => {
     try {
-      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('qiventra_orders') : null;
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed)
-        ? parsed.filter((order) => order && typeof order.id === 'string' && Array.isArray(order.items))
-        : [];
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch {
-      return [];
+      // Without storage the session lasts until the page closes.
+    }
+  }, [session]);
+
+  const currentUser = useMemo<UserProfile>(
+    () => ({ ...(isSignedIn ? profile : GUEST_USER), role: session.role }),
+    [isSignedIn, profile, session.role]
+  );
+
+  const signIn = useCallback((role: UserProfile['role']) => setSession({ signedIn: true, role }), []);
+  const signOut = useCallback(() => setSession({ signedIn: false, role: 'customer' }), []);
+  const setDemoRole = useCallback((role: UserProfile['role']) => setSession((prev) => ({ ...prev, role })), []);
+
+  const orders = useMemo(
+    () => (isSignedIn ? [...placedOrders, demoOrder, ...MOCK_PAST_ORDERS] : placedOrders),
+    [isSignedIn, placedOrders, demoOrder]
+  );
+
+  // The tracker and the courier workspace may be open in different tabs of one browser.
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === ORDERS_KEY) setPlacedOrders(readOrders(ORDERS_KEY));
+      if (event.key === DEMO_ORDER_KEY) setDemoOrder(readOrders(DEMO_ORDER_KEY)[0] ?? MOCK_ACTIVE_ORDER);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  const [currentAddressId, setCurrentAddressId] = useState<string>(() => {
+    try {
+      return addressById(localStorage.getItem(ADDRESS_KEY))?.id ?? DEFAULT_ADDRESS_ID;
+    } catch {
+      return DEFAULT_ADDRESS_ID;
     }
   });
+  const chosenAddress = addressById(currentAddressId) ?? DEMO_ADDRESSES[0];
+  const currentAddress = chosenAddress.label[language];
 
-  const trackedOrders = useMemo(() => [...placedOrders, demoOrder], [placedOrders, demoOrder]);
-  const activeOrder = trackedOrders.find((order) => order.id === focusedOrderId) ?? trackedOrders[0];
-
-  // Address localization and selection state
-  const [selectedAddressId, setSelectedAddressId] = useState<string>('addr-1');
-  const [customAddressMap, setCustomAddressMap] = useState<LocalizedText | null>(null);
-
-  const currentAddress = useMemo(() => {
-    if (customAddressMap) {
-      return customAddressMap[language] || customAddressMap.ru || customAddressMap.en;
+  const setCurrentAddress = useCallback((addressId: string) => {
+    if (!addressById(addressId)) return;
+    setCurrentAddressId(addressId);
+    try {
+      localStorage.setItem(ADDRESS_KEY, addressId);
+    } catch {
+      // Without storage the address lasts until the page closes.
     }
-    const saved = currentUser.savedAddresses.find((a) => a.id === selectedAddressId);
-    if (saved) {
-      return saved.addresses?.[language] || saved.address;
-    }
-    return (
-      currentUser.savedAddresses[0]?.addresses?.[language] ||
-      currentUser.savedAddresses[0]?.address ||
-      'Tel Aviv, 42 Rothschild Blvd, Apt 14'
-    );
-  }, [customAddressMap, currentUser.savedAddresses, selectedAddressId, language]);
+  }, []);
 
-  // The same address in every language, so a saved order keeps following the language switch.
-  const currentAddressTexts = useMemo((): LocalizedText | undefined => {
-    if (customAddressMap) return customAddressMap;
-    const saved = currentUser.savedAddresses.find((a) => a.id === selectedAddressId);
-    return saved?.addresses;
-  }, [customAddressMap, currentUser.savedAddresses, selectedAddressId]);
-
-  const setCurrentAddress = useCallback(
-    (addrOrId: string) => {
-      // 1. Check if it's an address id
-      const foundById = currentUser.savedAddresses.find((a) => a.id === addrOrId);
-      if (foundById) {
-        setSelectedAddressId(foundById.id);
-        setCustomAddressMap(null);
-        return;
-      }
-
-      // 2. Check if it matches any localized address string in saved addresses
-      const foundByText = currentUser.savedAddresses.find(
-        (a) =>
-          a.address === addrOrId ||
-          a.addresses?.ru === addrOrId ||
-          a.addresses?.en === addrOrId ||
-          a.addresses?.he === addrOrId
-      );
-      if (foundByText) {
-        setSelectedAddressId(foundByText.id);
-        setCustomAddressMap(null);
-        return;
-      }
-
-      // 3. Custom address entered by the user
-      setCustomAddressMap({
-        ru: addrOrId,
-        en: addrOrId,
-        he: addrOrId,
-      });
-    },
-    [currentUser.savedAddresses]
+  const deliveries = useMemo(
+    () => Object.fromEntries(MOCK_STORES.map((store) => [store.id, storeDelivery(store, chosenAddress.coords)])),
+    [chosenAddress]
+  );
+  const deliveryFor = useCallback(
+    (storeId: string): StoreDelivery => deliveries[storeId] ?? { km: 0, inRange: false, timeMin: 0, timeMax: 0 },
+    [deliveries]
   );
 
   // Initial cart with localStorage persistence and defensive corrupt state recovery
@@ -191,10 +260,10 @@ function AppStateProvider({ children }: { children: ReactNode }) {
                 item.quantity > 0
             );
             // An emptied basket stays empty, and saved items pick up current catalog data.
-            return valid.map((item) => ({
-              ...item,
-              product: MOCK_PRODUCTS.find((p) => p.id === item.product.id) ?? item.product,
-            }));
+            return valid.map((item) => {
+              const product = MOCK_PRODUCTS.find((p) => p.id === item.product.id) ?? item.product;
+              return { ...item, product, variantId: normalizeVariantId(product, item.variantId) };
+            });
           }
         }
       }
@@ -204,12 +273,52 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     // First visit starts with one shop's order that meets its minimum, as in the design.
     return ['prod-4', 'prod-5', 'prod-6'].flatMap((id, index) => {
       const product = MOCK_PRODUCTS.find((p) => p.id === id);
-      return product ? [{ product, quantity: index === 1 ? 2 : 1 }] : [];
+      return product ? [{ product, quantity: index === 1 ? 2 : 1, variantId: normalizeVariantId(product) }] : [];
     });
   });
 
-  const [promoDiscount, setCartDiscount] = useState(0);
-  const cartDiscount = cart.length > 0 ? promoDiscount : 0;
+  const [promoCodeText, setPromoCodeText] = useState<string | null>(() => {
+    try {
+      return findPromoCode(localStorage.getItem('qiventra_promo_code'))?.code ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (promoCodeText) localStorage.setItem('qiventra_promo_code', promoCodeText);
+      else localStorage.removeItem('qiventra_promo_code');
+    } catch {
+      // Without storage the code simply lasts until the page closes.
+    }
+  }, [promoCodeText]);
+
+  const applyPromoCode = (raw: string) => {
+    const found = findPromoCode(raw);
+    if (!found) return 'invalid';
+    if (found.code === promoCodeText) return 'already';
+    setPromoCodeText(found.code);
+    return 'applied';
+  };
+  const removePromoCode = () => setPromoCodeText(null);
+
+  const [favorites, setFavorites] = useState<Favorites>(readFavorites);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    } catch {
+      // Without storage favorites last until the page closes.
+    }
+  }, [favorites]);
+
+  const toggleFavorite = useCallback((kind: keyof Favorites, id: string) => {
+    setFavorites((prev) => ({
+      ...prev,
+      [kind]: prev[kind].includes(id) ? prev[kind].filter((entry) => entry !== id) : [...prev[kind], id],
+    }));
+  }, []);
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -248,74 +357,78 @@ function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('qiventra_orders', JSON.stringify(placedOrders));
-      }
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(placedOrders));
     } catch {
       // ignore quota or serialization errors
     }
   }, [placedOrders]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(DEMO_ORDER_KEY, JSON.stringify([demoOrder]));
+    } catch {
+      // ignore quota or serialization errors
+    }
+  }, [demoOrder]);
+
   const updateUserProfile = (updates: Partial<UserProfile>) => {
-    setCurrentUser((prev) => ({ ...prev, ...updates }));
+    setProfile((prev) => ({ ...prev, ...updates }));
   };
 
   const selectedStore = useMemo(() => {
     return MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0];
   }, [selectedStoreId]);
 
-  const pickStore = useCallback((id: string) => {
-    setSelectedStoreId(id);
-    setPickedStoreId(id);
+  const pickStore = useCallback(
+    (id: string) => {
+      // A shop out of range stays visible but cannot be chosen for an order.
+      if (!deliveries[id]?.inRange) return;
+      setSelectedStoreId(id);
+      setPickedStoreId(id);
+    },
+    [deliveries]
+  );
+
+  const navigateTo = useCallback(
+    (route: AppRoute, options: NavigationOptions = {}) => {
+      if (options.storeId) setSelectedStoreId(options.storeId);
+      navigate(pathFor(route, options));
+    },
+    [navigate]
+  );
+
+  const addToCart = useCallback((product: Product, quantity = 1, variantId?: string) => {
+    const chosen = normalizeVariantId(product, variantId);
+    const key = lineKey(product.id, chosen);
+    setCart((prev) =>
+      prev.some((item) => keyOfLine(item) === key)
+        ? prev.map((item) => (keyOfLine(item) === key ? { ...item, quantity: item.quantity + quantity } : item))
+        : [...prev, { product, quantity, variantId: chosen }]
+    );
   }, []);
 
-  const navigateTo = (route: AppRoute, options?: NavigationOptions) => {
-    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-    if (options?.storeId) setSelectedStoreId(options.storeId);
-    if (options?.categorySlug !== undefined) setSelectedCategorySlug(options.categorySlug);
-    if (options?.searchQuery !== undefined) setSearchQuery(options.searchQuery);
-    if (options?.orderId) setFocusedOrderId(options.orderId);
-
-    setCurrentRoute(route);
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  const removeFromCart = (key: string) => {
+    setCart((prev) => prev.filter((item) => keyOfLine(item) !== key));
   };
 
-  const addToCart = (product: Product, quantity = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prev, { product, quantity }];
-    });
-  };
-
-  const updateCartQuantity = (productId: string, quantity: number) => {
+  const updateCartQuantity = (key: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(key);
       return;
     }
-    setCart((prev) =>
-      prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    setCart((prev) => prev.map((item) => (keyOfLine(item) === key ? { ...item, quantity } : item)));
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  const quantityInCart = (productId: string) =>
+    cart.reduce((sum, item) => (item.product.id === productId ? sum + item.quantity : sum), 0);
+
+  const removeStoreItems = (storeId: string) => {
+    setCart((prev) => prev.filter((item) => item.product.storeId !== storeId));
   };
 
   const clearCart = () => {
     setCart([]);
-    setCartDiscount(0);
+    setPromoCodeText(null);
   };
 
   const cartTotalCount = useMemo(() => {
@@ -323,34 +436,37 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   const cartSubtotal = useMemo(() => {
-    return cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    return cart.reduce((acc, item) => acc + priceOf(item.product, item.variantId) * item.quantity, 0);
   }, [cart]);
 
   const order = useMemo(
-    () => calculateOrder({ cart, pickedStoreId, promotions, promoCodeAmount: cartDiscount, now }),
-    [cart, pickedStoreId, promotions, cartDiscount, now]
+    () => calculateOrder({ cart, pickedStoreId, promotions, promoCode: findPromoCode(promoCodeText), now, deliveryPoint: chosenAddress.coords }),
+    [cart, pickedStoreId, promotions, promoCodeText, now, chosenAddress]
   );
   const orderStores = order.stores;
   const deliveryFee = order.deliveryFee;
   const totalAmount = order.total;
 
-  // Delivery simulation stepper for the live tracker demo
-  const advanceOrderSimulation = () => {
-    const statuses: Order['status'][] = ['received', 'preparing', 'courier_assigned', 'on_the_way', 'delivered'];
-    const advance = (order: Order): Order => {
-      const nextStatus = statuses[(statuses.indexOf(order.status) + 1) % statuses.length];
-      return {
-        ...order,
-        status: nextStatus,
-        etaMinutes: nextStatus === 'delivered' ? 0 : Math.max(5, order.etaMinutes - 4),
-      };
+  const advanceOrderStatus = useCallback((id: string) => {
+    setPlacedOrders((prev) => prev.map((candidate) => (candidate.id === id ? advanceOrder(candidate) : candidate)));
+    setDemoOrder((prev) => (prev.id === id ? advanceOrder(prev) : prev));
+  }, []);
+
+  const createDemoOrder = useCallback((): Order => {
+    const startedAt = Date.now();
+    const created: Order = {
+      ...MOCK_ACTIVE_ORDER,
+      id: `ord-demo-${startedAt}`,
+      orderNumber: `QIV-IL-${String(startedAt).slice(-4)}`,
+      status: 'received',
+      etaMinutes: 40,
+      etaTotalMinutes: 40,
+      createdAts: undefined,
+      placedAt: new Date(startedAt).toISOString(),
     };
-    if (activeOrder.id === demoOrder.id) {
-      setDemoOrder(advance);
-    } else {
-      setPlacedOrders((prev) => prev.map((order) => (order.id === activeOrder.id ? advance(order) : order)));
-    }
-  };
+    setPlacedOrders((prev) => [created, ...prev]);
+    return created;
+  }, []);
 
   const updateOrder = (id: string, changes: Partial<Order>) => {
     setPlacedOrders((prev) => prev.map((order) => (order.id === id ? { ...order, ...changes } : order)));
@@ -377,25 +493,29 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         name: line.product.name,
         names: line.product.names,
         quantity: line.quantity,
-        price: line.product.price,
+        price: priceOf(line.product, line.variantId),
         storeId: line.product.storeId,
         imageUrl: line.product.imageUrl,
+        variantId: line.variantId,
+        variantLabels: hasVariantChoice(line.product) ? variantOf(line.product, line.variantId)?.labels : undefined,
       })),
       subtotal: order.itemsSubtotal,
       discount: order.promoCodeDiscount,
+      promoCode: order.promoCodeDiscount > 0 ? order.promoCode?.code : undefined,
       feeLines: orderStores.map((line) => ({ storeId: line.store.id, fee: line.baseFee })),
       promotionLines: order.promotionLines,
       totalAmount,
       deliveryFee: order.baseDeliveryFee,
       address: currentAddress,
-      addresses: currentAddressTexts,
-      etaMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
+      addresses: chosenAddress.label,
+      destination: chosenAddress.coords,
+      etaMinutes: Math.max(...orderStores.map((line) => line.delivery?.timeMax ?? line.store.deliveryTimeMax)),
+      etaTotalMinutes: Math.max(...orderStores.map((line) => line.delivery?.timeMax ?? line.store.deliveryTimeMax)),
       deliveryWindow,
       note: note.trim() || undefined,
     };
 
     setPlacedOrders((prev) => [placed, ...prev]);
-    setFocusedOrderId(placed.id);
     setPickedStoreId(null);
     clearCart();
     return placed;
@@ -411,24 +531,26 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         selectedStore,
         pickStore,
         orderStores,
-        selectedCategorySlug,
-        setSelectedCategorySlug,
-        searchQuery,
-        setSearchQuery,
         currentAddress,
+        currentAddressId,
         setCurrentAddress,
+        deliveryFor,
+        removeStoreItems,
         cart,
         addToCart,
         updateCartQuantity,
         removeFromCart,
+        quantityInCart,
         clearCart,
         cartTotalCount,
         cartSubtotal,
-        cartDiscount,
-        setCartDiscount,
+        applyPromoCode,
+        removePromoCode,
         order,
         deliveryFee,
         totalAmount,
+        favorites,
+        toggleFavorite,
         isAuthModalOpen,
         setIsAuthModalOpen,
         isAddressModalOpen,
@@ -439,9 +561,13 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         openChatWithParticipant,
         currentUser,
         updateUserProfile,
-        activeOrder,
-        trackedOrders,
-        advanceOrderSimulation,
+        isSignedIn,
+        signIn,
+        signOut,
+        setDemoRole,
+        orders,
+        advanceOrderStatus,
+        createDemoOrder,
         placeOrder,
         updateOrder,
       }}

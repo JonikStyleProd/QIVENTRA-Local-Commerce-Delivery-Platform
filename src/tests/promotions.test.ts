@@ -5,6 +5,8 @@ import {
   DEMO_PRODUCT_LABELS,
   FACT_LABELS,
   PRODUCT_LABELS,
+  PROMO_CODES,
+  findPromoCode,
   Promotion,
   bestPromotion,
   buildDemoPromotions,
@@ -44,8 +46,7 @@ const promotion = (overrides: Partial<Promotion>): Promotion => ({
   ...overrides,
 });
 
-const calculate = (cart: CartItem[], promotions: Promotion[], promoCodeAmount = 0, now = MORNING, pickedStoreId: string | null = null) =>
-  calculateOrder({ cart, pickedStoreId, promotions, promoCodeAmount, now });
+const calculate = (cart: CartItem[], promotions: Promotion[], codeAmount = 0, now = MORNING, pickedStoreId: string | null = null) =>  calculateOrder({    cart,    pickedStoreId,    promotions,    promoCode: codeAmount > 0 ? { code: 'TEST', amount: codeAmount, minSubtotal: 0 } : null,    now,  });
 
 describe('promotion types', () => {
   it('takes a percent discount off the shop goods', () => {
@@ -496,5 +497,63 @@ describe('filtering products by labels', () => {
   it('follows what the seller has set', () => {
     const edited = (id: string) => (id === 'prod-4' ? (['kosher'] as const).slice() : labels(id));
     expect(filterProductsByLabels(MOCK_PRODUCTS, ['kosher'], edited).map((p) => p.id)).toEqual(['prod-4', 'prod-12']);
+  });
+});
+
+describe('promo codes in the order calculation', () => {
+  const START20 = PROMO_CODES.find((code) => code.code === 'START20')!;
+  const withCode = (cart: CartItem[], promotions: Promotion[] = []) =>
+    calculateOrder({ cart, pickedStoreId: null, promotions, promoCode: START20, now: MORNING });
+  const lines = (id: string, quantity: number): CartItem[] => [
+    { product: MOCK_PRODUCTS.find((p) => p.id === id)!, quantity },
+  ];
+
+  it('takes 20 ₪ off from 80 ₪, as the banner promises', () => {
+    const order = withCode(lines('prod-3', 2)); // 96 ₪ of oil
+    expect(order.itemsSubtotal).toBe(96);
+    expect(order.promoCodeDiscount).toBe(20);
+    expect(order.discountChoice).toBe('promoCode');
+    expect(order.total).toBe(96 + 15 - 20);
+    expect(order.promoCode?.missing).toBe(0);
+  });
+
+  it('gives nothing below the threshold and says how much is missing', () => {
+    const order = withCode(lines('prod-1', 1)); // 24 ₪
+    expect(order.promoCodeDiscount).toBe(0);
+    expect(order.promoCodeValue).toBe(0);
+    expect(order.promoCode?.missing).toBe(80 - 24);
+    expect(order.total).toBe(24 + 15);
+    expect(order.discountChoice).toBe('none');
+  });
+
+  it('applies exactly at the threshold', () => {
+    const order = withCode(lines('prod-4', 5)); // 80 ₪ of challah
+    expect(order.itemsSubtotal).toBe(80);
+    expect(order.promoCodeDiscount).toBe(20);
+  });
+
+  it('keeps the promotion when it is worth more than the code', () => {
+    const promotion: Promotion = {
+      id: 'big', storeId: 'store-1', type: 'percent', percent: 50, minSubtotal: 0, productIds: [], categories: [],
+      title: { ru: 'x' }, description: {}, startsOn: '2020-01-01', endsOn: '2099-01-01', isPaused: false,
+    };
+    const order = withCode(lines('prod-3', 2), [promotion]);
+    expect(order.discountChoice).toBe('promotions');
+    expect(order.promoCodeDiscount).toBe(0);
+    expect(order.promotionsValue).toBe(48);
+    expect(order.promoCodeValue).toBe(20);
+  });
+
+  it('finds a code whatever its case and spacing, and nothing else', () => {
+    expect(findPromoCode(' start20 ')?.amount).toBe(20);
+    expect(findPromoCode('QIVENTRA2026')).toBeUndefined();
+    expect(findPromoCode('')).toBeUndefined();
+    expect(findPromoCode(null)).toBeUndefined();
+  });
+
+  it('has no code on an empty basket', () => {
+    const order = withCode([]);
+    expect(order.promoCode).toBeNull();
+    expect(order.total).toBe(0);
   });
 });

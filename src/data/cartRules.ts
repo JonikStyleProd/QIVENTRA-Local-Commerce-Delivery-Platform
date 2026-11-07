@@ -1,6 +1,8 @@
 import { CartItem, OrderItem, OrderPromotionLine, Product, Store } from '../types';
 import { MOCK_PRODUCTS, MOCK_STORES } from './mockData';
-import { Promotion, isLive } from './promotions';
+import { PromoCode, Promotion, isLive } from './promotions';
+import { GeoPoint, StoreDelivery, storeDelivery } from './addresses';
+import { keyOfLine, normalizeVariantId, priceOf, variantOf } from './variants';
 
 /** A promotion working on the current order, and what it is worth to the buyer. */
 export interface AppliedPromotion {
@@ -30,8 +32,10 @@ export interface OrderStoreLine {
   shortfall: number;
   applied: AppliedPromotion[];
   hints: PromotionHint[];
-  /** What the buyer pays per unit, by product id. */
+  /** What the buyer pays per unit, by basket line. */
   unitPrices: Record<string, number>;
+  /** Distance and time to the delivery address, when one is known. */
+  delivery?: StoreDelivery;
 }
 
 const roundMoney = (amount: number): number => Math.round(amount * 100) / 100;
@@ -57,7 +61,7 @@ const applyPromotions = (
 ): Pick<OrderStoreLine, 'fee' | 'applied' | 'hints' | 'unitPrices'> => {
   const unitPrices: Record<string, number> = {};
   items.forEach((item) => {
-    unitPrices[item.product.id] = item.product.price;
+    unitPrices[keyOfLine(item)] = priceOf(item.product, item.variantId);
   });
 
   const live = promotions.filter((promotion) => promotion.storeId === line.store.id && isLive(promotion, now));
@@ -71,21 +75,30 @@ const applyPromotions = (
   live
     .filter((promotion) => promotion.type === 'productPrice')
     .forEach((promotion) => {
-      const item = items.find((candidate) => candidate.product.id === promotion.productId);
       const newPrice = promotion.newPrice ?? 0;
-      if (!item || newPrice >= unitPrices[item.product.id]) return;
+      // Variants of one product are separate lines; the promotion may be about one of them or all.
+      const lines = items.filter(
+        (candidate) =>
+          candidate.product.id === promotion.productId &&
+          (!promotion.variantId || promotion.variantId === variantOf(candidate.product, candidate.variantId)?.id) &&
+          newPrice < unitPrices[keyOfLine(candidate)]
+      );
+      if (lines.length === 0) return;
       if (!reachesThreshold(promotion)) {
-        hints.push({ promotion, missing: promotion.minSubtotal - line.subtotal, product: item.product });
+        hints.push({ promotion, missing: promotion.minSubtotal - line.subtotal, product: lines[0].product });
         return;
       }
-      unitPrices[item.product.id] = newPrice;
-      applied.push({ promotion, saving: roundMoney((item.product.price - newPrice) * item.quantity) });
+      const saving = lines.reduce((sum, item) => sum + (unitPrices[keyOfLine(item)] - newPrice) * item.quantity, 0);
+      lines.forEach((item) => {
+        unitPrices[keyOfLine(item)] = newPrice;
+      });
+      applied.push({ promotion, saving: roundMoney(saving) });
     });
 
   const inScopeSum = (promotion: Promotion) =>
     items
       .filter((item) => isInScope(promotion, item.product))
-      .reduce((sum, item) => sum + unitPrices[item.product.id] * item.quantity, 0);
+      .reduce((sum, item) => sum + unitPrices[keyOfLine(item)] * item.quantity, 0);
 
   const discounts = live.filter((promotion) => promotion.type === 'percent' || promotion.type === 'amount');
   const bestDiscount = discounts
@@ -122,7 +135,7 @@ const applyPromotions = (
       const giftProduct = findProduct(promotion.giftProductId);
       if (!giftProduct?.inStock) return;
       if (qualifies(promotion)) {
-        applied.push({ promotion, saving: giftProduct.price, giftProduct });
+        applied.push({ promotion, saving: priceOf(giftProduct, promotion.giftVariantId), giftProduct });
       } else if (!reachesThreshold(promotion) && (hasGoodsInScope(promotion) || items.length === 0)) {
         hints.push({ promotion, missing: promotion.minSubtotal - line.subtotal, giftProduct });
       }
@@ -147,7 +160,8 @@ export const summarizeOrderStores = (
   cart: CartItem[],
   pickedStoreId: string | null,
   promotions: Promotion[] = [],
-  now: Date = new Date()
+  now: Date = new Date(),
+  deliveryPoint?: GeoPoint
 ): OrderStoreLine[] => {
   if (cart.length === 0) return [];
 
@@ -158,11 +172,15 @@ export const summarizeOrderStores = (
     const store = MOCK_STORES.find((s) => s.id === id);
     if (!store) return [];
     const items = cart.filter((line) => line.product.storeId === id);
-    const subtotal = items.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+    const delivery = deliveryPoint ? storeDelivery(store, deliveryPoint) : undefined;
+    // A picked shop with no goods has nothing to deliver, so out of range it simply leaves the order.
+    if (items.length === 0 && delivery && !delivery.inRange) return [];
+    const subtotal = items.reduce((sum, line) => sum + priceOf(line.product, line.variantId) * line.quantity, 0);
     const base = { store, subtotal, baseFee: store.deliveryFee };
     return [
       {
         ...base,
+        delivery,
         shortfall: Math.max(0, store.minOrder - subtotal),
         ...applyPromotions(base, items, promotions, now),
       },
@@ -184,10 +202,14 @@ export interface OrderCalculation {
   deliveryFee: number;
   /** Delivery before promotions: the summary shows this and takes free delivery off as its own line. */
   baseDeliveryFee: number;
+  /** Shops with goods in the basket that cannot reach the address. The order cannot be sent until this is empty. */
+  undeliverable: OrderStoreLine[];
   /** A promo code and shop promotions do not add up: this says which of them won. */
   discountChoice: DiscountChoice;
   /** The promo code's value, if it won. */
   promoCodeDiscount: number;
+  /** The entered code, with what is still missing to its threshold (0 once it is reached). */
+  promoCode: (PromoCode & { missing: number }) | null;
   /** What the entered promo code would give, and what the promotions would give, for the explanation. */
   promoCodeValue: number;
   promotionsValue: number;
@@ -196,13 +218,27 @@ export interface OrderCalculation {
   unitPrices: Record<string, number>;
 }
 
+/** The gift's name, with its variant when the product has several, in every language. */
+const giftNames = (entry: AppliedPromotion): OrderPromotionLine['giftName'] => {
+  if (!entry.giftProduct) return undefined;
+  const names = entry.giftProduct.names ?? { ru: entry.giftProduct.name };
+  const variant = variantOf(entry.giftProduct, entry.promotion.giftVariantId);
+  if (!variant || (entry.giftProduct.variants?.length ?? 0) < 2) return names;
+  return Object.fromEntries(
+    (Object.entries(names) as [keyof typeof variant.labels, string][]).map(([language, name]) => [
+      language,
+      `${name} · ${variant.labels[language]}`,
+    ])
+  );
+};
+
 const toLine = (storeId: string, entry: AppliedPromotion): OrderPromotionLine => ({
   promotionId: entry.promotion.id,
   storeId,
   type: entry.promotion.type,
   title: entry.promotion.title,
   saving: entry.saving,
-  giftName: entry.giftProduct?.names ?? (entry.giftProduct ? { ru: entry.giftProduct.name } : undefined),
+  giftName: giftNames(entry),
 });
 
 /**
@@ -214,24 +250,28 @@ export const calculateOrder = ({
   cart,
   pickedStoreId,
   promotions,
-  promoCodeAmount,
+  promoCode = null,
   now,
+  deliveryPoint,
 }: {
   cart: CartItem[];
   pickedStoreId: string | null;
   promotions: Promotion[];
-  promoCodeAmount: number;
+  promoCode?: PromoCode | null;
   now: Date;
+  deliveryPoint?: GeoPoint;
 }): OrderCalculation => {
-  const withPromotions = summarizeOrderStores(cart, pickedStoreId, promotions, now);
+  const withPromotions = summarizeOrderStores(cart, pickedStoreId, promotions, now, deliveryPoint);
   const itemsSubtotal = withPromotions.reduce((sum, line) => sum + line.subtotal, 0);
   const promotionsValue = roundMoney(
     withPromotions.reduce((sum, line) => sum + line.applied.reduce((total, entry) => total + entry.saving, 0), 0)
   );
-  const promoCodeValue = Math.min(promoCodeAmount, itemsSubtotal);
+  // Below its threshold a code is worth nothing yet, but stays entered and says what is missing.
+  const missing = promoCode ? Math.max(0, promoCode.minSubtotal - itemsSubtotal) : 0;
+  const promoCodeValue = promoCode && cart.length > 0 && missing === 0 ? Math.min(promoCode.amount, itemsSubtotal) : 0;
 
   const codeWins = promoCodeValue > promotionsValue;
-  const stores = codeWins ? summarizeOrderStores(cart, pickedStoreId, [], now) : withPromotions;
+  const stores = codeWins ? summarizeOrderStores(cart, pickedStoreId, [], now, deliveryPoint) : withPromotions;
   const promoCodeDiscount = codeWins ? promoCodeValue : 0;
 
   const promotionLines = stores.flatMap((line) => line.applied.map((entry) => toLine(line.store.id, entry)));
@@ -247,8 +287,10 @@ export const calculateOrder = ({
     itemsSubtotal,
     deliveryFee: orderDeliveryFee(stores),
     baseDeliveryFee,
+    undeliverable: stores.filter((line) => line.delivery && !line.delivery.inRange),
     discountChoice: codeWins ? 'promoCode' : promotionsValue > 0 ? 'promotions' : 'none',
     promoCodeDiscount,
+    promoCode: promoCode && cart.length > 0 ? { ...promoCode, missing } : null,
     promoCodeValue,
     promotionsValue,
     promotionLines,
@@ -259,17 +301,18 @@ export const calculateOrder = ({
 
 /** What a past order can put back in the basket today, and what it cannot. */
 export interface RepeatedOrder {
-  available: { product: Product; quantity: number }[];
+  available: { product: Product; quantity: number; variantId?: string }[];
   unavailable: OrderItem[];
 }
 
-/** An item counts only if its product is still in the catalog and in stock. */
+/** An item counts only if its product, and the variant it was bought in, are still on sale. */
 export const resolveRepeatOrder = (items: OrderItem[], catalog: Product[]): RepeatedOrder => {
   const result: RepeatedOrder = { available: [], unavailable: [] };
   items.forEach((item) => {
     const product = catalog.find((p) => p.id === item.productId);
-    if (product?.inStock) {
-      result.available.push({ product, quantity: item.quantity });
+    const variantGone = Boolean(item.variantId && !product?.variants?.some((variant) => variant.id === item.variantId));
+    if (product?.inStock && !variantGone) {
+      result.available.push({ product, quantity: item.quantity, variantId: item.variantId ?? normalizeVariantId(product) });
     } else {
       result.unavailable.push(item);
     }

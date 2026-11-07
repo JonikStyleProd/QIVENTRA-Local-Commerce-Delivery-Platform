@@ -74,7 +74,6 @@ class ChatService {
           he: 'שוק הכרמל',
         },
         participantRole: 'store',
-        participantAvatar: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=200&q=80',
         orderId: 'IL-84920',
         storeId: 'store-1',
         lastMessage: 'Shalom! Your order #IL-84920 has been packed and handed to the courier.',
@@ -98,7 +97,6 @@ class ChatService {
           he: 'אמיתי לוי',
         },
         participantRole: 'courier',
-        participantAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
         orderId: 'IL-84920',
         lastMessage: 'Hello! I picked up your order and am riding towards you on an e-bike. Arriving in 12 min.',
         lastMessages: {
