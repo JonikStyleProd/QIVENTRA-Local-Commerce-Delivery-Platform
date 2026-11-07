@@ -1,42 +1,31 @@
 import React, { useState } from 'react';
-import {
-  MapPin,
-  Smartphone,
-  ShieldCheck,
-  Store,
-  Bike,
-  LogOut,
-  ChevronRight,
-  ChevronLeft,
-  Camera,
-  Upload,
-  Moon,
-  Sun,
-} from 'lucide-react';
+import { Bike, Camera, ChevronRight, LogOut, MapPin, MessageSquare, Moon, ShieldCheck, Smartphone, Store, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
+import { AppRoute } from '../types';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
-import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
+import { IconButton } from '../components/ui/IconButton';
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
-import { SafeImage } from '../components/ui/SafeImage';
+import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
 import { PhotoUploadModal } from '../components/media/PhotoUploadModal';
+import { PageHeading, PageShell, SectionHeading } from '../components/collage/Page';
+import { Panel } from '../components/collage/Panel';
+import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
+import { Stamp } from '../components/collage/Stamp';
+
+const ROW = 'flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3 first:pt-0 last:pb-0';
+const TILE =
+  'chip-tilt flex items-start gap-3 w-full p-3.5 border-2 border-ink rounded-2xl shadow-hard-3 text-start cursor-pointer';
 
 export const ProfilePage: React.FC = () => {
   const { resolvedTheme, toggleTheme } = useTheme();
-  const {
-    currentUser,
-    updateUserProfile,
-    setIsAddressModalOpen,
-    setIsAuthModalOpen,
-    navigateTo,
-  } = useApp();
-
-  const { language, t, isRTL } = useLanguage();
+  const { currentUser, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, navigateTo, openChatWithParticipant } = useApp();
+  const { language, t } = useLanguage();
   const { showToast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const copy = t.screens.profile;
 
   const handleLogout = () => {
     showToast({
@@ -48,237 +37,164 @@ export const ProfilePage: React.FC = () => {
   };
 
   const displayName = currentUser.names?.[language] || currentUser.name;
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+
+  const workspaces: { route: AppRoute; title: string; desc: string; icon: React.ReactNode; tint: string }[] = [
+    {
+      route: 'vendor',
+      title: t.profile.vendorPortalTitle,
+      desc: t.profile.vendorPortalDesc,
+      icon: <Store aria-hidden="true" className="w-5 h-5 shrink-0" />,
+      tint: 'bg-tint-food',
+    },
+    {
+      route: 'courier',
+      title: t.profile.courierPortalTitle,
+      desc: t.profile.courierPortalDesc,
+      icon: <Bike aria-hidden="true" className="w-5 h-5 shrink-0" />,
+      tint: 'bg-tint-tech',
+    },
+    {
+      route: 'admin',
+      title: t.profile.adminPortalTitle,
+      desc: t.profile.adminPortalDesc,
+      icon: <ShieldCheck aria-hidden="true" className="w-5 h-5 shrink-0" />,
+      tint: 'bg-tint-health',
+    },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
-      {/* Profile Card Header */}
-      <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="relative group shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-ink text-paper overflow-hidden shadow-md flex items-center justify-center border-2 border-theme">
-              {currentUser.avatarUrl ? (
-                <SafeImage
-                  src={currentUser.avatarUrl}
-                  alt={displayName}
-                  className="w-full h-full object-cover"
-                  fallbackText={initials}
-                />
-              ) : (
-                <span className="text-xl font-bold">{initials || 'QA'}</span>
-              )}
-            </div>
-
-            {/* Quick Upload / Camera trigger */}
-            <button
-              type="button"
-              onClick={() => setIsUploadModalOpen(true)}
-              className="absolute -bottom-2 -end-2 grid place-items-center w-11 h-11 rounded-xl bg-card border-2 border-ink text-ink cursor-pointer"
-              title={t.media.changePhoto}
-              aria-label={t.media.changePhoto}
-            >
-              <Camera className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-primary">{displayName}</h1>
-              <Badge variant="pistachio" size="sm">
-                {t.profile.activeClient}
-              </Badge>
-            </div>
-            <p className="text-xs text-secondary mt-0.5" dir="ltr">{currentUser.phone}</p>
-            <p className="text-xs text-muted" dir="ltr">{currentUser.email}</p>
-          </div>
+    <PageShell width="narrow">
+      <section className="flex flex-wrap items-center gap-5 desk:gap-8 mb-7 desk:mb-10">
+        <div className="relative shrink-0 w-[112px] desk:w-[140px] bg-card p-2 pb-3 -rotate-3 shadow-polaroid">
+          <PolaroidPhoto src={currentUser.avatarUrl} alt={displayName} noteClassName="text-lg" eager />
+          <IconButton
+            onClick={() => setIsUploadModalOpen(true)}
+            aria-label={t.media.changePhoto}
+            title={t.media.changePhoto}
+            icon={<Camera aria-hidden="true" className="w-4 h-4" />}
+            className="absolute! -bottom-2 -end-3 rotate-3"
+          />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAuthModalOpen(true)}
-          >
-            {t.profile.switchAccount}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<LogOut className="w-4 h-4" />}
-            onClick={handleLogout}
-            className="text-secondary hover:text-danger"
-          >
-            {t.profile.logout}
-          </Button>
-        </div>
-      </div>
-
-      {/* Grid of Profile Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Saved Addresses Section */}
-        <div className="rounded-3xl bg-surface border border-theme p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-primary flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-ink" />
-              <span>{t.profile.savedAddresses}</span>
-            </h3>
-            <button
-              type="button"
-              onClick={() => setIsAddressModalOpen(true)}
-              className="min-w-11 min-h-11 text-sm font-extrabold hover:underline cursor-pointer"
-            >
-              {t.profile.manage}
-            </button>
+        <div className="flex-1 min-w-[220px]">
+          <PageHeading note={copy.note} title={displayName} />
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <Stamp tone="action">{copy.demoProfile}</Stamp>
+            <span className="text-sm font-bold text-ink-2">{copy.demoProfileDesc}</span>
           </div>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+              {t.profile.switchAccount}
+            </Button>
+            <Button variant="ghost" size="sm" leftIcon={<LogOut aria-hidden="true" className="w-4 h-4" />} onClick={handleLogout}>
+              {t.profile.logout}
+            </Button>
+          </div>
+        </div>
+      </section>
 
-          <div className="space-y-2.5">
-            {currentUser.savedAddresses.map((addr) => {
-              const addrTitle = addr.titles?.[language] || addr.title;
-              const addrText = addr.addresses?.[language] || addr.address;
-              return (
-                <div
-                  key={addr.id}
-                  className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex items-start justify-between gap-3"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-primary">{addrTitle}</span>
-                      {addr.isDefault && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-ink text-paper font-semibold">
-                          {t.address.primaryBadge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-secondary mt-1">{addrText}</p>
-                  </div>
+      <div className="grid desk:grid-cols-2 gap-6 items-start">
+        <Panel as="section" tape="blue" aria-label={t.profile.savedAddresses}>
+          <SectionHeading
+            title={
+              <span className="inline-flex items-center gap-2">
+                <MapPin aria-hidden="true" className="w-5 h-5 shrink-0 text-action-text" />
+                {t.profile.savedAddresses}
+              </span>
+            }
+            aside={
+              <Button variant="outline" size="sm" onClick={() => setIsAddressModalOpen(true)}>
+                {t.profile.manage}
+              </Button>
+            }
+          />
+          <ul className="divide-y-2 divide-paper-dot">
+            {currentUser.savedAddresses.map((addr) => (
+              <li key={addr.id} className="py-2.5 first:pt-0 last:pb-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-black">{addr.titles?.[language] || addr.title}</span>
+                  {addr.isDefault && <Stamp>{t.address.primaryBadge}</Stamp>}
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                <p className="text-sm font-bold text-ink-2 break-words">{addr.addresses?.[language] || addr.address}</p>
+              </li>
+            ))}
+          </ul>
+        </Panel>
 
-        {/* PWA, Language & System Settings Section */}
-        <div className="rounded-3xl bg-surface border border-theme p-6 shadow-xs space-y-4">
-          <h3 className="text-base font-bold text-primary flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-ink" />
-            <span>{t.profile.appSettings}</span>
-          </h3>
-
-          <div className="space-y-3 text-xs">
-            {/* Language Switcher Row */}
-            <div className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between">
-              <div>
-                <span className="font-bold text-primary block">{t.profile.languageSetting}</span>
-                <span className="text-secondary text-[11px]">
-                  {language === 'he' ? 'עברית (RTL)' : language === 'en' ? 'English (LTR)' : 'Русский'}
-                </span>
-              </div>
-              <LanguageSwitcher variant="compact" />
+        <Panel as="section" tape="yellow" aria-label={t.profile.appSettings}>
+          <SectionHeading
+            title={
+              <span className="inline-flex items-center gap-2">
+                <Smartphone aria-hidden="true" className="w-5 h-5 shrink-0" />
+                {t.profile.appSettings}
+              </span>
+            }
+          />
+          <div className="divide-y-2 divide-paper-dot">
+            <div className={ROW}>
+              <p className="font-black">{t.profile.languageSetting}</p>
+              <LanguageSwitcher />
             </div>
-
-            {/* Theme Toggle Row */}
-            <div className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between gap-3">
-              <div>
-                <span className="font-bold text-primary block">{t.profile.themeSetting}</span>
-                <span className="text-secondary text-[11px]">
+            <div className={ROW}>
+              <div className="min-w-0">
+                <p className="font-black">{t.profile.themeSetting}</p>
+                <p className="text-sm font-bold text-ink-2">
                   {resolvedTheme === 'dark' ? t.profile.themeDark : t.profile.themeLight}
-                </span>
+                </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={toggleTheme}
-                leftIcon={resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                leftIcon={
+                  resolvedTheme === 'dark' ? (
+                    <Sun aria-hidden="true" className="w-4 h-4" />
+                  ) : (
+                    <Moon aria-hidden="true" className="w-4 h-4" />
+                  )
+                }
               >
                 {t.profile.switchTheme}
               </Button>
             </div>
-
-            {/* PWA In-App Card */}
-            <div className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between">
-              <div>
-                <span className="font-bold text-primary block">{t.profile.pwaSetting}</span>
-                <span className="text-secondary text-[11px]">
-                  {t.profile.pwaDesc}
-                </span>
+            <div className={ROW}>
+              <div className="min-w-0 flex-1 min-w-[180px]">
+                <p className="font-black">{t.profile.pwaSetting}</p>
+                <p className="text-sm font-bold text-ink-2">{t.profile.pwaDesc}</p>
               </div>
               <PWAInstallButton />
             </div>
           </div>
-        </div>
-
-        {/* Role Portals Fast Access */}
-        <div className="md:col-span-2 rounded-3xl bg-surface-elevated border border-theme p-6 shadow-xs">
-          <h3 className="text-base font-bold text-primary mb-1">
-            {t.profile.partnerPortalsTitle}
-          </h3>
-          <p className="text-xs text-secondary mb-4">
-            {t.profile.partnerPortalsDesc}
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button
-              type="button"
-              onClick={() => navigateTo('vendor')}
-              className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
-            >
-              <Store className="w-5 h-5 text-ink mb-2" />
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-ink">
-                  {t.profile.vendorPortalTitle}
-                </span>
-                {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
-              </div>
-              <span className="text-[11px] text-secondary mt-1 block">
-                {t.profile.vendorPortalDesc}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigateTo('courier')}
-              className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
-            >
-              <Bike className="w-5 h-5 text-ink mb-2" />
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-ink">
-                  {t.profile.courierPortalTitle}
-                </span>
-                {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
-              </div>
-              <span className="text-[11px] text-secondary mt-1 block">
-                {t.profile.courierPortalDesc}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigateTo('admin')}
-              className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
-            >
-              <ShieldCheck className="w-5 h-5 text-ink mb-2" />
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-ink">
-                  {t.profile.adminPortalTitle}
-                </span>
-                {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
-              </div>
-              <span className="text-[11px] text-secondary mt-1 block">
-                {t.profile.adminPortalDesc}
-              </span>
-            </button>
-          </div>
-        </div>
-
+        </Panel>
       </div>
 
-      {/* Photo / Avatar Upload Modal */}
+      <section className="mt-8 desk:mt-10">
+        <SectionHeading note={copy.moreNote} title={copy.workspaces} />
+        <ul className="grid sm:grid-cols-2 desk:grid-cols-4 gap-3.5">
+          <li>
+            <button type="button" onClick={() => openChatWithParticipant()} className={`${TILE} bg-tint-gift h-full`}>
+              <MessageSquare aria-hidden="true" className="w-5 h-5 shrink-0" />
+              <span className="min-w-0">
+                <span className="block font-black leading-snug">{t.screens.menu.messages}</span>
+                <span className="block mt-0.5 text-sm font-bold text-ink-2">{copy.messagesDesc}</span>
+              </span>
+            </button>
+          </li>
+          {workspaces.map((space) => (
+            <li key={space.route}>
+              <button type="button" onClick={() => navigateTo(space.route)} className={`${TILE} ${space.tint} h-full`}>
+                {space.icon}
+                <span className="min-w-0 flex-1">
+                  <span className="block font-black leading-snug">{space.title}</span>
+                  <span className="block mt-0.5 text-sm font-bold text-ink-2">{space.desc}</span>
+                </span>
+                <ChevronRight aria-hidden="true" className="w-4 h-4 shrink-0 mt-1 rtl-flip" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <PhotoUploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
@@ -290,6 +206,6 @@ export const ProfilePage: React.FC = () => {
           setIsUploadModalOpen(false);
         }}
       />
-    </div>
+    </PageShell>
   );
 };

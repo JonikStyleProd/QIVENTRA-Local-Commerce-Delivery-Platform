@@ -1,39 +1,38 @@
 import React from 'react';
-import {
-  Bike,
-  Phone,
-  MessageSquare,
-  TrendingUp,
-  MapPin,
-  RefreshCw,
-  Store,
-} from 'lucide-react';
+import { Bike, MapPin, MessageSquare, Phone, RefreshCw, Store, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { MOCK_PAST_ORDERS } from '../data/mockData';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
-import { Tape } from '../components/collage/Tape';
 import { formatWindow } from '../data/deliverySlots';
+import { Button } from '../components/ui/Button';
+import { NotebookPage, NotebookStep, NotebookSteps } from '../components/collage/NotebookPage';
+import { PageHeading, PageShell, SectionHeading } from '../components/collage/Page';
+import { Panel } from '../components/collage/Panel';
+import { Stamp } from '../components/collage/Stamp';
+import { SummaryRow } from '../components/collage/SummaryRow';
+import { Tape } from '../components/collage/Tape';
+
+const STATUS_ORDER = ['received', 'preparing', 'on_the_way', 'delivered'] as const;
+
+/** The tracker has four steps; "courier assigned" and "on the way" are the same step to the buyer. */
+const stepIndex = (status: string): number => {
+  if (status === 'courier_assigned') return 2;
+  const index = STATUS_ORDER.indexOf(status as (typeof STATUS_ORDER)[number]);
+  return index === -1 ? 0 : index;
+};
 
 export const OrdersPage: React.FC = () => {
-  const {
-    activeOrder,
-    trackedOrders,
-    advanceOrderSimulation,
-    navigateTo,
-    openChatWithParticipant,
-    currentAddress,
-  } = useApp();
+  const { activeOrder, trackedOrders, advanceOrderSimulation, navigateTo, openChatWithParticipant, currentAddress } = useApp();
   const { language, t, formatCurrency, formatMinutes } = useLanguage();
   const { showToast } = useToast();
+  const copy = t.screens.orders;
 
   const handleCallCourier = () => {
     showToast({
       type: 'info',
-      title: t.orders.callCourier,
-      message: `${activeOrder.courier?.name}: ${activeOrder.courier?.phone}`,
+      title: copy.callDemoTitle,
+      message: copy.callDemoMsg,
     });
   };
 
@@ -47,6 +46,7 @@ export const OrdersPage: React.FC = () => {
   };
 
   const isDelivered = activeOrder.status === 'delivered';
+  const isOnTheWay = activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way';
   const displayStoreName = activeOrder.storeNames?.[language] || activeOrder.storeName;
   // A placed order keeps its own address; the demo order follows the current one.
   const displayAddress = activeOrder.placedAt
@@ -63,43 +63,92 @@ export const OrdersPage: React.FC = () => {
       : null;
   const otherOrders = trackedOrders.filter((order) => order.id !== activeOrder.id);
 
+  const currentStep = stepIndex(activeOrder.status);
+  const stepLabels = [t.orders.stepReceived, t.orders.stepPreparing, t.orders.stepOnTheWay, t.orders.stepAtDoor];
+  const steps: NotebookStep[] = stepLabels.map((label, index) => ({
+    key: label,
+    label,
+    state: index < currentStep || isDelivered ? 'done' : index === currentStep ? 'current' : 'todo',
+  }));
+
+  const courierName = activeOrder.courier?.names?.[language] || activeOrder.courier?.name || t.screens.chat.courier;
+
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 sm:space-y-10">
-      
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-3xl font-extrabold text-primary tracking-tight">
-          {t.orders.title}
-        </h1>
-        <p className="text-xs sm:text-sm text-secondary mt-1">
-          {t.orders.subtitle}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeading note={copy.note} title={t.orders.title} lead={t.orders.subtitle} className="mb-5 desk:mb-8" />
 
-      {/* ACTIVE ORDER LIVE TRACKER CARD */}
-      <div className="rounded-2xl sm:rounded-3xl bg-surface border border-theme p-5 sm:p-8 shadow-xs">
-        
-        {/* Top Header of Active Order */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 sm:pb-6 border-b border-theme">
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge variant={isDelivered ? 'success' : 'pistachio'} size="md" dot>
-                {statusLabel}
-              </Badge>
-              <span className="text-xs text-muted font-medium">#{activeOrder.orderNumber || activeOrder.id}</span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-primary mt-1.5">{displayStoreName}</h2>
-            <p className="text-xs text-secondary flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3.5 h-3.5 text-muted shrink-0" />
-              <span className="truncate">{displayAddress}</span>
-            </p>
+      <div className="grid desk:grid-cols-[minmax(0,1fr)_minmax(0,420px)] gap-6 desk:gap-10 items-start">
+        {/* ---------- Tracker page ---------- */}
+        <NotebookPage>
+          <div className="flex flex-wrap items-center gap-2 min-h-11">
+            <Stamp tone={isDelivered ? 'success' : 'action'} className="text-sm">
+              {statusLabel}
+            </Stamp>
+            <span className="text-sm font-bold text-ink-2">
+              <bdi>#{activeOrder.orderNumber || activeOrder.id}</bdi>
+            </span>
           </div>
+          <h2 className="text-[26px] desk:text-[32px] font-black tracking-tight leading-tight break-words">
+            <bdi>{displayStoreName}</bdi>
+          </h2>
+          <p className="flex items-start gap-1.5 mb-1 font-bold text-ink-2">
+            <MapPin aria-hidden="true" className="w-4 h-4 mt-1 shrink-0" />
+            <span className="min-w-0 break-words">{displayAddress}</span>
+          </p>
 
-          <div className="flex items-center gap-3">
+          <p className="hand text-[26px] leading-[44px] text-link-text">{copy.route}</p>
+          <NotebookSteps steps={steps} label={t.orders.statusLabel} />
+
+          {isDelivered && (
+            <span
+              aria-hidden="true"
+              className="anim-stamp hidden sm:block absolute end-5 bottom-[110px] px-4 py-2 border-4 border-action-text rounded-xl text-action-text text-2xl font-black bg-card/80"
+            >
+              {t.orders.statusCompleted}
+            </span>
+          )}
+
+          <div className="mt-3 pt-3">
+            <p className="mb-2 text-sm font-bold text-ink-2">{copy.demoStep}</p>
+            <Button
+              variant="secondary"
+              onClick={advanceOrderSimulation}
+              leftIcon={<TrendingUp aria-hidden="true" className="w-4 h-4" />}
+              className="whitespace-normal"
+            >
+              {t.orders.nextStepBtn}
+            </Button>
+          </div>
+        </NotebookPage>
+
+        {/* ---------- Order column ---------- */}
+        <div className="space-y-6 min-w-0">
+          <Panel tone="accent" as="section" aria-label={t.orders.orderItemsTitle}>
+            <p className="text-sm font-extrabold">
+              {isDelivered ? t.orders.statusLabel : windowLabel ? t.collage.delivery.windowWord : t.orders.estimatedTimeLabel}
+            </p>
+            <p className="mb-3 text-[28px] font-black leading-tight tabular-nums">
+              {isDelivered ? t.orders.statusCompleted : windowLabel ?? `~${formatMinutes(activeOrder.etaMinutes)}`}
+            </p>
+
+            <h3 className="mb-1 pt-2 border-t-2 border-ink font-black">{t.orders.orderItemsTitle}</h3>
+            {activeOrder.items.map((item, index) => (
+              <SummaryRow
+                key={index}
+                label={
+                  <>
+                    <span className="tabular-nums">{item.quantity} ×</span> {item.names?.[language] || item.name}
+                  </>
+                }
+                value={formatCurrency(item.price * item.quantity)}
+              />
+            ))}
+            <SummaryRow isTotal label={t.collage.delivery.total} value={formatCurrency(activeOrder.totalAmount)} />
+
             <Button
               variant="outline"
-              size="sm"
-              leftIcon={<Store className="w-3.5 h-3.5" />}
+              fullWidth
+              leftIcon={<Store aria-hidden="true" className="w-4 h-4" />}
               onClick={() =>
                 openChatWithParticipant({
                   type: 'store',
@@ -109,251 +158,133 @@ export const OrdersPage: React.FC = () => {
                   orderId: activeOrder.orderNumber,
                 })
               }
-              className="text-xs"
+              className="mt-4"
             >
-              {language === 'he' ? 'צ\'אט עם החנות' : language === 'ru' ? 'Чат с магазином' : 'Chat with Store'}
+              {t.chat.withStore}
             </Button>
+          </Panel>
 
-            <div className="text-start sm:text-end bg-surface-elevated sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-2xl border sm:border-0 border-theme">
-              <span className="text-xs text-secondary block">
-                {isDelivered ? t.orders.statusLabel : windowLabel ? t.collage.delivery.windowWord : t.orders.estimatedTimeLabel}
-              </span>
-              <span className="text-xl sm:text-2xl font-extrabold text-ink font-sans tabular-nums">
-                {isDelivered ? t.orders.statusCompleted : windowLabel ?? `~${formatMinutes(activeOrder.etaMinutes)}`}
-              </span>
+          {isOnTheWay && (
+            <div aria-hidden="true" className="relative max-w-[420px] mx-auto p-2.5 pb-3 bg-card -rotate-1 shadow-polaroid">
+              <Tape tone="yellow" />
+              <img
+                src="/photos/courier-cargo-bike.webp"
+                alt=""
+                loading="lazy"
+                className="block w-full aspect-[16/9] object-cover"
+              />
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* Dynamic Progress Timeline Bar */}
-        <div className="py-6 sm:py-8">
-          <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center text-xs font-semibold mb-3">
-            <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'received' ? 'text-ink font-bold' : 'text-secondary'}>
-                1. {t.orders.stepReceived}
-              </span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'preparing' ? 'text-ink font-bold' : 'text-secondary'}>
-                2. {t.orders.stepPreparing}
-              </span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way' ? 'text-ink font-bold' : 'text-secondary'}>
-                3. {t.orders.stepOnTheWay}
-              </span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className={isDelivered ? 'text-success font-bold' : 'text-secondary'}>
-                4. {t.orders.stepAtDoor}
-              </span>
-            </div>
-          </div>
-
-          <div className="relative h-2.5 sm:h-3 rounded-full bg-surface-elevated border border-theme overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-ink to-accent transition-all duration-500 rounded-full"
-              style={{
-                width:
-                  activeOrder.status === 'received'
-                    ? '25%'
-                    : activeOrder.status === 'preparing'
-                    ? '50%'
-                    : activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way'
-                    ? '75%'
-                    : '100%',
-              }}
-            />
-          </div>
-        </div>
-
-        {/* On the way: the courier photo from the design set */}
-        {(activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way') && (
-          <div aria-hidden="true" className="relative max-w-md mx-auto mb-8 p-2.5 pb-3 bg-card -rotate-1 shadow-polaroid">
-            <Tape tone="yellow" />
-            <img
-              src="/photos/courier-cargo-bike.webp"
-              alt=""
-              loading="lazy"
-              className="block w-full aspect-[16/9] object-cover"
-            />
-          </div>
-        )}
-
-        {/* Courier & Route Information Box */}
-        {activeOrder.courier && (
-          <div className="p-4 sm:p-5 rounded-2xl bg-surface-elevated border border-theme flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-2xl bg-ink text-paper flex items-center justify-center shrink-0 shadow-xs">
-                <Bike className="w-5 sm:w-6 h-5 sm:h-6 text-accent-on-ink" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-primary truncate">{activeOrder.courier.names?.[language] || activeOrder.courier.name}</span>
+          {activeOrder.courier && (
+            <Panel as="section" tone="health" aria-label={copy.courier}>
+              <div className="flex items-center gap-3">
+                <span className="grid place-items-center w-12 h-12 shrink-0 bg-card border-2 border-ink rounded-xl -rotate-3">
+                  <Bike aria-hidden="true" className="w-6 h-6" />
+                </span>
+                <div className="min-w-0">
+                  <p className="hand text-2xl leading-none text-link-text">{copy.courier}</p>
+                  <p className="font-black break-words">{courierName}</p>
+                  <p className="text-sm font-bold text-ink-2">
+                    {activeOrder.courier.vehicleName?.[language] || activeOrder.courier.vehicle}
+                  </p>
                 </div>
-                <p className="text-xs text-secondary mt-0.5 truncate">
-                  {activeOrder.courier.vehicleName?.[language] || activeOrder.courier.vehicle} • {activeOrder.courier.completedDeliveries} {t.orders.deliveriesCount}
-                </p>
-                <p className="text-[11px] text-muted mt-0.5 truncate">
-                  {activeOrder.courier.currentLocationNames?.[language] || activeOrder.courier.currentLocationName}
-                </p>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<Phone className="w-3.5 h-3.5" />}
-                onClick={handleCallCourier}
-                className="flex-1 sm:flex-initial"
-              >
-                {t.orders.callCourier}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
-                onClick={() =>
-                  openChatWithParticipant({
-                    type: 'courier',
-                    id: activeOrder.courier?.id || 'courier-1',
-                    name: activeOrder.courier?.names?.[language] || activeOrder.courier?.name || (language === 'he' ? 'שליח' : language === 'ru' ? 'Курьер' : 'Courier'),
-                    avatarUrl: activeOrder.courier?.avatarUrl,
-                    orderId: activeOrder.orderNumber,
-                  })
-                }
-                className="flex-1 sm:flex-initial"
-              >
-                {t.orders.chat}
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Order Items Summary */}
-        <div className="space-y-2 pt-2 border-t border-theme">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-secondary mb-3">
-            {t.orders.orderItemsTitle}
-          </h4>
-          <div className="space-y-2">
-            {activeOrder.items.map((item, idx) => {
-              const itemName = item.names?.[language] || item.name;
-              return (
-                <div
-                  key={idx}
-                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-xs"
+              <p className="mt-2 text-sm font-bold text-ink-2">
+                {activeOrder.courier.currentLocationNames?.[language] || activeOrder.courier.currentLocationName}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Phone aria-hidden="true" className="w-4 h-4" />}
+                  onClick={handleCallCourier}
+                  className="flex-1"
                 >
-                  <span className="text-primary font-medium break-words">
-                    <span className="font-bold text-secondary me-1 tabular-nums">{item.quantity} ×</span>
-                    {itemName}
-                  </span>
-                  <span className="text-primary font-bold whitespace-nowrap tabular-nums text-end">
-                    {formatCurrency(item.price * item.quantity)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pt-3 border-t border-theme/60 text-sm font-extrabold text-primary">
-            <span>{t.collage.delivery.total}</span>
-            <span className="font-sans whitespace-nowrap tabular-nums text-end">
-              {formatCurrency(activeOrder.totalAmount)}
-            </span>
-          </div>
+                  {t.orders.callCourier}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  leftIcon={<MessageSquare aria-hidden="true" className="w-4 h-4" />}
+                  onClick={() =>
+                    openChatWithParticipant({
+                      type: 'courier',
+                      id: activeOrder.courier?.id || 'courier-1',
+                      name: courierName,
+                      avatarUrl: activeOrder.courier?.avatarUrl,
+                      orderId: activeOrder.orderNumber,
+                    })
+                  }
+                  className="flex-1"
+                >
+                  {t.orders.chat}
+                </Button>
+              </div>
+            </Panel>
+          )}
         </div>
-
-        {/* Simulator Button */}
-        <div className="mt-6 pt-4 border-t border-theme flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-xs text-muted text-center sm:text-start">
-            {t.orders.simStepDesc}
-          </span>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={advanceOrderSimulation}
-            leftIcon={<TrendingUp className="w-4 h-4 text-accent" />}
-          >
-            {t.orders.nextStepBtn}
-          </Button>
-        </div>
-
       </div>
 
-      {/* OTHER ACTIVE ORDERS */}
       {otherOrders.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-base sm:text-lg font-bold text-primary">{t.collage.orders.otherActive}</h2>
-          <div className="space-y-3">
+        <section className="mt-10 desk:mt-14">
+          <SectionHeading title={t.collage.orders.otherActive} />
+          <ul className="grid desk:grid-cols-2 gap-4">
             {otherOrders.map((order) => (
-              <div
-                key={order.id}
-                className="p-4 sm:p-5 rounded-2xl bg-surface border border-theme flex flex-wrap items-center justify-between gap-3"
-              >
+              <Panel key={order.id} as="li" className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <span className="text-xs font-bold text-primary">#{order.orderNumber}</span>
-                  <h3 className="text-sm font-bold text-primary truncate">
+                  <p className="text-sm font-bold text-ink-2">
+                    <bdi>#{order.orderNumber}</bdi>
+                  </p>
+                  <h3 className="font-black break-words">
                     <bdi>{order.storeNames?.[language] || order.storeName}</bdi>
                   </h3>
                 </div>
-                <span className="text-sm font-extrabold text-primary whitespace-nowrap">{formatCurrency(order.totalAmount)}</span>
+                <span className="text-lg font-black whitespace-nowrap">{formatCurrency(order.totalAmount)}</span>
                 <Button variant="outline" size="sm" onClick={() => navigateTo('orders', { orderId: order.id })}>
                   {t.collage.orders.open}
                 </Button>
-              </div>
+              </Panel>
             ))}
-          </div>
-        </div>
+          </ul>
+        </section>
       )}
 
-      {/* PAST ORDERS ARCHIVE */}
-      <div className="space-y-4">
-        <h2 className="text-base sm:text-lg font-bold text-primary">{t.orders.historyTitle}</h2>
-
-        <div className="space-y-3">
-          {MOCK_PAST_ORDERS.map((order) => {
-            const orderStoreName = order.storeNames?.[language] || order.storeName;
-            return (
-              <div
-                key={order.id}
-                className="p-4 sm:p-5 rounded-2xl bg-surface border border-theme flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs"
-              >
-                <div className="space-y-1 min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-primary">#{order.orderNumber}</span>
-                    <Badge variant="neutral" size="sm">
-                      {order.status === 'delivered' ? t.orders.statusDelivered : order.status}
-                    </Badge>
-                    <span className="text-xs text-muted">{order.createdAt}</span>
-                  </div>
-                  <h4 className="text-sm font-bold text-primary truncate">{orderStoreName}</h4>
-                  <p className="text-xs text-secondary line-clamp-2">
-                    {order.items.map((i) => {
-                      const iname = i.names?.[language] || i.name;
-                      return `${i.quantity}x ${iname}`;
-                    }).join(', ')}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-theme">
-                  <span className="text-sm font-extrabold text-primary font-sans whitespace-nowrap tabular-nums">
-                    {formatCurrency(order.totalAmount)}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-                    onClick={() => handleRepeatOrder(order.orderNumber)}
-                  >
-                    {t.orders.repeatOrder}
-                  </Button>
-                </div>
+      <section className="mt-10 desk:mt-14">
+        <SectionHeading title={t.orders.historyTitle} />
+        <ul className="grid desk:grid-cols-2 gap-4">
+          {MOCK_PAST_ORDERS.map((order) => (
+            <Panel key={order.id} as="li">
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <span className="text-sm font-bold text-ink-2">
+                  <bdi>#{order.orderNumber}</bdi>
+                </span>
+                <Stamp tone={order.status === 'delivered' ? 'success' : 'neutral'}>
+                  {order.status === 'delivered' ? t.orders.statusDelivered : order.status}
+                </Stamp>
+                <span className="text-sm font-bold text-ink-3">{order.createdAts?.[language] || order.createdAt}</span>
               </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+              <h3 className="mt-1 text-lg font-black break-words">
+                <bdi>{order.storeNames?.[language] || order.storeName}</bdi>
+              </h3>
+              <p className="text-sm font-bold text-ink-2">
+                {order.items.map((item) => `${item.quantity} × ${item.names?.[language] || item.name}`).join(', ')}
+              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5">
+                <span className="text-lg font-black whitespace-nowrap tabular-nums">{formatCurrency(order.totalAmount)}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<RefreshCw aria-hidden="true" className="w-4 h-4" />}
+                  onClick={() => handleRepeatOrder(order.orderNumber)}
+                >
+                  {t.orders.repeatOrder}
+                </Button>
+              </div>
+            </Panel>
+          ))}
+        </ul>
+      </section>
+    </PageShell>
   );
 };
