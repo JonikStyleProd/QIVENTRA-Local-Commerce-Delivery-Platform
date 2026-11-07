@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Outlet, ScrollRestoration, useLocation, useNavigation } from 'react-router';
-import { ChatDrawer } from '../components/chat/ChatDrawer';
 import { focusPageHeading } from '../components/collage/focusHeading';
 import { Footer } from '../components/layout/Footer';
 import { MobileBottomNav } from '../components/layout/MobileBottomNav';
@@ -13,12 +12,20 @@ import { AppProvider, useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { usePageTitle } from './usePageTitle';
 
+// The chat and its photo tools load when it is first opened.
+const ChatDrawer = lazy(() => import('../components/chat/ChatDrawer').then((m) => ({ default: m.ChatDrawer })));
+
 const Layout: React.FC = () => {
   const { isChatOpen, setIsChatOpen, chatParticipant } = useApp();
   const { t } = useLanguage();
   const { pathname } = useLocation();
   const navigation = useNavigation();
   usePageTitle();
+
+  const [wasChatOpened, setWasChatOpened] = useState(false);
+  useEffect(() => {
+    if (isChatOpen) setWasChatOpened(true);
+  }, [isChatOpen]);
 
   // A new screen moves focus to its heading, so keyboard and screen-reader users continue from there.
   const previousPath = useRef(pathname);
@@ -51,11 +58,15 @@ const Layout: React.FC = () => {
       <Footer />
       <MobileBottomNav />
 
-      <ChatDrawer
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        initialParticipant={chatParticipant || undefined}
-      />
+      {wasChatOpened && (
+        <Suspense fallback={null}>
+          <ChatDrawer
+            isOpen={isChatOpen}
+            onClose={() => setIsChatOpen(false)}
+            initialParticipant={chatParticipant || undefined}
+          />
+        </Suspense>
+      )}
       <AddressModal />
       <AuthModal />
       <OfflineIndicator />

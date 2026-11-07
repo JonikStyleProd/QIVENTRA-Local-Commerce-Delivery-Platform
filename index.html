@@ -49,13 +49,12 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/qiventra-favicon-v3-32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/qiventra-icon-v3-192.png" />
 
-    <!-- Preload the official mark so the header logo renders without a layout shift -->
-    <link rel="preload" as="image" href="https://hrhjkixwsxciyxoxfciy.supabase.co/storage/v1/object/public/brand-assets/qiventra/v1/qiventra-mark-transparent-2k.png" />
-
     <!-- Collage fonts: Nunito + Rubik (text, Hebrew), Caveat + Amatic SC (handwriting, Hebrew) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Rubik:wght@600;700;800;900&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" rel="stylesheet" />
+    <!-- Loaded without blocking the first paint; the fallback fonts show until they arrive. -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Rubik:wght@600;700;800;900&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Rubik:wght@600;700;800;900&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap" /></noscript>
   </head>
   <body>
     <div id="root"></div>

@@ -6,6 +6,7 @@ import { MOCK_STORES, MOCK_PRODUCTS } from '../data/mockData';
 import { LinkButton } from '../components/ui/LinkButton';
 import { pathFor } from '../router/paths';
 import { StoreCard } from '../components/ui/StoreCard';
+import { smallPhoto } from '../components/collage/PolaroidPhoto';
 import { Tape } from '../components/collage/Tape';
 import { HandArrow, HandUnderline } from '../components/collage/HandMarks';
 import { ProductSticker } from '../components/collage/ProductSticker';
@@ -106,6 +107,7 @@ export const HomePage: React.FC = () => {
                   tape={item.tape}
                   delay={`${(0.15 + index * 0.1).toFixed(2)}s`}
                   onAdd={() => addToCart(product)}
+                  eager={index < 2}
                 />
               );
             })}
@@ -133,7 +135,7 @@ export const HomePage: React.FC = () => {
               {PHONE_BOARD.map(({ store, tilt }) => (
                 <span key={store} className="w-[62px] h-[62px] p-1 bg-card shrink-0" style={{ rotate: tilt }}>
                   <img
-                    src={MOCK_STORES.find((s) => s.id === store)?.coverUrl}
+                    src={smallPhoto(MOCK_STORES.find((s) => s.id === store)?.coverUrl ?? '')}
                     alt=""
                     loading="lazy"
                     className="block w-full h-full object-cover"
@@ -162,7 +164,7 @@ export const HomePage: React.FC = () => {
           >
             <Tape tone="red" />
             <img
-              src="/photos/hero-grocery-bag.webp"
+              src="/photos/480/hero-grocery-bag.webp"
               alt=""
               loading="lazy"
               className="block w-full aspect-[16/9] object-cover"
@@ -229,8 +231,10 @@ export const HomePage: React.FC = () => {
                   >
                     <Tape tone="blue" />
                     <img
-                      src={`/photos/${sticker.photo}.webp`}
+                      src={`/photos/480/${sticker.photo}.webp`}
                       alt=""
+                      loading="lazy"
+                      decoding="async"
                       className={`block w-full aspect-square object-cover ${sticker.round ? 'rounded-full' : 'rounded-sm'}`}
                     />
                     {caption && <p className="hand mt-1.5 text-center text-2xl">{caption}</p>}

@@ -74,7 +74,7 @@ export default defineConfig(() => {
               handler: 'CacheFirst',
               options: {
                 cacheName: 'collage-photos',
-                expiration: { maxEntries: 30 },
+                expiration: { maxEntries: 60 },
               },
             },
             {
@@ -93,16 +93,22 @@ export default defineConfig(() => {
         },
       }),
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          // React and the router change far less often than the app, so they get their own cached file.
+          manualChunks: (id: string) =>
+            /node_modules[\\/](react|react-dom|react-router|scheduler|cookie|set-cookie-parser)[\\/]/.test(id) ? 'vendor' : undefined,
+        },
+      },
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

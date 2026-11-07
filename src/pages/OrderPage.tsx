@@ -222,7 +222,7 @@ export const OrderPage: React.FC = () => {
             <div aria-hidden="true" className="relative max-w-[420px] mx-auto p-2.5 pb-3 bg-card -rotate-1 shadow-polaroid">
               <Tape tone="yellow" />
               <img
-                src="/photos/courier-cargo-bike.webp"
+                src="/photos/480/courier-cargo-bike.webp"
                 alt=""
                 loading="lazy"
                 className="block w-full aspect-[16/9] object-cover"

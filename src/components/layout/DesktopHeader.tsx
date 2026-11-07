@@ -35,7 +35,7 @@ export const DesktopHeader: React.FC = () => {
           aria-current={currentRoute === 'home' ? 'page' : undefined}
           className="flex items-center gap-2.5 min-h-11 shrink-0 text-ink cursor-pointer"
         >
-          <BrandLogo variant="mark" context="default" alt="" id="header-brand-mark" />
+          <BrandLogo alt="" id="header-brand-mark" />
           <span dir="ltr" className="hidden lg:inline text-xl font-black tracking-[0.04em]">
             QIVENTRA
           </span>
