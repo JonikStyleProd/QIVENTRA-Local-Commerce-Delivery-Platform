@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { Store } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
+import { MOCK_STORES } from '../data/mockData';
 import { Button } from '../components/ui/Button';
+import { SelectField } from '../components/ui/SelectField';
+import { SegmentedControl } from '../components/collage/SegmentedControl';
+import { ProductLabelManager } from '../components/vendor/ProductLabelManager';
+import { PromotionManager } from '../components/vendor/PromotionManager';
 import { PageShell, SectionHeading } from '../components/collage/Page';
 import { Panel } from '../components/collage/Panel';
 import { PortalHeader } from '../components/collage/PortalHeader';
@@ -48,6 +53,9 @@ export const VendorPortalPage: React.FC = () => {
   ];
 
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
+  const [tab, setTab] = useState<'orders' | 'promotions' | 'labels'>('orders');
+  const [managedStoreId, setManagedStoreId] = useState('store-1');
+  const seller = t.promotions.seller;
 
   const handleUpdateStatus = (orderId: string) => {
     setStatuses((prev) => ({
@@ -88,6 +96,38 @@ export const VendorPortalPage: React.FC = () => {
         />
       </PortalHeader>
 
+      <SegmentedControl<'orders' | 'promotions' | 'labels'>
+        label={t.vendor.portalTitle}
+        value={tab}
+        onChange={setTab}
+        className="flex w-full max-w-[560px] mb-6"
+        options={[
+          { value: 'orders', label: seller.tabOrders },
+          { value: 'promotions', label: seller.tabPromotions },
+          { value: 'labels', label: seller.tabLabels },
+        ]}
+      />
+
+      {tab !== 'orders' && (
+        <div className="max-w-[360px] mb-6">
+          <SelectField
+            label={seller.store}
+            value={managedStoreId}
+            onChange={(e) => setManagedStoreId(e.target.value)}
+            options={MOCK_STORES.map((store) => ({
+              value: store.id,
+              label: t.collage.storeCopy[store.id]?.name || store.names?.[language] || store.name,
+            }))}
+          />
+          <p className="mt-1 text-sm font-bold text-ink-2">{seller.storeNote}</p>
+        </div>
+      )}
+
+      {tab === 'promotions' && <PromotionManager storeId={managedStoreId} />}
+      {tab === 'labels' && <ProductLabelManager storeId={managedStoreId} />}
+
+      {tab === 'orders' && (
+        <>
       <section className="mb-9 desk:mb-12">
         <DemoFiguresNote text={t.screens.common.demoFigures} />
         <div className="grid grid-cols-2 desk:grid-cols-3 gap-3.5 desk:gap-5">
@@ -132,6 +172,8 @@ export const VendorPortalPage: React.FC = () => {
           })}
         </ul>
       </section>
+        </>
+      )}
     </PageShell>
   );
 };
