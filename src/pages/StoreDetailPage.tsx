@@ -102,7 +102,7 @@ export const StoreDetailPage: React.FC = () => {
 
         <div className="min-w-0">
           <p className="hand anim-in inline-block text-[26px] desk:text-[30px] leading-tight text-action -rotate-2">
-            {t.screens.store.note}
+            {delivery.inRange ? t.screens.store.note : displayKind}
           </p>
           <h1 className="anim-in font-black tracking-[-0.03em] leading-[1.02] text-[clamp(32px,4.6vw,60px)] break-words">
             <bdi>{displayName}</bdi>
@@ -121,10 +121,26 @@ export const StoreDetailPage: React.FC = () => {
             </div>
           )}
 
+          {!delivery.inRange && (
+            <div role="status" className="mt-4 p-3 bg-tint-food border-2 border-ink rounded-xl">
+              <p className="font-black">{t.demo.delivery.outOfRange}</p>
+              <p className="text-sm font-bold">
+                {t.demo.delivery.outOfRangeDesc
+                  .replace('{distance}', formatDistance(delivery.km))
+                  .replace('{radius}', formatDistance(store.deliveryRadiusKm))}
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => setIsAddressModalOpen(true)} className="mt-2">
+                {t.demo.delivery.changeAddress}
+              </Button>
+            </div>
+          )}
+
           <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
             <div className={`${FACT} bg-tint-health`}>
               <dt className="text-xs font-bold text-ink-2">{t.store.courierDeliveryLabel}</dt>
-              <dd className="font-black tabular-nums">{formatTimeRange(delivery.timeMin, delivery.timeMax)}</dd>
+              <dd className="font-black tabular-nums">
+                {delivery.inRange ? formatTimeRange(delivery.timeMin, delivery.timeMax) : '—'}
+              </dd>
             </div>
             <div className={`${FACT} bg-tint-food`}>
               <dt className="text-xs font-bold text-ink-2">{t.store.deliveryCostLabel}</dt>
@@ -139,20 +155,6 @@ export const StoreDetailPage: React.FC = () => {
               <dd className="font-black tabular-nums">{formatDistance(delivery.km)}</dd>
             </div>
           </dl>
-
-          {!delivery.inRange && (
-            <div role="status" className="mt-4 p-3 bg-tint-food border-2 border-ink rounded-xl">
-              <p className="font-black">{t.demo.delivery.outOfRange}</p>
-              <p className="text-sm font-bold">
-                {t.demo.delivery.outOfRangeDesc
-                  .replace('{distance}', formatDistance(delivery.km))
-                  .replace('{radius}', formatDistance(store.deliveryRadiusKm))}
-              </p>
-              <Button variant="secondary" size="sm" onClick={() => setIsAddressModalOpen(true)} className="mt-2">
-                {t.demo.delivery.changeAddress}
-              </Button>
-            </div>
-          )}
 
           <div className="flex flex-wrap items-center gap-2.5 mt-4">
             <Button

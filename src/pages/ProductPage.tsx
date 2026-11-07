@@ -59,7 +59,11 @@ export const ProductPage: React.FC = () => {
           icon={<Share2 aria-hidden="true" className="w-4 h-4" />}
         />
       </div>
-      <PageHeading note={t.demo.product.backToStore} title={name} className="mt-1 mb-5" />
+      <PageHeading
+        note={t.collage.storeCopy[store.id]?.kind ?? ''}
+        title={name}
+        className="mt-1 mb-5"
+      />
       <ProductDetails key={product.id} product={product} />
     </PageShell>
   );

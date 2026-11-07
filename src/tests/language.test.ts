@@ -6,6 +6,7 @@ import { demoTranslations } from '../i18n/demo';
 import { pickLanguage } from '../i18n/detectLanguage';
 import { formatCount, formatKm, formatMinutesAgo, formatMinutesIn, formatMinutesRange, formatPromotionDate, formatShekels } from '../i18n/format';
 import { translations } from '../i18n/translations';
+import { MOCK_ACTIVE_ORDER, MOCK_CATEGORIES, MOCK_PAST_ORDERS, MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 
 describe('default language', () => {
   it('keeps the saved choice over the browser', () => {
@@ -103,6 +104,42 @@ describe('copy', () => {
     expect(translations.ru.collage.common.demo).toMatch(/демо/i);
     expect(translations.en.collage.common.demo).toMatch(/demo/i);
     expect(translations.he.collage.common.demo).toMatch(/הדגמ/);
+  });
+});
+
+describe('catalog data', () => {
+  const cyrillic = /[А-Яа-яЁё]/;
+  const checkLocalized = (name: string, text?: { ru?: string; en?: string; he?: string }) => {
+    expect(text?.ru, `${name} ru`).toBeTruthy();
+    expect(text?.en, `${name} en`).toBeTruthy();
+    expect(text?.he, `${name} he`).toBeTruthy();
+    expect(cyrillic.test(text?.en ?? ''), `${name} en has Cyrillic`).toBe(false);
+    expect(cyrillic.test(text?.he ?? ''), `${name} he has Cyrillic`).toBe(false);
+  };
+
+  it('has shops, products, categories and orders in all three languages', () => {
+    MOCK_STORES.forEach((store) => {
+      checkLocalized(`${store.id} name`, store.names);
+      checkLocalized(`${store.id} category`, store.categories);
+      checkLocalized(`${store.id} address`, store.addresses);
+    });
+    MOCK_PRODUCTS.forEach((product) => {
+      checkLocalized(`${product.id} name`, product.names);
+      checkLocalized(`${product.id} description`, product.descriptions);
+      checkLocalized(`${product.id} unit`, product.units);
+      checkLocalized(`${product.id} store`, product.storeNames);
+      if (product.origin) checkLocalized(`${product.id} origin`, product.origins);
+    });
+    MOCK_CATEGORIES.forEach((category) => {
+      checkLocalized(`${category.id} name`, category.names);
+      checkLocalized(`${category.id} description`, category.descriptions);
+    });
+    [MOCK_ACTIVE_ORDER, ...MOCK_PAST_ORDERS].forEach((order) => {
+      checkLocalized(`${order.id} store`, order.storeNames);
+      checkLocalized(`${order.id} address`, order.addresses);
+      checkLocalized(`${order.id} date`, order.createdAts);
+      order.items.forEach((item) => checkLocalized(`${order.id} ${item.productId}`, item.names));
+    });
   });
 });
 

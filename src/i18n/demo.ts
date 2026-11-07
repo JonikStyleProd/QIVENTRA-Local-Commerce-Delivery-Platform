@@ -65,7 +65,7 @@ const ru = {
   },
   coming: {
     title: 'Скоро в районе',
-    desc: 'Лавок этой категории пока нет: {list}.',
+    desc: 'Пока нет лавок в категориях: {list}.',
     emptyTitle: 'Пока без лавок',
     emptyDesc: 'В этой категории ещё нет лавок. Посмотрите все остальные.',
   },
@@ -112,6 +112,7 @@ const ru = {
     chooseFromList: 'Выберите адрес из подсказок',
     deliverTo: 'Доставляем на',
     change: 'Изменить',
+    nearCount: '{count} рядом',
     noneNear: 'Рядом нет лавок: выберите другой адрес.',
     savedTitleToast: 'Адрес доставки',
     nearToast: '{count} доставляют на этот адрес.',
@@ -138,9 +139,6 @@ const ru = {
     giftVariantField: 'Вариант подарка',
     variantForeign: 'Такого варианта у товара нет.',
     openPage: 'Страница товара',
-  },
-  product: {
-    backToStore: 'К лавке',
   },
   orders: {
     filterLabel: 'Показать заказы',
@@ -381,6 +379,7 @@ const en: DemoStrings = {
     chooseFromList: 'Pick an address from the suggestions',
     deliverTo: 'Delivering to',
     change: 'Change',
+    nearCount: '{count} nearby',
     noneNear: 'No shops nearby: pick another address.',
     savedTitleToast: 'Delivery address',
     nearToast: '{count} deliver to this address.',
@@ -407,9 +406,6 @@ const en: DemoStrings = {
     giftVariantField: 'Gift option',
     variantForeign: 'This product has no such option.',
     openPage: 'Product page',
-  },
-  product: {
-    backToStore: 'To the shop',
   },
   orders: {
     filterLabel: 'Show orders',
@@ -648,6 +644,7 @@ const he: DemoStrings = {
     chooseFromList: 'בחרו כתובת מההצעות',
     deliverTo: 'משלוח אל',
     change: 'שינוי',
+    nearCount: '{count} בקרבת מקום',
     noneNear: 'אין חנויות בקרבת מקום: בחרו כתובת אחרת.',
     savedTitleToast: 'כתובת למשלוח',
     nearToast: '{count} מוסרות לכתובת הזו.',
@@ -674,9 +671,6 @@ const he: DemoStrings = {
     giftVariantField: 'אפשרות למתנה',
     variantForeign: 'למוצר אין אפשרות כזו.',
     openPage: 'דף המוצר',
-  },
-  product: {
-    backToStore: 'לחנות',
   },
   orders: {
     filterLabel: 'הצגת הזמנות',

@@ -484,6 +484,11 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewsCount: 112,
     inStock: true,
     origin: 'Оливковые рощи Галилеи',
+    origins: {
+      ru: 'Оливковые рощи Галилеи',
+      en: 'Galilee olive groves',
+      he: 'מטעי הזיתים של הגליל',
+    },
     variantKind: 'volume',
     variants: [
       { id: '750ml', labels: { ru: '750 мл', en: '750 ml', he: '750 מ״ל' }, price: 48 },

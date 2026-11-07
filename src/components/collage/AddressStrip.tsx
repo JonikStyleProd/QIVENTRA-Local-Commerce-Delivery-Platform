@@ -24,7 +24,7 @@ export const AddressStrip: React.FC<{ className?: string }> = ({ className = '' 
         <span className="block font-black break-words">{currentAddress}</span>
       </p>
       <p className={`text-sm font-extrabold ${near === 0 ? 'text-action-text' : ''}`}>
-        {near > 0 ? `${t.collage.mobileHome.near}: ${formatCount(near, t.demo.counts.shops, language)}` : copy.noneNear}
+        {near > 0 ? copy.nearCount.replace('{count}', formatCount(near, t.demo.counts.shops, language)) : copy.noneNear}
       </p>
       <Button variant="outline" size="sm" onClick={() => setIsAddressModalOpen(true)}>
         {copy.change}

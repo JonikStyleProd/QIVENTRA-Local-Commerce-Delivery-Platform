@@ -190,7 +190,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   }, [session]);
 
   const currentUser = useMemo<UserProfile>(
-    () => (isSignedIn ? profile : { ...GUEST_USER, role: session.role }),
+    () => ({ ...(isSignedIn ? profile : GUEST_USER), role: session.role }),
     [isSignedIn, profile, session.role]
   );
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
@@ -22,6 +22,11 @@ export const DemoRoleBar: React.FC<{ current: 'vendor' | 'courier' | 'admin' }> 
   const { showToast } = useToast();
   const portal = t.screens.portal;
   const copy = t.demo.portal;
+
+  // Opening a workspace is acting in its role, so what that role unlocks there works.
+  useEffect(() => {
+    setDemoRole(current);
+  }, [current, setDemoRole]);
 
   return (
     <aside

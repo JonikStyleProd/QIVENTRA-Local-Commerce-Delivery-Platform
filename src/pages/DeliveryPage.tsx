@@ -49,7 +49,9 @@ export const DeliveryPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   // Kept in the history entry, so a reload still shows what was just sent.
-  const placedOrderId = (location.state as { placedOrderId?: string } | null)?.placedOrderId ?? null;
+  const savedOrderId = (location.state as { placedOrderId?: string } | null)?.placedOrderId ?? null;
+  const [justPlacedId, setJustPlacedId] = useState<string | null>(null);
+  const placedOrderId = justPlacedId ?? savedOrderId;
   const [phase, setPhase] = useState<Phase>(placedOrderId ? 'done' : 'form');
   const timer = useRef<number | undefined>(undefined);
   const noteId = useId();
@@ -154,7 +156,9 @@ export const DeliveryPage: React.FC = () => {
       if (placedOrder) {
         updateOrder(placedOrder.id, { deliveryWindow: chosenWindow, note: note.trim() || undefined });
       } else {
-        navigate(pathFor('delivery'), { replace: true, state: { placedOrderId: placeOrder({ deliveryWindow: chosenWindow, note }).id } });
+        const placed = placeOrder({ deliveryWindow: chosenWindow, note });
+        setJustPlacedId(placed.id);
+        navigate(pathFor('delivery'), { replace: true, state: { placedOrderId: placed.id } });
       }
       setPhase('done');
     }, SENDING_TIME_MS);
