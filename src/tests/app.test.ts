@@ -273,6 +273,7 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
     const { SearchPage } = await import('../pages/SearchPage');
     const { OrdersPage } = await import('../pages/OrdersPage');
     const { CartPage } = await import('../pages/CartPage');
+    const { DeliveryPage } = await import('../pages/DeliveryPage');
     const { ProfilePage } = await import('../pages/ProfilePage');
     const { StoreDetailPage } = await import('../pages/StoreDetailPage');
     const { VendorPortalPage } = await import('../pages/VendorPortalPage');
@@ -285,6 +286,7 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
       SearchPage,
       OrdersPage,
       CartPage,
+      DeliveryPage,
       ProfilePage,
       StoreDetailPage,
       VendorPortalPage,
@@ -312,8 +314,8 @@ describe('QIVENTRA Brand & Logo Compliance', () => {
   });
 });
 
-describe('QIVENTRA PWA v2 & Mobile Hero Suite', () => {
-  it('validates PWA v2 manifest requirements', async () => {
+describe('QIVENTRA PWA & Mobile Hero Suite', () => {
+  it('validates PWA manifest requirements', async () => {
     const fs = await import('fs');
     const path = await import('path');
 
@@ -325,15 +327,15 @@ describe('QIVENTRA PWA v2 & Mobile Hero Suite', () => {
     expect(manifest.name).toBe('QIVENTRA');
     expect(manifest.short_name).toBe('QIVENTRA');
     expect(manifest.display).toBe('standalone');
-    expect(manifest.theme_color).toBe('#123B35');
-    expect(manifest.background_color).toBe('#F3F1EA');
+    expect(manifest.theme_color).toBe('#FFF8EC');
+    expect(manifest.background_color).toBe('#FFD84D');
     expect(manifest.icons).toHaveLength(4);
 
     const iconSrcs = manifest.icons.map((i: { src: string }) => i.src);
-    expect(iconSrcs).toContain('/icons/qiventra-icon-v2-192.png');
-    expect(iconSrcs).toContain('/icons/qiventra-icon-v2-512.png');
-    expect(iconSrcs).toContain('/icons/qiventra-maskable-v2-192.png');
-    expect(iconSrcs).toContain('/icons/qiventra-maskable-v2-512.png');
+    expect(iconSrcs).toContain('/icons/qiventra-icon-v3-192.png');
+    expect(iconSrcs).toContain('/icons/qiventra-icon-v3-512.png');
+    expect(iconSrcs).toContain('/icons/qiventra-maskable-v3-192.png');
+    expect(iconSrcs).toContain('/icons/qiventra-maskable-v3-512.png');
   });
 
   it('ensures all versioned PWA icon files exist in /public/icons/', async () => {
@@ -341,18 +343,18 @@ describe('QIVENTRA PWA v2 & Mobile Hero Suite', () => {
     const path = await import('path');
 
     const expectedIcons = [
-      'qiventra-icon-v2-48.png',
-      'qiventra-icon-v2-72.png',
-      'qiventra-icon-v2-96.png',
-      'qiventra-icon-v2-128.png',
-      'qiventra-icon-v2-144.png',
-      'qiventra-icon-v2-192.png',
-      'qiventra-icon-v2-384.png',
-      'qiventra-icon-v2-512.png',
-      'qiventra-maskable-v2-192.png',
-      'qiventra-maskable-v2-512.png',
-      'qiventra-apple-touch-v2-180.png',
-      'qiventra-favicon-v2-32.png',
+      'qiventra-icon-v3-48.png',
+      'qiventra-icon-v3-72.png',
+      'qiventra-icon-v3-96.png',
+      'qiventra-icon-v3-128.png',
+      'qiventra-icon-v3-144.png',
+      'qiventra-icon-v3-192.png',
+      'qiventra-icon-v3-384.png',
+      'qiventra-icon-v3-512.png',
+      'qiventra-maskable-v3-192.png',
+      'qiventra-maskable-v3-512.png',
+      'qiventra-apple-touch-v3-180.png',
+      'qiventra-favicon-v3-32.png',
     ];
 
     expectedIcons.forEach((filename) => {
@@ -381,5 +383,47 @@ describe('QIVENTRA PWA v2 & Mobile Hero Suite', () => {
   });
 });
 
+describe('QIVENTRA Collage design', () => {
+  const keysOf = (value: unknown, prefix = ''): string[] => {
+    if (typeof value !== 'object' || value === null) return [prefix];
+    return Object.entries(value).flatMap(([key, nested]) => keysOf(nested, prefix ? `${prefix}.${key}` : key));
+  };
 
+  it('has the same Collage copy keys in RU, EN and HE', () => {
+    const ru = keysOf(translations.ru.collage).sort();
+    expect(keysOf(translations.en.collage).sort()).toEqual(ru);
+    expect(keysOf(translations.he.collage).sort()).toEqual(ru);
+  });
 
+  it('keeps the demo notice in all three languages', () => {
+    expect(translations.ru.collage.common.demo).toBe('Демо-проект портфолио; оплата не проводится');
+    expect(translations.en.collage.common.demo).toBe('Portfolio demo project; no payments are processed');
+    expect(translations.he.collage.common.demo).toBe('פרויקט הדגמה לתיק עבודות; לא מתבצעים תשלומים');
+  });
+
+  it('maps both chip ids and data category slugs onto one shop filter', async () => {
+    const { groupFromSlug, groupOfCategoryName } = await import('../data/collageCatalog');
+    expect(groupFromSlug(null)).toBe('all');
+    expect(groupFromSlug('food')).toBe('food');
+    expect(groupFromSlug('bakery')).toBe('food');
+    expect(groupOfCategoryName('Кафе & Пекарни')).toBe('food');
+    expect(groupOfCategoryName('Цветы & Подарки')).toBe('gift');
+  });
+
+  it('gives every store a time, fee and minimum from the data, and leaves Sarona without a photo', async () => {
+    const { MOCK_STORES } = await import('../data/mockData');
+    for (const store of MOCK_STORES) {
+      expect(store.deliveryTimeMin).toBeGreaterThan(0);
+      expect(store.deliveryTimeMax).toBeGreaterThan(store.deliveryTimeMin);
+      expect(store.deliveryFee).toBeGreaterThanOrEqual(0);
+      expect(store.minOrder).toBeGreaterThan(0);
+      expect(Boolean(store.coverUrl)).toBe(store.id !== 'store-2');
+    }
+  });
+
+  it('isolates numeric ranges so RTL text cannot reverse them', () => {
+    for (const slot of translations.he.collage.slots.slice(1)) {
+      expect(slot.label).toMatch(/\u2066\d+–\d+\u2069/);
+    }
+  });
+});

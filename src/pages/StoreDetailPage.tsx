@@ -29,7 +29,7 @@ export const StoreDetailPage: React.FC = () => {
     cart,
   } = useApp();
 
-  const { language, t, formatCurrency, isRTL } = useLanguage();
+  const { language, t, formatCurrency, formatTimeRange, isRTL } = useLanguage();
   const { showToast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -80,12 +80,6 @@ export const StoreDetailPage: React.FC = () => {
     }
   };
 
-  const formatDeliveryTime = (min: number, max: number) => {
-    if (language === 'he') return `${min}–${max} דק'`;
-    if (language === 'en') return `${min}–${max} min`;
-    return `${min}–${max} мин`;
-  };
-
   return (
     <div className="max-w-[1440px] mx-auto px-6 md:px-8 lg:px-12 py-6 space-y-8">
       
@@ -93,7 +87,7 @@ export const StoreDetailPage: React.FC = () => {
       <button
         type="button"
         onClick={() => navigateTo('catalog')}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary transition"
+        className="inline-flex items-center gap-1.5 min-h-11 text-sm font-extrabold hover:underline cursor-pointer"
       >
         {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
         <span>{t.store.backToCatalog}</span>
@@ -192,7 +186,7 @@ export const StoreDetailPage: React.FC = () => {
             <div>
               <span className="text-[10px] text-secondary block">{t.store.courierDeliveryLabel}</span>
               <span className="font-bold text-primary text-sm tabular-nums">
-                {formatDeliveryTime(store.deliveryTimeMin, store.deliveryTimeMax)}
+                {formatTimeRange(store.deliveryTimeMin, store.deliveryTimeMax)}
               </span>
             </div>
           </div>

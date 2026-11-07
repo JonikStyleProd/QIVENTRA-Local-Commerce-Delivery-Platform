@@ -13,18 +13,16 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: [
           'icons/*.png',
-          'icons/qiventra-favicon-v2-32.png',
-          'icons/qiventra-apple-touch-v2-180.png',
-          'icons/qiventra-icon-v2-192.png',
-          'icons/qiventra-icon-v2-512.png',
-          'icons/qiventra-maskable-v2-192.png',
-          'icons/qiventra-maskable-v2-512.png',
+          'icons/qiventra-favicon-v3-32.png',
+          'icons/qiventra-apple-touch-v3-180.png',
+          'icons/qiventra-icon-v3-192.png',
+          'icons/qiventra-icon-v3-512.png',
+          'icons/qiventra-maskable-v3-192.png',
+          'icons/qiventra-maskable-v3-512.png',
           'apple-touch-icon.png',
           'pwa-192x192.png',
           'pwa-512x512.png',
-          'pwa-maskable-512x512.png',
-          'icon.svg',
-          'logo.svg'
+          'pwa-maskable-512x512.png'
         ],
         manifest: {
           id: '/',
@@ -35,29 +33,29 @@ export default defineConfig(() => {
           scope: '/',
           display: 'standalone',
           orientation: 'portrait-primary',
-          background_color: '#F3F1EA',
-          theme_color: '#123B35',
+          background_color: '#FFD84D',
+          theme_color: '#FFF8EC',
           icons: [
             {
-              src: '/icons/qiventra-icon-v2-192.png',
+              src: '/icons/qiventra-icon-v3-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/icons/qiventra-icon-v2-512.png',
+              src: '/icons/qiventra-icon-v3-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/icons/qiventra-maskable-v2-192.png',
+              src: '/icons/qiventra-maskable-v3-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'maskable',
             },
             {
-              src: '/icons/qiventra-maskable-v2-512.png',
+              src: '/icons/qiventra-maskable-v3-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
@@ -66,6 +64,27 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,webmanifest}'],
+          // Photos and fonts are cached on first view rather than precached: an installed
+          // PWA keeps its look offline without a 2 MB download on the first visit.
+          runtimeCaching: [
+            {
+              urlPattern: /\/photos\/.+\.webp$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'collage-photos',
+                expiration: { maxEntries: 30 },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'collage-fonts',
+                expiration: { maxEntries: 30 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
         },
         devOptions: {
           enabled: false,
