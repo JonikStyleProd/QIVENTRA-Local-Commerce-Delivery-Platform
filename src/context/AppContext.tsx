@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText } from '../types';
-import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_USER } from '../data/mockData';
+import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_PAST_ORDERS, MOCK_USER } from '../data/mockData';
+import { advanceOrder } from '../data/orderTracker';
 import { DeliveryWindow } from '../data/deliverySlots';
 import { collageTranslations } from '../i18n/collage';
 import { OrderCalculation, OrderStoreLine, calculateOrder } from '../data/cartRules';
@@ -66,17 +67,67 @@ interface AppContextType {
   // Domain state
   currentUser: UserProfile;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
-  /** The order the tracker shows: the one asked for, else the newest placed, else the demo order. */
-  activeOrder: Order;
-  /** Every order still tracked, newest placed first, the demo order last. */
-  trackedOrders: Order[];
-  advanceOrderSimulation: () => void;
+  isSignedIn: boolean;
+  /** Demo sign-in: nothing is checked. */
+  signIn: (role: UserProfile['role']) => void;
+  /** Back to the guest state: the demo profile and its orders are hidden. */
+  signOut: () => void;
+  setDemoRole: (role: UserProfile['role']) => void;
+  /** The orders this visitor can see: placed ones first, then the demo profile's, if signed in. */
+  orders: Order[];
+  /** One step along the order's flow. It stops at "delivered". */
+  advanceOrderStatus: (id: string) => void;
+  /** A fresh order at "received" for trying the courier flow, without going through a basket. */
+  createDemoOrder: () => Order;
   /** Turns the basket into an order with status "received", then empties the basket. */
   placeOrder: (details: { deliveryWindow: DeliveryWindow; note: string }) => Order;
   updateOrder: (id: string, changes: Partial<Order>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+const ORDERS_KEY = 'qiventra_orders';
+const DEMO_ORDER_KEY = 'qiventra_demo_order';
+const SESSION_KEY = 'qiventra_session';
+
+interface StoredSession {
+  signedIn: boolean;
+  role: UserProfile['role'];
+}
+
+const ROLES: UserProfile['role'][] = ['customer', 'vendor', 'courier', 'admin'];
+
+/** The demo starts signed in as the sample profile, so its orders and addresses are there to look at. */
+const readSession = (): StoredSession => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null');
+    if (parsed && typeof parsed.signedIn === 'boolean' && ROLES.includes(parsed.role)) return parsed;
+  } catch {
+    // Fall through to the default.
+  }
+  return { signedIn: true, role: 'customer' };
+};
+
+const readOrders = (key: string): Order[] => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) ?? '[]');
+    return Array.isArray(parsed)
+      ? parsed.filter((order) => order && typeof order.id === 'string' && Array.isArray(order.items))
+      : [];
+  } catch {
+    return [];
+  }
+};
+
+const GUEST_USER: UserProfile = {
+  id: 'guest',
+  name: '',
+  phone: '',
+  email: '',
+  savedAddresses: [],
+  favoriteStoreIds: [],
+  role: 'customer',
+};
 
 function AppStateProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
@@ -92,22 +143,43 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     if (routeParams.storeId) setSelectedStoreId(routeParams.storeId);
   }, [routeParams.storeId]);
 
-  const [currentUser, setCurrentUser] = useState<UserProfile>(MOCK_USER);
-  const [demoOrder, setDemoOrder] = useState<Order>(MOCK_ACTIVE_ORDER);
-  const [placedOrders, setPlacedOrders] = useState<Order[]>(() => {
-    try {
-      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('qiventra_orders') : null;
-      const parsed = saved ? JSON.parse(saved) : [];
-      return Array.isArray(parsed)
-        ? parsed.filter((order) => order && typeof order.id === 'string' && Array.isArray(order.items))
-        : [];
-    } catch {
-      return [];
-    }
-  });
+  const [session, setSession] = useState<StoredSession>(readSession);
+  const isSignedIn = session.signedIn;
+  const [profile, setProfile] = useState<UserProfile>(() => ({ ...MOCK_USER, role: session.role }));
+  const [placedOrders, setPlacedOrders] = useState<Order[]>(() => readOrders(ORDERS_KEY));
+  const [demoOrder, setDemoOrder] = useState<Order>(() => readOrders(DEMO_ORDER_KEY)[0] ?? MOCK_ACTIVE_ORDER);
 
-  const trackedOrders = useMemo(() => [...placedOrders, demoOrder], [placedOrders, demoOrder]);
-  const activeOrder = trackedOrders.find((order) => order.id === routeParams.orderId) ?? trackedOrders[0];
+  useEffect(() => {
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    } catch {
+      // Without storage the session lasts until the page closes.
+    }
+  }, [session]);
+
+  const currentUser = useMemo<UserProfile>(
+    () => (isSignedIn ? profile : { ...GUEST_USER, role: session.role }),
+    [isSignedIn, profile, session.role]
+  );
+
+  const signIn = useCallback((role: UserProfile['role']) => setSession({ signedIn: true, role }), []);
+  const signOut = useCallback(() => setSession({ signedIn: false, role: 'customer' }), []);
+  const setDemoRole = useCallback((role: UserProfile['role']) => setSession((prev) => ({ ...prev, role })), []);
+
+  const orders = useMemo(
+    () => (isSignedIn ? [...placedOrders, demoOrder, ...MOCK_PAST_ORDERS] : placedOrders),
+    [isSignedIn, placedOrders, demoOrder]
+  );
+
+  // The tracker and the courier workspace may be open in different tabs of one browser.
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === ORDERS_KEY) setPlacedOrders(readOrders(ORDERS_KEY));
+      if (event.key === DEMO_ORDER_KEY) setDemoOrder(readOrders(DEMO_ORDER_KEY)[0] ?? MOCK_ACTIVE_ORDER);
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   // Address localization and selection state
   const [selectedAddressId, setSelectedAddressId] = useState<string>('addr-1');
@@ -267,16 +339,22 @@ function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('qiventra_orders', JSON.stringify(placedOrders));
-      }
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(placedOrders));
     } catch {
       // ignore quota or serialization errors
     }
   }, [placedOrders]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(DEMO_ORDER_KEY, JSON.stringify([demoOrder]));
+    } catch {
+      // ignore quota or serialization errors
+    }
+  }, [demoOrder]);
+
   const updateUserProfile = (updates: Partial<UserProfile>) => {
-    setCurrentUser((prev) => ({ ...prev, ...updates }));
+    setProfile((prev) => ({ ...prev, ...updates }));
   };
 
   const selectedStore = useMemo(() => {
@@ -347,23 +425,26 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   const deliveryFee = order.deliveryFee;
   const totalAmount = order.total;
 
-  // Delivery simulation stepper for the live tracker demo
-  const advanceOrderSimulation = () => {
-    const statuses: Order['status'][] = ['received', 'preparing', 'courier_assigned', 'on_the_way', 'delivered'];
-    const advance = (order: Order): Order => {
-      const nextStatus = statuses[(statuses.indexOf(order.status) + 1) % statuses.length];
-      return {
-        ...order,
-        status: nextStatus,
-        etaMinutes: nextStatus === 'delivered' ? 0 : Math.max(5, order.etaMinutes - 4),
-      };
+  const advanceOrderStatus = useCallback((id: string) => {
+    setPlacedOrders((prev) => prev.map((candidate) => (candidate.id === id ? advanceOrder(candidate) : candidate)));
+    setDemoOrder((prev) => (prev.id === id ? advanceOrder(prev) : prev));
+  }, []);
+
+  const createDemoOrder = useCallback((): Order => {
+    const startedAt = Date.now();
+    const created: Order = {
+      ...MOCK_ACTIVE_ORDER,
+      id: `ord-demo-${startedAt}`,
+      orderNumber: `QIV-IL-${String(startedAt).slice(-4)}`,
+      status: 'received',
+      etaMinutes: 40,
+      etaTotalMinutes: 40,
+      createdAts: undefined,
+      placedAt: new Date(startedAt).toISOString(),
     };
-    if (activeOrder.id === demoOrder.id) {
-      setDemoOrder(advance);
-    } else {
-      setPlacedOrders((prev) => prev.map((order) => (order.id === activeOrder.id ? advance(order) : order)));
-    }
-  };
+    setPlacedOrders((prev) => [created, ...prev]);
+    return created;
+  }, []);
 
   const updateOrder = (id: string, changes: Partial<Order>) => {
     setPlacedOrders((prev) => prev.map((order) => (order.id === id ? { ...order, ...changes } : order)));
@@ -404,6 +485,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
       address: currentAddress,
       addresses: currentAddressTexts,
       etaMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
+      etaTotalMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
       deliveryWindow,
       note: note.trim() || undefined,
     };
@@ -448,9 +530,13 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         openChatWithParticipant,
         currentUser,
         updateUserProfile,
-        activeOrder,
-        trackedOrders,
-        advanceOrderSimulation,
+        isSignedIn,
+        signIn,
+        signOut,
+        setDemoRole,
+        orders,
+        advanceOrderStatus,
+        createDemoOrder,
         placeOrder,
         updateOrder,
       }}

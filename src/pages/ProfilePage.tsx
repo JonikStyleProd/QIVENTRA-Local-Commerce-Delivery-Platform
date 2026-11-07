@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router';
 import { Bike, Camera, ChevronRight, LogOut, MapPin, MessageSquare, Moon, ShieldCheck, Smartphone, Store, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { AppRoute } from '../types';
+import { pathFor } from '../router/paths';
 import { Button } from '../components/ui/Button';
 import { IconButton } from '../components/ui/IconButton';
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
@@ -21,22 +23,18 @@ const TILE =
 
 export const ProfilePage: React.FC = () => {
   const { resolvedTheme, toggleTheme } = useTheme();
-  const { currentUser, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, navigateTo, openChatWithParticipant } = useApp();
+  const { currentUser, isSignedIn, signOut, updateUserProfile, setIsAddressModalOpen, setIsAuthModalOpen, openChatWithParticipant } = useApp();
   const { language, t } = useLanguage();
   const { showToast } = useToast();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const copy = t.screens.profile;
 
   const handleLogout = () => {
-    showToast({
-      type: 'info',
-      title: t.profile.logout,
-      message: t.auth.demoNotice,
-    });
-    setIsAuthModalOpen(true);
+    signOut();
+    showToast({ type: 'info', title: t.demo.auth.signedOutTitle, message: t.demo.auth.signedOutMsg });
   };
 
-  const displayName = currentUser.names?.[language] || currentUser.name;
+  const displayName = isSignedIn ? currentUser.names?.[language] || currentUser.name : t.demo.auth.guestName;
 
   const workspaces: { route: AppRoute; title: string; desc: string; icon: React.ReactNode; tint: string }[] = [
     {
@@ -77,18 +75,27 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         <div className="flex-1 min-w-[220px]">
-          <PageHeading note={copy.note} title={displayName} />
+          <PageHeading note={isSignedIn ? copy.note : t.demo.auth.guestNote} title={displayName} />
           <div className="flex flex-wrap items-center gap-2 mt-2">
-            <Stamp tone="action">{copy.demoProfile}</Stamp>
-            <span className="text-sm font-bold text-ink-2">{copy.demoProfileDesc}</span>
+            <Stamp tone="action">{isSignedIn ? copy.demoProfile : t.demo.auth.guestName}</Stamp>
+            <span className="text-sm font-bold text-ink-2">{isSignedIn ? copy.demoProfileDesc : t.demo.auth.guestDesc}</span>
           </div>
+          <p className="mt-1 text-sm font-bold text-ink-2">{t.demo.auth.note}</p>
           <div className="flex flex-wrap gap-2 mt-3">
-            <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
-              {t.profile.switchAccount}
-            </Button>
-            <Button variant="ghost" size="sm" leftIcon={<LogOut aria-hidden="true" className="w-4 h-4" />} onClick={handleLogout}>
-              {t.profile.logout}
-            </Button>
+            {isSignedIn ? (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                  {t.profile.switchAccount}
+                </Button>
+                <Button variant="ghost" size="sm" leftIcon={<LogOut aria-hidden="true" className="w-4 h-4" />} onClick={handleLogout}>
+                  {t.demo.auth.signOut}
+                </Button>
+              </>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                {t.demo.auth.signIn}
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -182,14 +189,14 @@ export const ProfilePage: React.FC = () => {
           </li>
           {workspaces.map((space) => (
             <li key={space.route}>
-              <button type="button" onClick={() => navigateTo(space.route)} className={`${TILE} ${space.tint} h-full`}>
+              <Link to={pathFor(space.route)} className={`${TILE} ${space.tint} h-full`}>
                 {space.icon}
                 <span className="min-w-0 flex-1">
                   <span className="block font-black leading-snug">{space.title}</span>
                   <span className="block mt-0.5 text-sm font-bold text-ink-2">{space.desc}</span>
                 </span>
                 <ChevronRight aria-hidden="true" className="w-4 h-4 shrink-0 mt-1 rtl-flip" />
-              </button>
+              </Link>
             </li>
           ))}
         </ul>

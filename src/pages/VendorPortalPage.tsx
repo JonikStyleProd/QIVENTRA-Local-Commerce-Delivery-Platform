@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Store } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
+import { formatMinutesAgo } from '../i18n/format';
 import { MOCK_STORES } from '../data/mockData';
 import { Button } from '../components/ui/Button';
 import { SelectField } from '../components/ui/SelectField';
@@ -10,6 +11,7 @@ import { ProductLabelManager } from '../components/vendor/ProductLabelManager';
 import { PromotionManager } from '../components/vendor/PromotionManager';
 import { PageShell, SectionHeading } from '../components/collage/Page';
 import { Panel } from '../components/collage/Panel';
+import { DemoRoleBar } from '../components/collage/DemoRoleBar';
 import { PortalHeader } from '../components/collage/PortalHeader';
 import { Stamp } from '../components/collage/Stamp';
 import { DemoFiguresNote, StatSticker } from '../components/collage/StatSticker';
@@ -28,29 +30,12 @@ export const VendorPortalPage: React.FC = () => {
     'QIV-7815-A': 'completed',
   });
 
+  const orderCopy = t.demo.portalData.vendorOrders;
   const orders = [
-    {
-      id: 'QIV-7821-M',
-      client: language === 'he' ? 'נועה כהן' : language === 'en' ? 'Noa Cohen' : 'Ноа Коэн',
-      items: language === 'he' ? 'אבוקדו האס (2 יח׳), גבינת עיזים (1 יח׳)' : language === 'en' ? 'Hass Avocado (2 pcs), Goat Cheese (1 pc)' : 'Авокадо Hass (2 шт.), Козий сыр (1 шт.)',
-      total: 62,
-      time: language === 'he' ? 'לפני 5 דק׳' : language === 'en' ? '5 min ago' : '5 мин назад',
-    },
-    {
-      id: 'QIV-7820-K',
-      client: language === 'he' ? 'דניאל לוי' : language === 'en' ? 'Daniel Levi' : 'Даниэль Леви',
-      items: language === 'he' ? 'שמן זית כתית מעולה 750 מ״ל (1 יח׳)' : language === 'en' ? 'Extra Virgin Olive Oil (1 pc)' : 'Оливковое масло Extra Virgin (1 шт.)',
-      total: 48,
-      time: language === 'he' ? 'לפני 18 דק׳' : language === 'en' ? '18 min ago' : '18 мин назад',
-    },
-    {
-      id: 'QIV-7815-A',
-      client: language === 'he' ? 'מיכל אברהם' : language === 'en' ? 'Michal Avraham' : 'Михаль Авраам',
-      items: language === 'he' ? 'חלת שבת קלועה (2 יח׳)' : language === 'en' ? 'Artisan Challah (2 pcs)' : 'Свежая хала (2 шт.)',
-      total: 36,
-      time: language === 'he' ? 'לפני 42 דק׳' : language === 'en' ? '42 min ago' : '42 мин назад',
-    },
-  ];
+    { id: 'QIV-7821-M', total: 96, minutesAgo: 5 },
+    { id: 'QIV-7820-K', total: 48, minutesAgo: 18 },
+    { id: 'QIV-7815-A', total: 32, minutesAgo: 42 },
+  ].map((order) => ({ ...order, ...orderCopy[order.id], time: formatMinutesAgo(order.minutesAgo, language) }));
 
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
   const [tab, setTab] = useState<'orders' | 'promotions' | 'labels'>('orders');
@@ -78,11 +63,13 @@ export const VendorPortalPage: React.FC = () => {
     });
   };
 
-  const storeTitle = language === 'he' ? 'שוק הכרמל - חנות טרייה' : 'Carmel Fresh Market';
-  const storeAddress = language === 'he' ? 'תל אביב, רחוב הכרמל 18' : language === 'en' ? 'Tel Aviv, 18 HaCarmel St' : 'Тель-Авив, ул. Кармель 18';
+  const ownStore = MOCK_STORES.find((store) => store.id === 'store-1');
+  const storeTitle = t.collage.storeCopy['store-1']?.name ?? ownStore?.name ?? '';
+  const storeAddress = ownStore?.addresses?.[language] ?? ownStore?.address ?? '';
 
   return (
     <PageShell>
+      <DemoRoleBar current="vendor" />
       <PortalHeader
         icon={<Store className="w-7 h-7 desk:w-9 desk:h-9" />}
         note={t.vendor.portalTitle}

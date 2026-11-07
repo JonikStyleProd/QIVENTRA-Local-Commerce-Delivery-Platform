@@ -6,6 +6,7 @@ import { CatalogPage } from '../pages/CatalogPage';
 import { DeliveryPage } from '../pages/DeliveryPage';
 import { HomePage } from '../pages/HomePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { OrderPage } from '../pages/OrderPage';
 import { OrdersPage } from '../pages/OrdersPage';
 import { SearchPage } from '../pages/SearchPage';
 import { StoreDetailPage } from '../pages/StoreDetailPage';
@@ -33,12 +34,15 @@ export const appRoutes: RouteObject[] = [
       { path: relative(ROUTE_PATTERNS.cart), Component: CartPage },
       { path: relative(ROUTE_PATTERNS.delivery), Component: DeliveryPage },
       { path: relative(ROUTE_PATTERNS.orders), Component: OrdersPage },
-      { path: relative(ROUTE_PATTERNS.order), Component: OrdersPage },
+      { path: relative(ROUTE_PATTERNS.order), Component: OrderPage },
       { path: relative(ROUTE_PATTERNS.search), Component: SearchPage },
       lazyPage(ROUTE_PATTERNS.profile, () => import('../pages/ProfilePage').then((m) => ({ Component: m.ProfilePage }))),
       lazyPage(ROUTE_PATTERNS.vendor, () => import('../pages/VendorPortalPage').then((m) => ({ Component: m.VendorPortalPage }))),
       lazyPage(ROUTE_PATTERNS.courier, () => import('../pages/CourierPortalPage').then((m) => ({ Component: m.CourierPortalPage }))),
       lazyPage(ROUTE_PATTERNS.admin, () => import('../pages/AdminPortalPage').then((m) => ({ Component: m.AdminPortalPage }))),
+      lazyPage(ROUTE_PATTERNS.privacy, () => import('../pages/LegalPage').then((m) => ({ Component: m.PrivacyPage }))),
+      lazyPage(ROUTE_PATTERNS.terms, () => import('../pages/LegalPage').then((m) => ({ Component: m.TermsPage }))),
+      lazyPage(ROUTE_PATTERNS.accessibility, () => import('../pages/LegalPage').then((m) => ({ Component: m.AccessibilityPage }))),
       { path: '*', Component: NotFoundPage },
     ],
   },

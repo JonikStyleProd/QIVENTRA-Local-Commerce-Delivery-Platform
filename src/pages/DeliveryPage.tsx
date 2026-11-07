@@ -33,7 +33,7 @@ export const DeliveryPage: React.FC = () => {
     navigateTo,
     placeOrder,
     updateOrder,
-    trackedOrders,
+    orders,
   } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const copy = t.collage.delivery;
@@ -73,7 +73,7 @@ export const DeliveryPage: React.FC = () => {
   }, [phase, slot, slotDays]);
 
   // Once sent, the basket is empty: this screen shows the order that was placed instead.
-  const placedOrder = placedOrderId ? trackedOrders.find((order) => order.id === placedOrderId) : undefined;
+  const placedOrder = placedOrderId ? orders.find((candidate) => candidate.id === placedOrderId) : undefined;
 
   const isDone = phase === 'done';
   const isBusy = phase === 'busy';

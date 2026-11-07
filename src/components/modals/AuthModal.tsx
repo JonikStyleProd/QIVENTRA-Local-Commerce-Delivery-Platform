@@ -11,7 +11,7 @@ import { SegmentedControl } from '../collage/SegmentedControl';
 type AuthRole = 'customer' | 'vendor' | 'courier';
 
 export const AuthModal: React.FC = () => {
-  const { isAuthModalOpen, setIsAuthModalOpen, updateUserProfile, navigateTo } = useApp();
+  const { isAuthModalOpen, setIsAuthModalOpen, signIn, navigateTo } = useApp();
   const { showToast } = useToast();
   const { t } = useLanguage();
 
@@ -31,7 +31,7 @@ export const AuthModal: React.FC = () => {
     setIsLoading(true);
 
     setTimeout(() => {
-      updateUserProfile({ role });
+      signIn(role);
       setIsLoading(false);
       setIsAuthModalOpen(false);
 
@@ -57,7 +57,7 @@ export const AuthModal: React.FC = () => {
     >
       <div className="space-y-4">
         <SegmentedControl
-          label={t.screens.portal.role}
+          label={t.demo.auth.roleLabel}
           value={role}
           onChange={(next) => {
             setRole(next);
@@ -82,7 +82,7 @@ export const AuthModal: React.FC = () => {
             {t.auth.submitBtn}
           </Button>
 
-          <p className="text-center text-[13px] font-bold text-ink-2">{t.auth.demoNotice}</p>
+          <p className="text-center text-[13px] font-bold text-ink-2">{t.demo.auth.note}</p>
         </form>
       </div>
     </Modal>
