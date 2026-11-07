@@ -543,3 +543,38 @@ describe('QIVENTRA honest footer', () => {
     });
   });
 });
+
+describe('QIVENTRA repeat order', () => {
+  const challah = { name: 'Challah', quantity: 2, price: 16, productId: 'prod-4' };
+
+  it('puts every past order back from the catalog with its quantities', async () => {
+    const { resolveRepeatOrder } = await import('../data/cartRules');
+    const { MOCK_PAST_ORDERS, MOCK_PRODUCTS } = await import('../data/mockData');
+    MOCK_PAST_ORDERS.forEach((order) => {
+      const { available, unavailable } = resolveRepeatOrder(order.items, MOCK_PRODUCTS);
+      expect(unavailable).toHaveLength(0);
+      expect(available.map((line) => line.quantity)).toEqual(order.items.map((item) => item.quantity));
+    });
+  });
+
+  it('leaves out what is out of stock or no longer sold', async () => {
+    const { resolveRepeatOrder } = await import('../data/cartRules');
+    const { MOCK_PRODUCTS } = await import('../data/mockData');
+    const soldOut = MOCK_PRODUCTS.map((p) => (p.id === 'prod-4' ? { ...p, inStock: false } : p));
+    const items = [challah, { ...challah, productId: 'prod-5' }, { name: 'Gone', quantity: 1, price: 1, productId: 'prod-999' }, { name: 'Old', quantity: 1, price: 1 }];
+
+    const { available, unavailable } = resolveRepeatOrder(items, soldOut);
+    expect(available.map((line) => line.product.id)).toEqual(['prod-5']);
+    expect(unavailable.map((item) => item.productId)).toEqual(['prod-4', 'prod-999', undefined]);
+  });
+});
+
+describe('QIVENTRA service worker assets', () => {
+  it('keeps the interface logo small and the source logo out of the precache', async () => {
+    const { statSync, readFileSync } = await import('node:fs');
+    expect(statSync('public/brand/jonikstyle-logo.webp').size).toBeLessThanOrEqual(30 * 1024);
+    const config = readFileSync('vite.config.ts', 'utf8');
+    expect(config).toContain("'brand/jonikstyle-logo.webp'");
+    expect(config).toContain("globIgnores: ['brand/jonikstyle-logo.png'");
+  });
+});

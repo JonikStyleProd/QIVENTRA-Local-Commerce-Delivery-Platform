@@ -63,7 +63,9 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,webmanifest}', 'brand/jonikstyle-logo.webp'],
+          // The 305 KB source logo is for the README, and the PNG fallback only for browsers without WebP.
+          globIgnores: ['brand/jonikstyle-logo.png', 'brand/jonikstyle-logo-160.png'],
           // Photos and fonts are cached on first view rather than precached: an installed
           // PWA keeps its look offline without a 2 MB download on the first visit.
           runtimeCaching: [
