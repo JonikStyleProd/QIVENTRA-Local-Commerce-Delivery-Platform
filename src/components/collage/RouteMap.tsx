@@ -77,7 +77,6 @@ export const RouteMap: React.FC<RouteMapProps> = ({ from, to, progress, label, p
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
       aria-label={label}
-      dir="ltr"
       className="block w-full h-auto bg-tint-tech border-2 border-ink rounded-xl"
     >
       {[1, 2, 3, 4, 5].map((index) => (
