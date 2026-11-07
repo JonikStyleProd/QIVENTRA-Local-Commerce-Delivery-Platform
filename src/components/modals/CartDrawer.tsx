@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Drawer } from '../ui/Drawer';
@@ -53,7 +53,7 @@ export const CartDrawer: React.FC = () => {
       {cart.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
           <div className="w-16 h-16 rounded-3xl bg-surface-elevated flex items-center justify-center text-muted border border-theme">
-            <ShoppingBag className="w-8 h-8 text-[#123B35] dark:text-[#B8D96B]" />
+            <ShoppingBag className="w-8 h-8 text-[#1E1E1E] dark:text-[#FFD84D]" />
           </div>
           <div className="space-y-1 max-w-xs">
             <h3 className="text-base font-bold text-primary">
@@ -144,7 +144,7 @@ export const CartDrawer: React.FC = () => {
             {cartSubtotal < freeDeliveryThreshold ? (
               <div className="p-2.5 rounded-xl bg-surface-elevated border border-theme text-xs text-secondary flex items-center justify-between">
                 <span>{t.cart.freeDeliveryProgress}</span>
-                <span className="font-bold text-[#123B35] dark:text-[#B8D96B] tabular-nums">
+                <span className="font-bold text-[#1E1E1E] dark:text-[#FFD84D] tabular-nums">
                   {formatCurrency(freeDeliveryThreshold - cartSubtotal)}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export const CartDrawer: React.FC = () => {
                 </span>
               </div>
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm font-extrabold text-primary pt-2 border-t border-theme/60">
-                <span>{t.cart.totalPayable}</span>
+                <span>{t.collage.delivery.total}</span>
                 <span className="text-base text-primary font-sans whitespace-nowrap tabular-nums">{formatCurrency(totalAmount)}</span>
               </div>
             </div>
@@ -186,10 +186,7 @@ export const CartDrawer: React.FC = () => {
               </Button>
             </div>
 
-            <p className="text-[11px] text-center text-muted flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#1E824C] shrink-0" />
-              {t.cart.securePaymentNote}
-            </p>
+            <p className="text-center text-[13px] font-bold">{t.collage.common.demo}</p>
           </div>
         </div>
       )}

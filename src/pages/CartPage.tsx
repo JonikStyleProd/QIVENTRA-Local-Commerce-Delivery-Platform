@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Trash2,
-  Plus,
-  Minus,
-  ArrowRight,
-  ArrowLeft,
-  ShieldCheck,
-  MapPin,
-} from 'lucide-react';
+import { Trash2, Plus, Minus, MapPin } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
@@ -23,24 +15,23 @@ export const CartPage: React.FC = () => {
     clearCart,
     cartSubtotal,
     cartTotalCount,
+    cartDiscount,
+    setCartDiscount,
+    deliveryFee,
+    totalAmount,
     currentAddress,
     setIsAddressModalOpen,
     navigateTo,
   } = useApp();
 
-  const { language, t, formatCurrency, isRTL } = useLanguage();
+  const { language, t, formatCurrency } = useLanguage();
   const { showToast } = useToast();
   const [promoCode, setPromoCode] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(0);
-
-  const freeDeliveryThreshold = 100;
-  const deliveryFee = cartSubtotal >= freeDeliveryThreshold || cartSubtotal === 0 ? 0 : 15;
-  const totalAmount = Math.max(0, cartSubtotal - discountApplied + deliveryFee);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
     if (promoCode.trim().toUpperCase() === 'START20' || promoCode.trim().toUpperCase() === 'QIVENTRA2026') {
-      setDiscountApplied(25);
+      setCartDiscount(25);
       showToast({
         type: 'success',
         title: t.cart.promoAppliedTitle,
@@ -53,15 +44,6 @@ export const CartPage: React.FC = () => {
         message: t.cart.promoInvalidDesc,
       });
     }
-  };
-
-  const handleCheckout = () => {
-    showToast({
-      type: 'success',
-      title: t.orders.placedTitle,
-      message: t.orders.placedMessage,
-    });
-    navigateTo('orders');
   };
 
   if (cart.length === 0) {
@@ -133,12 +115,12 @@ export const CartPage: React.FC = () => {
                   {/* Right: Stepper + Total + Delete */}
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     {/* Stepper */}
-                    <div className="flex items-center gap-1.5 bg-surface-elevated border border-theme rounded-xl px-2 py-1">
+                    <div className="seg-group flex items-center bg-accent border-2 border-ink rounded-xl overflow-hidden">
                       <button
                         type="button"
                         onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
-                        className="p-1 hover:text-primary text-secondary transition active:scale-95"
-                        aria-label="Decrease"
+                        className="grid place-items-center w-11 h-11 cursor-pointer"
+                        aria-label={`${t.productCard.decrease}: ${displayName}`}
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
@@ -148,8 +130,8 @@ export const CartPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
-                        className="p-1 hover:text-primary text-secondary transition active:scale-95"
-                        aria-label="Increase"
+                        className="grid place-items-center w-11 h-11 cursor-pointer"
+                        aria-label={`${t.productCard.increase}: ${displayName}`}
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -164,8 +146,8 @@ export const CartPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeFromCart(item.product.id)}
-                      className="p-1.5 text-muted hover:text-[#C53030] rounded-lg transition"
-                      aria-label="Remove"
+                      className="grid place-items-center w-11 h-11 text-ink-3 hover:text-[#C53030] rounded-lg cursor-pointer"
+                      aria-label={`${t.cart.clearAll}: ${displayName}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -178,7 +160,7 @@ export const CartPage: React.FC = () => {
           {/* Delivery Address Reminder */}
           <div className="p-4 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <MapPin className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B] shrink-0" />
+              <MapPin className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D] shrink-0" />
               <div className="min-w-0 flex-1">
                 <span className="text-[11px] text-secondary block">{t.cart.deliveryDestination}:</span>
                 <span className="text-xs font-bold text-primary truncate block">{currentAddress}</span>
@@ -207,22 +189,22 @@ export const CartPage: React.FC = () => {
                 <span className="font-semibold text-primary whitespace-nowrap tabular-nums">{formatCurrency(cartSubtotal)}</span>
               </div>
 
-              {discountApplied > 0 && (
+              {cartDiscount > 0 && (
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-[#1E824C] dark:text-[#48BB78]">
                   <span>{t.cart.promoDiscount}</span>
-                  <span className="font-semibold whitespace-nowrap tabular-nums">- {formatCurrency(discountApplied)}</span>
+                  <span className="font-semibold whitespace-nowrap tabular-nums">- {formatCurrency(cartDiscount)}</span>
                 </div>
               )}
 
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-secondary">
-                <span>{t.cart.courierDelivery}</span>
+                <span>{t.collage.delivery.deliveryLabel}</span>
                 <span className="font-semibold text-primary whitespace-nowrap tabular-nums">
                   {deliveryFee === 0 ? t.cart.free : formatCurrency(deliveryFee)}
                 </span>
               </div>
 
               <div className="pt-3 border-t border-theme grid grid-cols-[minmax(0,1fr)_auto] items-center text-base font-extrabold text-primary">
-                <span>{t.cart.totalPayable}</span>
+                <span>{t.collage.delivery.total}</span>
                 <span className="text-xl font-sans whitespace-nowrap tabular-nums">{formatCurrency(totalAmount)}</span>
               </div>
             </div>
@@ -240,23 +222,12 @@ export const CartPage: React.FC = () => {
               </Button>
             </form>
 
-            {/* CTA Button */}
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth
-              rightIcon={isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-              onClick={handleCheckout}
-            >
-              {t.cart.payOrderPrefix} {formatCurrency(totalAmount)}
+            {/* Next step: choosing the delivery window. Nothing is charged in this demo. */}
+            <Button variant="primary" size="lg" fullWidth onClick={() => navigateTo('delivery')}>
+              {t.collage.stores.next}
             </Button>
 
-            <div className="pt-2 text-center">
-              <span className="text-[11px] text-muted flex items-center justify-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#1E824C]" />
-                {t.cart.paymentConfirmationNote}
-              </span>
-            </div>
+            <p className="pt-1 text-center text-[13px] font-bold">{t.collage.common.demo}</p>
           </div>
         </div>
 

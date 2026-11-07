@@ -30,6 +30,9 @@ interface AppContextType {
   clearCart: () => void;
   cartTotalCount: number;
   cartSubtotal: number;
+  /** Promo discount in ₪ applied on the cart page; carried through to the delivery window. */
+  cartDiscount: number;
+  setCartDiscount: (amount: number) => void;
   freeDeliveryThreshold: number;
   deliveryFee: number;
   totalAmount: number;
@@ -166,6 +169,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ];
   });
 
+  const [promoDiscount, setCartDiscount] = useState(0);
+  const cartDiscount = cart.length > 0 ? promoDiscount : 0;
+
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -219,7 +225,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (options?.searchQuery !== undefined) setSearchQuery(options.searchQuery);
 
     setCurrentRoute(route);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   };
 
   const addToCart = (product: Product, quantity = 1) => {
@@ -254,6 +261,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setCart([]);
+    setCartDiscount(0);
   };
 
   const cartTotalCount = useMemo(() => {
@@ -271,8 +279,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [cartSubtotal]);
 
   const totalAmount = useMemo(() => {
-    return Math.max(0, cartSubtotal + deliveryFee);
-  }, [cartSubtotal, deliveryFee]);
+    return Math.max(0, cartSubtotal - cartDiscount + deliveryFee);
+  }, [cartSubtotal, cartDiscount, deliveryFee]);
 
   // Delivery simulation stepper for the live tracker demo
   const advanceOrderSimulation = () => {
@@ -311,6 +319,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         clearCart,
         cartTotalCount,
         cartSubtotal,
+        cartDiscount,
+        setCartDiscount,
         freeDeliveryThreshold,
         deliveryFee,
         totalAmount,

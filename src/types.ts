@@ -4,6 +4,7 @@ export type AppRoute =
   | 'search'
   | 'orders'
   | 'cart'
+  | 'delivery'
   | 'profile'
   | 'auth'
   | 'store'
