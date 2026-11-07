@@ -9,7 +9,7 @@ import { MadeBy } from '../collage/MadeBy';
 import { Tape } from '../collage/Tape';
 
 const FOOTER_LINK =
-  'inline-flex items-center gap-1 min-h-11 text-sm font-bold text-start cursor-pointer hover:underline';
+  'inline-flex items-center gap-1 min-w-11 min-h-11 text-sm font-bold text-start cursor-pointer hover:underline';
 
 /** Keeps the end of the page clear of what floats over it: phone tabs, and the yellow panel on these screens. */
 const bottomSpace = (route: AppRoute): string => {

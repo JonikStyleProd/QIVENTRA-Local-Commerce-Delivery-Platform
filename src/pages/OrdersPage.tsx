@@ -35,7 +35,7 @@ const OrderCard: React.FC<{ order: Order }> = ({ order }) => {
         )}
       </div>
       <h2 className="mt-1 text-lg font-black break-words">
-        <Link to={to} className="hover:underline">
+        <Link to={to} className="inline-flex items-center min-h-11 hover:underline">
           <bdi>{order.storeNames?.[language] || order.storeName}</bdi>
         </Link>
       </h2>
