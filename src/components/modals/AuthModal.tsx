@@ -129,7 +129,7 @@ export const AuthModal: React.FC = () => {
           </Button>
 
           <p className="text-[11px] text-center text-muted flex items-center justify-center gap-1 mt-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#1E824C] shrink-0" />
+            <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0" />
             {t.auth.demoNotice}
           </p>
         </form>

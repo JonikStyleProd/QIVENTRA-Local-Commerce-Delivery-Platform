@@ -31,12 +31,12 @@ export const SafeImage: React.FC<SafeImageProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden bg-[#F1EBDD] dark:bg-[#1C2522] ${aspectRatio} ${containerClassName}`}
+      className={`relative overflow-hidden bg-tint-pets ${aspectRatio} ${containerClassName}`}
       onClick={onClick}
     >
       {/* Loading Skeleton Shimmer */}
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 dark:via-white/5 to-transparent animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
       )}
 
       {/* Actual Image */}
@@ -56,7 +56,7 @@ export const SafeImage: React.FC<SafeImageProps> = ({
       ) : (
         /* Fallback Container */
         <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center bg-radial from-white/30 to-transparent">
-          {fallbackIcon || <ImageIcon className="w-7 h-7 text-[#6E685C] dark:text-[#A0AEA9] opacity-70 mb-1" />}
+          {fallbackIcon || <ImageIcon className="w-7 h-7 text-ink-3 opacity-70 mb-1" />}
           {fallbackText && (
             <span className="text-[10px] text-muted font-medium line-clamp-1 max-w-[90%]">
               {fallbackText}

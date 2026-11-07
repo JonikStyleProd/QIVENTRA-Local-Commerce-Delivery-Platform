@@ -56,8 +56,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <div
         className={`
           flex items-center w-full rounded-2xl bg-surface border border-theme
-          focus-within:border-[#1E1E1E] dark:focus-within:border-[#FFD84D]
-          focus-within:ring-2 focus-within:ring-[#1E1E1E]/15 dark:focus-within:ring-[#FFD84D]/20
+          focus-within:border-ink
+          focus-within:ring-2 focus-within:ring-ink/15
           transition-all duration-150 shadow-xs
           ${sizeStyles[size]}
         `}
@@ -89,7 +89,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           <button
             type="button"
             onClick={() => onSearch?.(internalValue)}
-            className="flex items-center justify-center w-8 h-8 rounded-xl bg-[#1E1E1E] text-[#FFF8EC] hover:bg-[#1E1E1E] transition ms-1 shrink-0"
+            className="flex items-center justify-center w-8 h-8 rounded-xl bg-ink text-paper hover:bg-ink transition ms-1 shrink-0"
             aria-label={t.nav.search}
           >
             {isRTL ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}

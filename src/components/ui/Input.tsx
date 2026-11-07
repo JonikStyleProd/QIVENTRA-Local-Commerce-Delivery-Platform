@@ -53,12 +53,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={`
               w-full h-11 rounded-xl bg-surface border text-primary text-sm placeholder:text-muted/60
               transition-all duration-150
-              focus:outline-none focus:border-[#1E1E1E] focus:ring-2 focus:ring-[#FFD84D]/30
-              dark:focus:border-[#FFD84D] dark:focus:ring-[#FFD84D]/20
+              focus:outline-none focus:border-ink focus:ring-2 focus:ring-accent/30
               disabled:opacity-50 disabled:bg-surface-elevated disabled:cursor-not-allowed
               ${leftIcon ? 'pl-10' : 'pl-3.5'}
               ${rightIcon || isLoading || error ? 'pr-10' : 'pr-3.5'}
-              ${error ? 'border-[#C53030] focus:border-[#C53030] focus:ring-[#C53030]/20' : 'border-theme'}
+              ${error ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-theme'}
               ${className}
             `}
             {...props}
@@ -66,7 +65,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
           <div className="absolute right-3.5 flex items-center gap-1.5 pointer-events-none">
             {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted" />}
-            {error && !isLoading && <AlertCircle className="w-4 h-4 text-[#C53030]" />}
+            {error && !isLoading && <AlertCircle className="w-4 h-4 text-danger" />}
             {rightIcon && !isLoading && !error && (
               <span className="text-muted">{rightIcon}</span>
             )}
@@ -74,7 +73,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error ? (
-          <p className="text-xs text-[#C53030] font-medium flex items-center gap-1">
+          <p className="text-xs text-danger font-medium flex items-center gap-1">
             {error}
           </p>
         ) : hint ? (

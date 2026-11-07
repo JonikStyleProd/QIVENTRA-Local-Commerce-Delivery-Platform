@@ -52,7 +52,7 @@ export const CartDrawer: React.FC = () => {
       {cart.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
           <div className="w-16 h-16 rounded-3xl bg-surface-elevated flex items-center justify-center text-muted border border-theme">
-            <ShoppingBag className="w-8 h-8 text-[#1E1E1E] dark:text-[#FFD84D]" />
+            <ShoppingBag className="w-8 h-8 text-ink" />
           </div>
           <div className="space-y-1 max-w-xs">
             <h3 className="text-base font-bold text-primary">
@@ -125,7 +125,7 @@ export const CartDrawer: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeFromCart(item.product.id)}
-                      className="p-1 text-muted hover:text-[#C53030] transition rounded-lg hover:bg-surface-elevated shrink-0"
+                      className="p-1 text-muted hover:text-danger transition rounded-lg hover:bg-surface-elevated shrink-0"
                       aria-label={t.cart.clearAll}
                     >
                       <Trash2 className="w-4 h-4" />

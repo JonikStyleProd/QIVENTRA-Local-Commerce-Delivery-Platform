@@ -78,7 +78,7 @@ export const CartPage: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={clearCart}
-          className="text-secondary hover:text-[#C53030]"
+          className="text-secondary hover:text-danger"
         >
           {t.cart.clearAll}
         </Button>
@@ -147,7 +147,7 @@ export const CartPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeFromCart(item.product.id)}
-                      className="grid place-items-center w-11 h-11 text-ink-3 hover:text-[#C53030] rounded-lg cursor-pointer"
+                      className="grid place-items-center w-11 h-11 text-ink-3 hover:text-danger rounded-lg cursor-pointer"
                       aria-label={`${t.cart.clearAll}: ${displayName}`}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -161,7 +161,7 @@ export const CartPage: React.FC = () => {
           {/* Delivery Address Reminder */}
           <div className="p-4 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <MapPin className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D] shrink-0" />
+              <MapPin className="w-4 h-4 text-ink shrink-0" />
               <div className="min-w-0 flex-1">
                 <span className="text-[11px] text-secondary block">{t.cart.deliveryDestination}:</span>
                 <span className="text-xs font-bold text-primary truncate block">{currentAddress}</span>

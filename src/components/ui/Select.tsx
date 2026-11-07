@@ -36,10 +36,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             className={`
               w-full h-11 appearance-none rounded-xl bg-surface border text-primary text-sm pl-3.5 pr-10
               transition-all duration-150 cursor-pointer
-              focus:outline-none focus:border-[#1E1E1E] focus:ring-2 focus:ring-[#FFD84D]/30
-              dark:focus:border-[#FFD84D] dark:focus:ring-[#FFD84D]/20
+              focus:outline-none focus:border-ink focus:ring-2 focus:ring-accent/30
               disabled:opacity-50 disabled:bg-surface-elevated disabled:cursor-not-allowed
-              ${error ? 'border-[#C53030]' : 'border-theme'}
+              ${error ? 'border-danger' : 'border-theme'}
               ${className}
             `}
             {...props}
@@ -53,7 +52,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 
           <div className="absolute right-3.5 flex items-center pointer-events-none text-muted">
             {error ? (
-              <AlertCircle className="w-4 h-4 text-[#C53030]" />
+              <AlertCircle className="w-4 h-4 text-danger" />
             ) : (
               <ChevronDown className="w-4 h-4" />
             )}
@@ -61,7 +60,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
 
         {error ? (
-          <p className="text-xs text-[#C53030] font-medium">{error}</p>
+          <p className="text-xs text-danger font-medium">{error}</p>
         ) : hint ? (
           <p className="text-xs text-muted">{hint}</p>
         ) : null}

@@ -138,7 +138,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
         <div className="mt-4 space-y-4">
           {/* Error Banner */}
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-[#FDECEB] dark:bg-[#3D1919] border border-[#C53030]/30 text-[#C53030] dark:text-[#FC8181] text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-danger-bg border border-danger/30 text-danger text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -146,7 +146,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
 
           {/* Success Banner */}
           {isSuccess && (
-            <div className="p-3 rounded-xl bg-[#E8F5EE] dark:bg-[#132E20] border border-[#1E824C]/30 text-[#1E824C] dark:text-[#48BB78] text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-success-bg border border-success/30 text-success text-xs flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{t.media?.uploadSuccess || 'Image saved successfully!'}</span>
             </div>
@@ -155,7 +155,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
           {/* Image Preview & Crop Area */}
           {previewUrl ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden border-2 border-theme bg-[#F1EBDD] dark:bg-[#1A2220] shadow-inner">
+              <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden border-2 border-theme bg-tint-pets shadow-inner">
                 <img
                   src={previewUrl}
                   alt="Preview"
@@ -174,7 +174,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
                   step="0.05"
                   value={zoom}
                   onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="w-full accent-[#1E1E1E] dark:accent-[#FFD84D]"
+                  className="w-full accent-ink"
                 />
                 <span className="tabular-nums font-mono text-[11px]">{Math.round(zoom * 100)}%</span>
               </div>
@@ -184,7 +184,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-surface-elevated hover:bg-[#F1EBDD] dark:hover:bg-[#252E2B] border border-theme text-xs font-semibold text-primary transition"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-surface-elevated hover:bg-tint-pets border border-theme text-xs font-semibold text-primary transition"
                 >
                   <RefreshCw className="w-3.5 h-3.5 text-secondary" />
                   <span>{t.media?.replace || 'Replace'}</span>
@@ -193,7 +193,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[#FDECEB] dark:bg-[#3D1919] hover:bg-red-200 dark:hover:bg-red-900/40 text-xs font-semibold text-[#C53030] dark:text-[#FC8181] transition"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-danger-bg hover:bg-red-200 text-xs font-semibold text-danger transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>{t.media?.delete || 'Delete'}</span>
@@ -210,11 +210,11 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
               onClick={() => fileInputRef.current?.click()}
               className={`p-6 sm:p-8 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center cursor-pointer transition ${
                 isDragging
-                  ? 'border-[#1E1E1E] dark:border-[#FFD84D] bg-[#1E1E1E]/5 dark:bg-[#FFD84D]/10'
+                  ? 'border-ink bg-ink/5'
                   : 'border-theme hover:border-secondary bg-surface-elevated'
               }`}
             >
-              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#252E2B] shadow-xs flex items-center justify-center text-[#1E1E1E] dark:text-[#FFD84D] mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-card shadow-xs flex items-center justify-center text-ink mb-3">
                 <Upload className="w-6 h-6" />
               </div>
               <h4 className="text-xs sm:text-sm font-bold text-primary mb-1">
@@ -251,7 +251,7 @@ export const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
               </div>
               <div className="w-full h-2 rounded-full bg-surface-elevated overflow-hidden border border-theme">
                 <div
-                  className="h-full bg-[#1E1E1E] dark:bg-[#FFD84D] transition-all duration-200"
+                  className="h-full bg-ink transition-all duration-200"
                   style={{ width: `${progress}%` }}
                 />
               </div>

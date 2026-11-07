@@ -117,7 +117,7 @@ export const SearchPage: React.FC = () => {
               px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
               ${
                 selectedCategory === 'all'
-                  ? 'bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E]'
+                  ? 'bg-ink text-paper'
                   : 'bg-surface-elevated text-secondary hover:text-primary border border-theme'
               }
             `}
@@ -136,7 +136,7 @@ export const SearchPage: React.FC = () => {
                   px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
                   ${
                     isSelected
-                      ? 'bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E]'
+                      ? 'bg-ink text-paper'
                       : 'bg-surface-elevated text-secondary hover:text-primary border border-theme'
                   }
                 `}
@@ -155,7 +155,7 @@ export const SearchPage: React.FC = () => {
               px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
               ${
                 onlyEco
-                  ? 'bg-[#E8F5EE] dark:bg-[#132E20] text-[#1E824C] dark:text-[#48BB78] border border-[#1E824C]/30'
+                  ? 'bg-success-bg text-success border border-success/30'
                   : 'bg-surface-elevated text-secondary border border-theme'
               }
             `}
@@ -170,7 +170,7 @@ export const SearchPage: React.FC = () => {
         <div className="pt-4">
           <div className="text-center max-w-md mx-auto p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface border border-theme">
             <div className="w-12 h-12 rounded-2xl bg-surface-elevated text-secondary flex items-center justify-center mx-auto mb-3 border border-theme">
-              <Search className="w-6 h-6 text-[#1E1E1E] dark:text-[#FFD84D]" />
+              <Search className="w-6 h-6 text-ink" />
             </div>
             <h3 className="text-sm sm:text-base font-bold text-primary mb-1">
               {t.search.startTypingTitle}
@@ -194,7 +194,7 @@ export const SearchPage: React.FC = () => {
           {matchedStores.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <StoreIcon className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
+                <StoreIcon className="w-4 h-4 text-ink" />
                 <h2 className="text-base font-bold text-primary">
                   {t.catalog.tabStores} ({matchedStores.length})
                 </h2>
@@ -215,7 +215,7 @@ export const SearchPage: React.FC = () => {
           {matchedProducts.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Package className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
+                <Package className="w-4 h-4 text-ink" />
                 <h2 className="text-base font-bold text-primary">
                   {t.catalog.tabProducts} ({matchedProducts.length})
                 </h2>

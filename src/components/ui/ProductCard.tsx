@@ -35,7 +35,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <article
-      className="card-tilt relative flex flex-col h-full min-w-0 bg-white p-2 pb-3 shadow-polaroid"
+      className="card-tilt relative flex flex-col h-full min-w-0 bg-card p-2 pb-3 shadow-polaroid"
       style={{ '--tilt': tiltFor(product.id) } as React.CSSProperties}
     >
       <Tape small tone="blue" />

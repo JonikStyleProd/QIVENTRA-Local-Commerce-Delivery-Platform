@@ -19,7 +19,7 @@ export const StepHeader: React.FC<StepHeaderProps> = ({ step, title, backLabel, 
       type="button"
       onClick={onBack}
       aria-label={backLabel}
-      className="chip-tilt grid place-items-center w-11 h-11 shrink-0 bg-white text-ink border-2 border-ink rounded-xl cursor-pointer"
+      className="chip-tilt grid place-items-center w-11 h-11 shrink-0 bg-card text-ink border-2 border-ink rounded-xl cursor-pointer"
     >
       <ChevronLeft aria-hidden="true" strokeWidth={3} className="w-5 h-5 rtl-flip" />
     </button>

@@ -44,12 +44,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary: `${size === 'lg' ? 'bg-action' : 'bg-action-strong'} text-white shadow-hard-3`,
       accent: 'bg-accent text-ink shadow-hard-3',
       secondary: 'bg-link text-white shadow-hard-3',
-      outline: 'bg-white text-ink',
+      outline: 'bg-card text-ink',
       ghost: 'bg-transparent text-ink border-transparent hover:bg-paper-dot/40',
       danger: 'bg-[#C53030] text-white shadow-hard-3',
     };
 
-    const errorStyles = isError ? 'border-[#C53030] bg-tint-food text-[#C53030]' : '';
+    const errorStyles = isError ? 'border-danger bg-tint-food text-danger' : '';
 
     return (
       <button

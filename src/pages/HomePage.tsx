@@ -45,9 +45,9 @@ const PHONE_BOARD: { store: string; tilt: string }[] = [
 ];
 
 const STEP_STYLES = [
-  { background: 'bg-white', number: 'text-link' },
+  { background: 'bg-card', number: 'text-link-text' },
   { background: 'bg-tint-food', number: 'text-action' },
-  { background: 'bg-tint-health', number: 'text-link' },
+  { background: 'bg-tint-health', number: 'text-link-text' },
 ];
 
 export const HomePage: React.FC = () => {
@@ -67,7 +67,7 @@ export const HomePage: React.FC = () => {
       {/* ---------- Phone: M9-Home ---------- */}
       <div className="desk:hidden pb-5">
         <section className="px-4 pt-2 pb-4">
-          <p className="hand anim-in inline-block text-[26px] text-link -rotate-2">{phone.today}</p>
+          <p className="hand anim-in inline-block text-[26px] text-link-text -rotate-2">{phone.today}</p>
           <h1 className="anim-in text-[40px] font-black leading-[0.98] tracking-[-0.03em]" style={{ animationDelay: '0.1s' }}>
             {phone.h1a}
             <span className="relative inline-block">
@@ -108,7 +108,7 @@ export const HomePage: React.FC = () => {
           <div className="flex items-baseline justify-between mb-2.5">
             <h2 id="home-shops" className="text-xl font-black">
               {phone.near}{' '}
-              <span className="hand font-bold text-link">{phone.count.replace('{n}', storeCount)}</span>
+              <span className="hand font-bold text-link-text">{phone.count.replace('{n}', storeCount)}</span>
             </h2>
             <button
               type="button"
@@ -125,7 +125,7 @@ export const HomePage: React.FC = () => {
           >
             <span className="flex gap-2 mb-3">
               {PHONE_BOARD.map(({ store, tilt }) => (
-                <span key={store} className="w-[62px] h-[62px] p-1 bg-white shrink-0" style={{ rotate: tilt }}>
+                <span key={store} className="w-[62px] h-[62px] p-1 bg-card shrink-0" style={{ rotate: tilt }}>
                   <img
                     src={MOCK_STORES.find((s) => s.id === store)?.coverUrl}
                     alt=""
@@ -141,7 +141,7 @@ export const HomePage: React.FC = () => {
         </section>
 
         <section className="px-4">
-          <div className="px-4 py-3.5 bg-white border-2 border-ink rounded-[18px]" style={{ rotate: '-1deg' }}>
+          <div className="px-4 py-3.5 bg-card border-2 border-ink rounded-[18px]" style={{ rotate: '-1deg' }}>
             <p className="hand text-2xl text-action">{phone.howT}</p>
             <p className="mt-1 font-bold leading-normal">{phone.howD}</p>
           </div>
@@ -151,7 +151,7 @@ export const HomePage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigateTo('catalog')}
-            className="card-tilt relative block w-full p-2 pb-2.5 bg-white text-start shadow-polaroid cursor-pointer"
+            className="card-tilt relative block w-full p-2 pb-2.5 bg-card text-start shadow-polaroid cursor-pointer"
             style={{ '--tilt': '1.5deg' } as React.CSSProperties}
           >
             <Tape tone="red" />
@@ -170,7 +170,7 @@ export const HomePage: React.FC = () => {
       <div className="hidden desk:block overflow-hidden">
         <section className="relative max-w-[1360px] min-h-[760px] mx-auto px-10 pt-[30px] pb-20">
           <div className="relative z-[2] max-w-[56%] xl:max-w-[760px]">
-            <p className="hand anim-in inline-block mb-1.5 text-[32px] text-link -rotate-3">{landing.hello}</p>
+            <p className="hand anim-in inline-block mb-1.5 text-[32px] text-link-text -rotate-3">{landing.hello}</p>
             <h1
               className="anim-in font-black leading-[0.98] tracking-[-0.03em] text-[clamp(54px,7vw,112px)]"
               style={{ animationDelay: '0.1s' }}
@@ -214,7 +214,7 @@ export const HomePage: React.FC = () => {
                   }
                 >
                   <div
-                    className={`relative bg-white p-2.5 shadow-sticker ${
+                    className={`relative bg-card p-2.5 shadow-sticker ${
                       sticker.round ? 'rounded-full' : caption ? 'rounded-md pb-1.5' : 'rounded-md'
                     }`}
                   >
@@ -271,7 +271,7 @@ export const HomePage: React.FC = () => {
                 className={`anim-reveal relative p-7 border-[3px] border-ink rounded-[26px] shadow-hard-6 ${STEP_STYLES[index].background}`}
               >
                 {index === 0 && (
-                  <div aria-hidden="true" className="absolute -top-7 end-6 w-[132px] p-1.5 pb-2 bg-white rotate-3 shadow-polaroid">
+                  <div aria-hidden="true" className="absolute -top-7 end-6 w-[132px] p-1.5 pb-2 bg-card rotate-3 shadow-polaroid">
                     <Tape tone="blue" small />
                     <img
                       src="/photos/aerial-tel-aviv.webp"
@@ -297,7 +297,7 @@ export const HomePage: React.FC = () => {
                 :)
               </span>
             </h2>
-            <div aria-hidden="true" className="hidden min-[1200px]:block relative w-[300px] p-2 pb-3 bg-white -rotate-2 shadow-polaroid">
+            <div aria-hidden="true" className="hidden min-[1200px]:block relative w-[300px] p-2 pb-3 bg-card -rotate-2 shadow-polaroid">
               <Tape tone="blue" />
               <img
                 src="/photos/hero-grocery-bag.webp"

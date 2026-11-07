@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* The Collage design is light-only: `dark:` follows the .dark class, never the OS setting. */
+/* `dark:` follows the .dark class that ThemeContext sets, not the OS setting directly. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* -------------------------------------------------------------
@@ -9,11 +9,23 @@
 @theme {
   --color-paper: #FFF8EC;
   --color-paper-dot: #E9DFCB;
+  --color-card: #FFFFFF;
   --color-ink: #1E1E1E;
   --color-action: #E8473B;
   /* Same red for text smaller than 19px bold: white on #E8473B is only 3.9:1. */
   --color-action-strong: #D4352A;
   --color-link: #2E5BFF;
+  /* Blue as text; the dark theme needs a lighter one than the button colour. */
+  --color-link-text: #2E5BFF;
+  --color-focus: #2E5BFF;
+  --color-focus-on-ink: #FFD84D;
+  --color-accent-on-ink: #FFD84D;
+  --color-success: #1E824C;
+  --color-success-bg: #E6F4E0;
+  --color-danger: #C53030;
+  --color-danger-bg: #FFE3DF;
+  --color-warn: #8A5A12;
+  --color-warn-bg: #FFF1B8;
   --color-accent: #FFD84D;
   --color-tint-food: #FFE3DF;
   --color-tint-health: #E3E9FF;
@@ -26,12 +38,12 @@
   --color-notebook-line: #DCE4FF;
   --color-notebook-margin: #F3A39B;
 
-  --shadow-hard-2: 2px 2px 0 #1E1E1E;
-  --shadow-hard-3: 3px 3px 0 #1E1E1E;
-  --shadow-hard-4: 4px 4px 0 #1E1E1E;
-  --shadow-hard-5: 5px 5px 0 #1E1E1E;
-  --shadow-hard-6: 6px 6px 0 #1E1E1E;
-  --shadow-hard-8: 8px 8px 0 #1E1E1E;
+  --shadow-hard-2: 2px 2px 0 var(--color-ink);
+  --shadow-hard-3: 3px 3px 0 var(--color-ink);
+  --shadow-hard-4: 4px 4px 0 var(--color-ink);
+  --shadow-hard-5: 5px 5px 0 var(--color-ink);
+  --shadow-hard-6: 6px 6px 0 var(--color-ink);
+  --shadow-hard-8: 8px 8px 0 var(--color-ink);
   --shadow-polaroid: 0 22px 34px -22px rgba(0, 0, 0, 0.55);
   --shadow-sticker: 0 14px 24px -14px rgba(0, 0, 0, 0.35);
 
@@ -104,6 +116,94 @@
   }
 }
 
+/* -------------------------------------------------------------
+   DARK COLLAGE: dark paper, light outlines, the same accents.
+   Contrast checked against WCAG AA in the browser audit.
+------------------------------------------------------------- */
+.dark {
+  color-scheme: dark;
+
+  --color-paper: #1B1A17;
+  --color-paper-dot: #34312B;
+  --color-card: #272521;
+  --color-ink: #F6F0E2;
+  --color-ink-2: #D9D2C3;
+  --color-ink-3: #C2BBAB;
+  --color-ink-4: #C2BBAB;
+  --color-link-text: #9DB2FF;
+  --color-focus: #FFD84D;
+  --color-focus-on-ink: #2E5BFF;
+  --color-accent-on-ink: #1E1E1E;
+  --color-tint-food: #4B2723;
+  --color-tint-health: #27305A;
+  --color-tint-gift: #4A3F14;
+  --color-tint-tech: #2C3A2A;
+  --color-tint-pets: #3B362C;
+  --color-notebook-line: #3B3F5C;
+  --color-notebook-margin: #8C4A44;
+  --color-success: #86D69A;
+  --color-success-bg: #263623;
+  --color-danger: #FF9A8F;
+  --color-danger-bg: #4A2320;
+  --color-warn: #F2C35E;
+  --color-warn-bg: #43371A;
+  --shadow-polaroid: 0 0 0 1.5px rgba(246, 240, 226, 0.35), 0 22px 34px -22px rgba(0, 0, 0, 0.9);
+  --shadow-sticker: 0 0 0 1.5px rgba(246, 240, 226, 0.35), 0 14px 24px -14px rgba(0, 0, 0, 0.9);
+
+  --bg-app: #1B1A17;
+  --bg-surface: #272521;
+  --bg-surface-elevated: #2F2C27;
+  --bg-surface-card: #272521;
+  --text-primary: #F6F0E2;
+  --text-secondary: #D9D2C3;
+  --text-muted: #C2BBAB;
+  --border-color: #4A463D;
+  --border-subtle: #38342D;
+  --brand-mineral: #F6F0E2;
+  --brand-mineral-dark: #F6F0E2;
+  --brand-mineral-light: #D9D2C3;
+  --brand-dark: #F6F0E2;
+  --brand-light: #1B1A17;
+  --status-success: #86D69A;
+  --status-success-bg: #263623;
+  --status-warning: #F2C35E;
+  --status-warning-bg: #43371A;
+  --status-error: #FF9A8F;
+  --status-error-bg: #4A2320;
+  --status-info: #9DB2FF;
+  --status-info-bg: #27305A;
+}
+
+/* Yellow stays yellow in the dark theme, so everything on it keeps the light tokens. */
+.dark .bg-accent {
+  color: #1E1E1E;
+  --color-paper: #FFF8EC;
+  --color-paper-dot: #E9DFCB;
+  --color-card: #FFFFFF;
+  --color-ink: #1E1E1E;
+  --color-ink-2: #5A554C;
+  --color-ink-3: #6E685C;
+  --color-ink-4: #7A7466;
+  --color-link-text: #2E5BFF;
+  --color-focus: #2E5BFF;
+  --color-focus-on-ink: #FFD84D;
+  --color-success: #1E824C;
+  --color-danger: #C53030;
+  --shadow-hard-2: 2px 2px 0 #1E1E1E;
+  --shadow-hard-3: 3px 3px 0 #1E1E1E;
+  --shadow-hard-4: 4px 4px 0 #1E1E1E;
+  --shadow-hard-5: 5px 5px 0 #1E1E1E;
+  --shadow-hard-6: 6px 6px 0 #1E1E1E;
+  --shadow-hard-8: 8px 8px 0 #1E1E1E;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFF8EC;
+  --bg-surface-card: #FFFFFF;
+  --text-primary: #1E1E1E;
+  --text-secondary: #5A554C;
+  --text-muted: #6E685C;
+  --border-color: #E9DFCB;
+}
+
 /* Custom Utilities for Design System */
 .bg-app {
   background-color: var(--bg-app);
@@ -150,18 +250,21 @@
    on older screens cannot remove the visible keyboard ring.
 ------------------------------------------------------------- */
 :focus-visible {
-  outline: 3px solid #2E5BFF;
+  outline: 3px solid var(--color-focus);
   outline-offset: 3px;
   border-radius: 10px;
 }
 .on-blue :focus-visible {
   outline-color: #FFD84D;
 }
+.on-blue .bg-accent :focus-visible {
+  outline-color: #2E5BFF;
+}
 .seg-group button:focus-visible {
   outline-offset: -5px;
 }
 .seg-group button[aria-pressed='true']:focus-visible {
-  outline-color: #FFD84D;
+  outline-color: var(--color-focus-on-ink);
 }
 h1[tabindex='-1']:focus {
   outline: none;

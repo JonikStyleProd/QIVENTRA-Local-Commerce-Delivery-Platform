@@ -12,7 +12,7 @@ interface CategoryChipProps {
 export const CategoryChip: React.FC<CategoryChipProps> = ({
   label,
   isActive,
-  tintClassName = 'bg-white',
+  tintClassName = 'bg-card',
   onClick,
   icon,
 }) => (
@@ -21,7 +21,7 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({
     onClick={onClick}
     aria-pressed={isActive}
     className={`chip-tilt inline-flex items-center gap-1.5 shrink-0 min-h-11 desk:min-h-[46px] px-3.5 desk:px-[18px] border-2 border-ink rounded-xl desk:rounded-[14px] shadow-hard-2 desk:shadow-hard-3 text-sm desk:text-base font-extrabold cursor-pointer whitespace-nowrap ${
-      isActive ? 'bg-ink text-white' : `${tintClassName} text-ink`
+      isActive ? 'bg-ink text-paper' : `${tintClassName} text-ink`
     }`}
   >
     {icon}

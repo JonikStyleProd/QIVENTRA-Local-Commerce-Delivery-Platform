@@ -21,23 +21,23 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantStyles = {
-    pistachio: 'bg-[#FFD84D] text-[#1E1E1E] font-semibold',
-    mineral: 'bg-[#1E1E1E] text-[#FFF8EC]',
-    success: 'bg-[#E8F5EE] text-[#1E824C] dark:bg-[#132E20] dark:text-[#48BB78]',
-    warning: 'bg-[#FEF8E7] text-[#B7791F] dark:bg-[#332612] dark:text-[#F6AD55]',
-    error: 'bg-[#FDECEB] text-[#C53030] dark:bg-[#3D1919] dark:text-[#FC8181]',
+    pistachio: 'bg-accent text-ink font-semibold',
+    mineral: 'bg-ink text-paper',
+    success: 'bg-success-bg text-success',
+    warning: 'bg-warn-bg text-warn',
+    error: 'bg-danger-bg text-danger',
     neutral: 'bg-surface-elevated text-secondary border border-theme',
     outline: 'bg-transparent text-primary border border-theme',
   };
 
   const dotColor = {
-    pistachio: 'bg-[#1E1E1E]',
-    mineral: 'bg-[#FFD84D]',
-    success: 'bg-[#1E824C] dark:bg-[#48BB78]',
-    warning: 'bg-[#B7791F] dark:bg-[#F6AD55]',
-    error: 'bg-[#C53030] dark:bg-[#FC8181]',
+    pistachio: 'bg-ink',
+    mineral: 'bg-accent',
+    success: 'bg-[#1E824C]',
+    warning: 'bg-[#B7791F]',
+    error: 'bg-[#C53030]',
     neutral: 'bg-muted',
-    outline: 'bg-[#1E1E1E]',
+    outline: 'bg-ink',
   };
 
   return (

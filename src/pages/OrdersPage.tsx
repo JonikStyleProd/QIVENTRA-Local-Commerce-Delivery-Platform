@@ -118,7 +118,7 @@ export const OrdersPage: React.FC = () => {
               <span className="text-xs text-secondary block">
                 {isDelivered ? t.orders.statusLabel : windowLabel ? t.collage.delivery.windowWord : t.orders.estimatedTimeLabel}
               </span>
-              <span className="text-xl sm:text-2xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans tabular-nums">
+              <span className="text-xl sm:text-2xl font-extrabold text-ink font-sans tabular-nums">
                 {isDelivered ? t.orders.statusCompleted : windowLabel ?? `~${formatMinutes(activeOrder.etaMinutes)}`}
               </span>
             </div>
@@ -129,22 +129,22 @@ export const OrdersPage: React.FC = () => {
         <div className="py-6 sm:py-8">
           <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center text-xs font-semibold mb-3">
             <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'received' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
+              <span className={activeOrder.status === 'received' ? 'text-ink font-bold' : 'text-secondary'}>
                 1. {t.orders.stepReceived}
               </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'preparing' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
+              <span className={activeOrder.status === 'preparing' ? 'text-ink font-bold' : 'text-secondary'}>
                 2. {t.orders.stepPreparing}
               </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
+              <span className={activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way' ? 'text-ink font-bold' : 'text-secondary'}>
                 3. {t.orders.stepOnTheWay}
               </span>
             </div>
             <div className="flex flex-col items-center">
-              <span className={isDelivered ? 'text-[#1E824C] dark:text-[#48BB78] font-bold' : 'text-secondary'}>
+              <span className={isDelivered ? 'text-success font-bold' : 'text-secondary'}>
                 4. {t.orders.stepAtDoor}
               </span>
             </div>
@@ -152,7 +152,7 @@ export const OrdersPage: React.FC = () => {
 
           <div className="relative h-2.5 sm:h-3 rounded-full bg-surface-elevated border border-theme overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#1E1E1E] to-[#FFD84D] transition-all duration-500 rounded-full"
+              className="h-full bg-gradient-to-r from-ink to-accent transition-all duration-500 rounded-full"
               style={{
                 width:
                   activeOrder.status === 'received'
@@ -169,7 +169,7 @@ export const OrdersPage: React.FC = () => {
 
         {/* On the way: the courier photo from the design set */}
         {(activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way') && (
-          <div aria-hidden="true" className="relative max-w-md mx-auto mb-8 p-2.5 pb-3 bg-white -rotate-1 shadow-polaroid">
+          <div aria-hidden="true" className="relative max-w-md mx-auto mb-8 p-2.5 pb-3 bg-card -rotate-1 shadow-polaroid">
             <Tape tone="yellow" />
             <img
               src="/photos/courier-cargo-bike.webp"
@@ -184,8 +184,8 @@ export const OrdersPage: React.FC = () => {
         {activeOrder.courier && (
           <div className="p-4 sm:p-5 rounded-2xl bg-surface-elevated border border-theme flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center shrink-0 shadow-xs">
-                <Bike className="w-5 sm:w-6 h-5 sm:h-6 text-[#FFD84D]" />
+              <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-2xl bg-ink text-paper flex items-center justify-center shrink-0 shadow-xs">
+                <Bike className="w-5 sm:w-6 h-5 sm:h-6 text-accent-on-ink" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export const OrdersPage: React.FC = () => {
             variant="primary"
             size="md"
             onClick={advanceOrderSimulation}
-            leftIcon={<TrendingUp className="w-4 h-4 text-[#FFD84D]" />}
+            leftIcon={<TrendingUp className="w-4 h-4 text-accent" />}
           >
             {t.orders.nextStepBtn}
           </Button>

@@ -7,10 +7,13 @@ import {
   Bike,
   ShieldCheck,
   MessageSquare,
+  Moon,
+  Sun,
   User,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
 import { BrandLogo } from '../ui/BrandLogo';
 import { Button } from '../ui/Button';
 import { LanguageSwitcher } from '../ui/LanguageSwitcher';
@@ -18,11 +21,12 @@ import { AppRoute } from '../../types';
 import { AddressButton, CartCountBadge } from '../collage/HeaderControls';
 
 const ICON_BUTTON =
-  'chip-tilt relative grid place-items-center w-11 h-11 shrink-0 bg-white text-ink border-2 border-ink rounded-xl cursor-pointer';
+  'chip-tilt relative grid place-items-center w-11 h-11 shrink-0 bg-card text-ink border-2 border-ink rounded-xl cursor-pointer';
 
 export const DesktopHeader: React.FC = () => {
   const { currentRoute, navigateTo, cartTotalCount, setIsCartDrawerOpen, setIsChatOpen } = useApp();
   const { t } = useLanguage();
+  const { resolvedTheme, toggleTheme } = useTheme();
   const [isPortalsMenuOpen, setIsPortalsMenuOpen] = useState(false);
 
   const navLinks: { label: string; route: AppRoute }[] = [
@@ -91,8 +95,8 @@ export const DesktopHeader: React.FC = () => {
             {isPortalsMenuOpen && (
               <>
                 <div className="fixed inset-0 z-20" onClick={() => setIsPortalsMenuOpen(false)} />
-                <div className="absolute start-0 z-30 w-60 mt-2 py-2 bg-white border-[3px] border-ink rounded-2xl shadow-hard-4">
-                  <p className="hand px-3 text-2xl text-link">{t.profile.partnerPortalsTitle}</p>
+                <div className="absolute start-0 z-30 w-60 mt-2 py-2 bg-card border-[3px] border-ink rounded-2xl shadow-hard-4">
+                  <p className="hand px-3 text-2xl text-link-text">{t.profile.partnerPortalsTitle}</p>
                   {portals.map((portal) => (
                     <button
                       key={portal.route}
@@ -117,6 +121,20 @@ export const DesktopHeader: React.FC = () => {
       <div className="flex items-center gap-2 xl:gap-3 min-w-0">
         <AddressButton className="max-w-[170px] xl:max-w-[210px]" />
         <LanguageSwitcher />
+
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={resolvedTheme === 'dark' ? t.nav.toggleThemeLight : t.nav.toggleThemeDark}
+          title={resolvedTheme === 'dark' ? t.nav.toggleThemeLight : t.nav.toggleThemeDark}
+          className={ICON_BUTTON}
+        >
+          {resolvedTheme === 'dark' ? (
+            <Sun aria-hidden="true" className="w-5 h-5" />
+          ) : (
+            <Moon aria-hidden="true" className="w-5 h-5" />
+          )}
+        </button>
 
         <button
           type="button"

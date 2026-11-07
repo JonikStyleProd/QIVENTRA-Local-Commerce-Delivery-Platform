@@ -68,7 +68,7 @@ export const HandArrow: React.FC<{ className?: string; style?: React.CSSProperti
       className="anim-draw"
       d="M10 100 C 60 20, 120 120, 180 30"
       fill="none"
-      stroke="#1E1E1E"
+      stroke="currentColor"
       strokeWidth="3"
       strokeLinecap="round"
       style={{ animationDelay: '1.4s', '--dash': 600 } as React.CSSProperties}
@@ -77,7 +77,7 @@ export const HandArrow: React.FC<{ className?: string; style?: React.CSSProperti
       className="anim-draw"
       d="M165 28 L182 28 L178 46"
       fill="none"
-      stroke="#1E1E1E"
+      stroke="currentColor"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"

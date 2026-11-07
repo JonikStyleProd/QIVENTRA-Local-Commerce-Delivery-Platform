@@ -59,8 +59,8 @@ export const AdminPortalPage: React.FC = () => {
       {/* Admin Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            <ShieldCheck className="w-6 h-6 text-[#FFD84D]" />
+          <div className="w-12 h-12 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+            <ShieldCheck className="w-6 h-6 text-accent-on-ink" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export const AdminPortalPage: React.FC = () => {
                 }}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                   currentUser.role === r
-                    ? 'bg-[#1E1E1E] text-[#FFF8EC] shadow-2xs'
+                    ? 'bg-ink text-paper shadow-2xs'
                     : 'text-secondary hover:text-primary'
                 }`}
               >
@@ -122,7 +122,7 @@ export const AdminPortalPage: React.FC = () => {
           <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
             {formatCurrency(48290)}
           </span>
-          <span className="text-[11px] text-[#1E824C] dark:text-[#48BB78] font-medium flex items-center gap-0.5 mt-1">
+          <span className="text-[11px] text-success font-medium flex items-center gap-0.5 mt-1">
             <TrendingUp className="w-3 h-3 me-0.5" /> +18.4% {t.admin.todayLabel}
           </span>
         </div>
@@ -142,14 +142,14 @@ export const AdminPortalPage: React.FC = () => {
           <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
             24 {t.admin.onLine}
           </span>
-          <span className="text-[11px] text-[#1E824C] dark:text-[#48BB78] mt-1 block">
+          <span className="text-[11px] text-success mt-1 block">
             100% {t.admin.ecoFleet}
           </span>
         </div>
 
         <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
           <span className="text-xs text-secondary block">{t.admin.avgDeliveryTime}</span>
-          <span className="text-2xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans mt-1 block tabular-nums">
+          <span className="text-2xl font-extrabold text-ink font-sans mt-1 block tabular-nums">
             27.4 {t.admin.minLabel}
           </span>
           <span className="text-[11px] text-muted mt-1 block">
@@ -162,7 +162,7 @@ export const AdminPortalPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-primary flex items-center gap-2">
-            <Store className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
+            <Store className="w-5 h-5 text-ink" />
             <span>{t.admin.merchantApplications}</span>
           </h2>
           <span className="text-xs text-secondary">
@@ -201,7 +201,7 @@ export const AdminPortalPage: React.FC = () => {
                     {t.admin.approveAndPublish}
                   </Button>
                 ) : (
-                  <span className="text-xs text-[#1E824C] dark:text-[#48BB78] font-semibold flex items-center gap-1">
+                  <span className="text-xs text-success font-semibold flex items-center gap-1">
                     <CheckCircle2 className="w-4 h-4" /> {t.admin.activeInCatalog}
                   </span>
                 )}

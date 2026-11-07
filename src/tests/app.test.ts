@@ -388,6 +388,19 @@ describe('QIVENTRA Collage design', () => {
     return Object.entries(value).flatMap(([key, nested]) => keysOf(nested, prefix ? `${prefix}.${key}` : key));
   };
 
+  it('keeps the old green palette out of the styles and components', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const file = path.join(dir, entry.name);
+        return entry.isDirectory() ? walk(file) : /\.(tsx|css)$/.test(file) ? [file] : [];
+      });
+    for (const file of walk(path.resolve(process.cwd(), 'src'))) {
+      expect(fs.readFileSync(file, 'utf8'), file).not.toMatch(/#(123B35|B8D96B|1A4B44|132E20|252E2B|1A2220)/i);
+    }
+  });
+
   it('has the same Collage copy keys in RU, EN and HE', () => {
     const ru = keysOf(translations.ru.collage).sort();
     expect(keysOf(translations.en.collage).sort()).toEqual(ru);

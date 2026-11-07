@@ -21,7 +21,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`anim-in max-w-[520px] mx-auto px-[18px] py-7 desk:px-7 desk:py-10 text-center bg-white border-[3px] border-ink rounded-[20px] desk:rounded-3xl shadow-hard-5 desk:shadow-hard-6 ${className}`}
+      className={`anim-in max-w-[520px] mx-auto px-[18px] py-7 desk:px-7 desk:py-10 text-center bg-card border-[3px] border-ink rounded-[20px] desk:rounded-3xl shadow-hard-5 desk:shadow-hard-6 ${className}`}
       style={{ rotate: '-1deg' }}
     >
       {icon && <div className="flex justify-center mb-2 text-ink-3">{icon}</div>}

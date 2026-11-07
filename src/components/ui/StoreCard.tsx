@@ -38,7 +38,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, isSelected
       type="button"
       onClick={onClick}
       aria-pressed={isSelected}
-      className={`card-tilt relative block w-full h-full bg-white text-ink text-start cursor-pointer shadow-polaroid ${
+      className={`card-tilt relative block w-full h-full bg-card text-ink text-start cursor-pointer shadow-polaroid ${
         isBoard ? 'px-3 pt-3 pb-[18px]' : 'p-[7px] pb-2.5 desk:p-3.5 desk:pb-5'
       }`}
       style={{ '--tilt': tilt ?? tiltFor(store.id) } as React.CSSProperties}

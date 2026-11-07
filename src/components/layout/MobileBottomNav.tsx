@@ -34,7 +34,7 @@ export const MobileBottomNav: React.FC = () => {
     <nav
       id="mobile-bottom-navigation"
       aria-label={t.collage.tabs.label}
-      className="desk:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 px-2 pt-1 bg-white border-t border-ink"
+      className="desk:hidden fixed bottom-0 inset-x-0 z-40 grid grid-cols-5 px-2 pt-1 bg-card border-t border-ink"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
     >
       {navItems.map((item) => {

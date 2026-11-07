@@ -63,8 +63,8 @@ export const CourierPortalPage: React.FC = () => {
       {/* Courier Header */}
       <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-xl shadow-sm shrink-0">
-            <Bike className="w-7 h-7 text-[#FFD84D]" />
+          <div className="w-14 h-14 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-xl shadow-sm shrink-0">
+            <Bike className="w-7 h-7 text-accent-on-ink" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export const CourierPortalPage: React.FC = () => {
           onClick={toggleShift}
           className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold border transition shrink-0 ${
             isOnShift
-              ? 'bg-[#E8F5EE] text-[#1E824C] border-[#A3D9B8] dark:bg-[#132E20] dark:text-[#48BB78]'
+              ? 'bg-success-bg text-success border-[#A3D9B8]'
               : 'bg-surface-elevated text-secondary border-theme'
           }`}
         >
@@ -98,7 +98,7 @@ export const CourierPortalPage: React.FC = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-surface border border-theme text-center">
           <span className="text-xs text-secondary block">{t.courier.earnedShift}</span>
-          <span className="text-xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans mt-0.5 block tabular-nums">
+          <span className="text-xl font-extrabold text-ink font-sans mt-0.5 block tabular-nums">
             {formatCurrency(285)}
           </span>
           <span className="text-[10px] text-muted">{t.courier.includingTips}</span>
@@ -109,7 +109,7 @@ export const CourierPortalPage: React.FC = () => {
           <span className="text-xl font-extrabold text-primary font-sans mt-0.5 block tabular-nums">
             8 {t.orders.deliveriesCount}
           </span>
-          <span className="text-[10px] text-[#1E824C] dark:text-[#48BB78]">100% {t.courier.onTime}</span>
+          <span className="text-[10px] text-success">100% {t.courier.onTime}</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-surface border border-theme text-center">
@@ -150,7 +150,7 @@ export const CourierPortalPage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-start gap-3.5">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              activeDeliveryStep !== 'to_store' ? 'bg-[#E8F5EE] text-[#1E824C]' : 'bg-[#1E1E1E] text-[#FFF8EC]'
+              activeDeliveryStep !== 'to_store' ? 'bg-success-bg text-success' : 'bg-ink text-paper'
             }`}>
               {activeDeliveryStep !== 'to_store' ? <CheckCircle2 className="w-5 h-5" /> : '1'}
             </div>
@@ -163,7 +163,7 @@ export const CourierPortalPage: React.FC = () => {
 
           <div className="flex items-start gap-3.5">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              activeDeliveryStep === 'delivered' ? 'bg-[#E8F5EE] text-[#1E824C]' : 'bg-surface-elevated text-secondary border border-theme'
+              activeDeliveryStep === 'delivered' ? 'bg-success-bg text-success' : 'bg-surface-elevated text-secondary border border-theme'
             }`}>
               {activeDeliveryStep === 'delivered' ? <CheckCircle2 className="w-5 h-5" /> : '2'}
             </div>

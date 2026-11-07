@@ -21,7 +21,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
     <div
       role="group"
       aria-label={t.collage.common.langLabel}
-      className={`seg-group inline-flex shrink-0 bg-white border-2 border-ink rounded-xl overflow-hidden ${className}`}
+      className={`seg-group inline-flex shrink-0 bg-card border-2 border-ink rounded-xl overflow-hidden ${className}`}
     >
       {LANGUAGES.map((lang) => {
         const isActive = language === lang.code;
@@ -34,7 +34,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = 
             aria-label={lang.name}
             lang={lang.code}
             className={`min-w-11 min-h-11 px-1 text-[13px] font-black cursor-pointer transition-colors duration-200 ${
-              isActive ? 'bg-ink text-white' : 'bg-white text-ink'
+              isActive ? 'bg-ink text-paper' : 'bg-card text-ink'
             }`}
           >
             {lang.label}

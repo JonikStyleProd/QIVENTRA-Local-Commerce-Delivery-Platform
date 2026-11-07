@@ -5,7 +5,7 @@ import { MOCK_CATEGORIES } from './mockData';
 export const COLLAGE_GROUPS: CollageGroupId[] = ['all', 'food', 'health', 'gift', 'tech', 'pets'];
 
 export const GROUP_TINT_CLASS: Record<CollageGroupId, string> = {
-  all: 'bg-white',
+  all: 'bg-card',
   food: 'bg-tint-food',
   health: 'bg-tint-health',
   gift: 'bg-tint-gift',

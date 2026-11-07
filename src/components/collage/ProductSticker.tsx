@@ -25,7 +25,7 @@ export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart,
       className="anim-stick shrink-0 w-[150px]"
       style={{ '--r': tilt, animationDelay: delay } as React.CSSProperties}
     >
-      <div className="relative bg-white p-2 pb-2.5 shadow-[0_12px_20px_-12px_rgba(0,0,0,0.45)]">
+      <div className="relative bg-card p-2 pb-2.5 shadow-sticker">
         <Tape tone={tape} small />
         <img
           src={product.imageUrl}

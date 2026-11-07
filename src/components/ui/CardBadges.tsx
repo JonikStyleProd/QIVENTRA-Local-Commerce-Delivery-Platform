@@ -21,12 +21,12 @@ export const DeliveryTimeBadge: React.FC<DeliveryTimeBadgeProps> = ({
       dir="ltr"
       className={`
         inline-flex items-center gap-1.5 h-6 px-2 rounded-md
-        bg-[#1E1E1E]/75 backdrop-blur-xs text-[#FFF8EC] text-[11px] font-semibold
+        bg-ink/75 backdrop-blur-xs text-paper text-[11px] font-semibold
         border border-white/15 tabular-nums whitespace-nowrap select-none
         ${className}
       `}
     >
-      <Clock className="w-3.5 h-3.5 text-[#FFD84D] shrink-0" aria-hidden="true" />
+      <Clock className="w-3.5 h-3.5 text-accent shrink-0" aria-hidden="true" />
       <span>{minMinutes}–{maxMinutes} min</span>
     </span>
   );
@@ -52,12 +52,12 @@ export const DistanceBadge: React.FC<DistanceBadgeProps> = ({
       dir="ltr"
       className={`
         inline-flex items-center gap-1 h-6 px-2 rounded-md
-        bg-[#1E1E1E]/75 backdrop-blur-xs text-[#FFF8EC] text-[11px] font-semibold
+        bg-ink/75 backdrop-blur-xs text-paper text-[11px] font-semibold
         border border-white/15 tabular-nums whitespace-nowrap select-none
         ${className}
       `}
     >
-      <MapPin className="w-3 h-3 text-[#FFD84D] shrink-0" aria-hidden="true" />
+      <MapPin className="w-3 h-3 text-accent shrink-0" aria-hidden="true" />
       <span>{formattedDistance}</span>
     </span>
   );
@@ -82,8 +82,8 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({
     <span
       className={`
         inline-flex items-center gap-1 h-6 px-2.5 rounded-md
-        bg-[#FFF8EC] text-[#1E1E1E] text-[11px] font-bold
-        border border-[#E9DFCB] shadow-xs truncate max-w-[140px] select-none
+        bg-paper text-ink text-[11px] font-bold
+        border border-paper-dot shadow-xs truncate max-w-[140px] select-none
         ${className}
       `}
     >
@@ -113,10 +113,10 @@ export const PromotionBadge: React.FC<PromotionBadgeProps> = ({
   className = '',
 }) => {
   const variantStyles = {
-    pistachio: 'bg-[#FFD84D] text-[#1E1E1E] border border-[#FFD84D]/50',
-    mineral: 'bg-[#1E1E1E] text-[#FFF8EC] border border-[#1E1E1E]',
-    warning: 'bg-[#FEF8E7] text-[#B7791F] dark:bg-[#332612] dark:text-[#F6AD55] border border-[#F6AD55]/30',
-    eco: 'bg-[#E8F5EE] text-[#1E824C] dark:bg-[#132E20] dark:text-[#48BB78] border border-[#1E824C]/30',
+    pistachio: 'bg-accent text-ink border border-accent/50',
+    mineral: 'bg-ink text-paper border border-ink',
+    warning: 'bg-warn-bg text-warn border border-[#F6AD55]/30',
+    eco: 'bg-success-bg text-success border border-success/30',
   };
 
   return (

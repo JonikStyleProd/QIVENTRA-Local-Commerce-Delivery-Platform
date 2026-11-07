@@ -114,7 +114,7 @@ export const CatalogPage: React.FC = () => {
 
         {/* Existing catalog controls that the mockups do not show but the product keeps. */}
         <div className="scroll-row flex desk:flex-wrap items-center gap-2 mt-1 desk:mt-4 px-4 desk:px-0 pb-1 overflow-x-auto desk:overflow-visible">
-          <div className="seg-group inline-flex shrink-0 bg-white border-2 border-ink rounded-xl overflow-hidden">
+          <div className="seg-group inline-flex shrink-0 bg-card border-2 border-ink rounded-xl overflow-hidden">
             {(['stores', 'products'] as const).map((tab) => (
               <button
                 key={tab}
@@ -122,7 +122,7 @@ export const CatalogPage: React.FC = () => {
                 onClick={() => setActiveTab(tab)}
                 aria-pressed={activeTab === tab}
                 className={`min-h-11 px-3 text-sm font-extrabold cursor-pointer ${
-                  activeTab === tab ? 'bg-ink text-white' : 'bg-white text-ink'
+                  activeTab === tab ? 'bg-ink text-paper' : 'bg-card text-ink'
                 }`}
               >
                 {tab === 'stores' ? t.collage.tabs.shops : t.catalog.tabProducts}
@@ -146,7 +146,7 @@ export const CatalogPage: React.FC = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortKey)}
-              className="min-h-11 px-2 bg-white border-2 border-ink rounded-xl font-extrabold cursor-pointer"
+              className="min-h-11 px-2 bg-card border-2 border-ink rounded-xl font-extrabold cursor-pointer"
             >
               <option value="deliveryTime">{t.catalog.sortDeliverySpeed}</option>
               <option value="minOrder">{t.catalog.sortMinOrder}</option>
@@ -216,7 +216,7 @@ export const CatalogPage: React.FC = () => {
             type="button"
             onClick={() => navigateTo('store', { storeId: pickedStore.id })}
             aria-label={`${copy.openStore}: ${pickedName}`}
-            className="chip-tilt inline-flex items-center justify-center gap-1.5 min-w-11 min-h-[52px] px-2.5 desk:px-4 bg-white border-2 border-ink rounded-[14px] font-extrabold cursor-pointer"
+            className="chip-tilt inline-flex items-center justify-center gap-1.5 min-w-11 min-h-[52px] px-2.5 desk:px-4 bg-card border-2 border-ink rounded-[14px] font-extrabold cursor-pointer"
           >
             <StoreIcon aria-hidden="true" className="w-5 h-5 shrink-0" />
             <span className="hidden desk:inline whitespace-nowrap">{copy.openStore}</span>

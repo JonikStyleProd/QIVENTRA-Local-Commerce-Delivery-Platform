@@ -33,7 +33,7 @@ export const AddressButton: React.FC<{ className?: string }> = ({ className = ''
       type="button"
       onClick={() => setIsAddressModalOpen(true)}
       aria-label={`${t.collage.common.addressLabel}: ${currentAddress}`}
-      className={`chip-tilt flex items-center gap-1.5 min-h-11 min-w-0 px-2.5 bg-white text-ink border-2 border-ink rounded-xl text-sm font-extrabold cursor-pointer ${className}`}
+      className={`chip-tilt flex items-center gap-1.5 min-h-11 min-w-0 px-2.5 bg-card text-ink border-2 border-ink rounded-xl text-sm font-extrabold cursor-pointer ${className}`}
       style={{ rotate: '-1.5deg' }}
     >
       <MapPin aria-hidden="true" className="w-4 h-4 shrink-0 text-action" />

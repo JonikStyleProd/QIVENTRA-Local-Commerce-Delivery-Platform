@@ -80,7 +80,7 @@ export const VendorPortalPage: React.FC = () => {
       {/* Merchant Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
             CF
           </div>
           <div>
@@ -104,7 +104,7 @@ export const VendorPortalPage: React.FC = () => {
           onClick={toggleAcceptance}
           className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold border transition shrink-0 ${
             isAcceptingOrders
-              ? 'bg-[#E8F5EE] text-[#1E824C] border-[#A3D9B8] dark:bg-[#132E20] dark:text-[#48BB78]'
+              ? 'bg-success-bg text-success border-[#A3D9B8]'
               : 'bg-surface-elevated text-secondary border-theme'
           }`}
         >
@@ -124,7 +124,7 @@ export const VendorPortalPage: React.FC = () => {
           <span className="text-2xl font-extrabold text-primary font-sans mt-1 block tabular-nums">
             {formatCurrency(3840)}
           </span>
-          <span className="text-[11px] text-[#1E824C] dark:text-[#48BB78] font-medium flex items-center gap-0.5 mt-1">
+          <span className="text-[11px] text-success font-medium flex items-center gap-0.5 mt-1">
             <TrendingUp className="w-3 h-3 me-0.5" /> +14.2% {t.vendor.vsLastWeek}
           </span>
         </div>
@@ -155,7 +155,7 @@ export const VendorPortalPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-primary flex items-center gap-2">
-            <Package className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
+            <Package className="w-5 h-5 text-ink" />
             <span>{t.vendor.liveOrdersQueue}</span>
           </h2>
           <span className="text-xs text-secondary">

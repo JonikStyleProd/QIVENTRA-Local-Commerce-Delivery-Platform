@@ -45,7 +45,7 @@ export const Footer: React.FC = () => {
           <p className="text-sm font-semibold text-ink-2 max-w-sm leading-relaxed">{t.footer.brandStatement}</p>
 
           <div>
-            <h2 className="hand mb-1 text-[26px] leading-none text-link">{t.footer.forCustomers}</h2>
+            <h2 className="hand mb-1 text-[26px] leading-none text-link-text">{t.footer.forCustomers}</h2>
             <ul>
               {customerLinks.map((link) => (
                 <li key={link.route}>
@@ -58,7 +58,7 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h2 className="hand mb-1 text-[26px] leading-none text-link">{t.footer.forBusiness}</h2>
+            <h2 className="hand mb-1 text-[26px] leading-none text-link-text">{t.footer.forBusiness}</h2>
             <ul>
               {businessLinks.map((link) => (
                 <li key={link.route}>
@@ -72,7 +72,7 @@ export const Footer: React.FC = () => {
           </div>
 
           <div>
-            <h2 className="hand mb-1 text-[26px] leading-none text-link">{contactsTitle}</h2>
+            <h2 className="hand mb-1 text-[26px] leading-none text-link-text">{contactsTitle}</h2>
             <ul className="space-y-2 text-sm font-bold">
               <li className="flex items-center gap-2">
                 <Phone aria-hidden="true" className="w-4 h-4 shrink-0" />

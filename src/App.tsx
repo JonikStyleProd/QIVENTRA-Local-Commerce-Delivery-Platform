@@ -78,7 +78,7 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-paper text-ink text-start selection:bg-accent selection:text-ink">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-[60] focus:px-4 focus:py-3 focus:bg-white focus:border-2 focus:border-ink focus:rounded-xl focus:font-extrabold"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-[60] focus:px-4 focus:py-3 focus:bg-card focus:border-2 focus:border-ink focus:rounded-xl focus:font-extrabold"
       >
         {t.collage.common.skipToContent}
       </a>

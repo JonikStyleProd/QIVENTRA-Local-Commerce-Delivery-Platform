@@ -249,9 +249,9 @@ export const BrandAssetsManager: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="p-6 sm:p-8 rounded-3xl bg-surface border border-red-200 dark:border-red-900/40 shadow-xs space-y-4">
+      <div className="p-6 sm:p-8 rounded-3xl bg-surface border border-red-200 shadow-xs space-y-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shrink-0">
             <ShieldAlert className="w-6 h-6" />
           </div>
           <div>
@@ -279,8 +279,8 @@ export const BrandAssetsManager: React.FC = () => {
       {/* Header & Section Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
         <div className="flex items-start gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            <ShieldCheck className="w-6 h-6 text-[#FFD84D]" />
+          <div className="w-11 h-11 rounded-2xl bg-ink text-paper flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+            <ShieldCheck className="w-6 h-6 text-accent-on-ink" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -316,9 +316,9 @@ export const BrandAssetsManager: React.FC = () => {
       {/* Backend & Bucket Info Pill */}
       <div className="p-4 rounded-2xl bg-surface-elevated border border-theme flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
+          <Database className="w-4 h-4 text-ink" />
           <span className="font-medium text-primary">
-            Bucket: <span className="font-mono text-[#1E1E1E] dark:text-[#FFD84D] font-bold">{BRAND_ASSETS_BUCKET}</span>
+            Bucket: <span className="font-mono text-ink font-bold">{BRAND_ASSETS_BUCKET}</span>
           </span>
           <span className="text-muted">•</span>
           <span className="text-secondary">Публичное чтение активно, запись ограничена Admin RLS</span>
@@ -341,7 +341,7 @@ export const BrandAssetsManager: React.FC = () => {
           }}
           className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
             selectedVariant === 'lockup'
-              ? 'bg-[#1E1E1E] text-[#FFF8EC] shadow-xs'
+              ? 'bg-ink text-paper shadow-xs'
               : 'text-secondary hover:text-primary'
           }`}
         >
@@ -357,7 +357,7 @@ export const BrandAssetsManager: React.FC = () => {
           }}
           className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
             selectedVariant === 'mark'
-              ? 'bg-[#1E1E1E] text-[#FFF8EC] shadow-xs'
+              ? 'bg-ink text-paper shadow-xs'
               : 'text-secondary hover:text-primary'
           }`}
         >
@@ -391,7 +391,7 @@ export const BrandAssetsManager: React.FC = () => {
               <div className="space-y-3">
                 {/* Light theme: darkLockup (dark letters on light background) */}
                 <div className="p-4 rounded-xl bg-[#FFF8EC] border border-[#E9DFCB] flex flex-col items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold text-[#5A554C] uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold text-ink-2 uppercase tracking-wider">
                     Light Theme & Header (darkLockup)
                   </span>
                   <img
@@ -419,7 +419,7 @@ export const BrandAssetsManager: React.FC = () => {
 
                 {/* Dark theme & Footer: lightLockup (light letters on dark background) */}
                 <div className="p-4 rounded-xl bg-[#1E1E1E] border border-[#1E1E1E] flex flex-col items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold text-[#FFD84D] uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold text-accent uppercase tracking-wider">
                     Dark Theme & Footer (lightLockup)
                   </span>
                   <img
@@ -494,7 +494,7 @@ export const BrandAssetsManager: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => copyToClipboard(activeRecord.sha256)}
-                    className="text-[11px] text-[#1E1E1E] dark:text-[#FFD84D] hover:underline flex items-center gap-1 font-medium"
+                    className="text-[11px] text-ink hover:underline flex items-center gap-1 font-medium"
                   >
                     {copiedSha === activeRecord.sha256 ? (
                       <Check className="w-3 h-3 text-emerald-500" />
@@ -531,9 +531,9 @@ export const BrandAssetsManager: React.FC = () => {
             {!stagedFile ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="min-h-[160px] p-6 rounded-2xl border-2 border-dashed border-theme hover:border-[#1E1E1E] dark:hover:border-[#FFD84D] transition-colors flex flex-col items-center justify-center gap-3 cursor-pointer bg-surface group"
+                className="min-h-[160px] p-6 rounded-2xl border-2 border-dashed border-theme hover:border-ink transition-colors flex flex-col items-center justify-center gap-3 cursor-pointer bg-surface group"
               >
-                <div className="w-10 h-10 rounded-xl bg-surface-elevated text-secondary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D] flex items-center justify-center transition">
+                <div className="w-10 h-10 rounded-xl bg-surface-elevated text-secondary group-hover:text-ink flex items-center justify-center transition">
                   <Upload className="w-5 h-5" />
                 </div>
                 <div className="text-center space-y-1">
@@ -614,7 +614,7 @@ export const BrandAssetsManager: React.FC = () => {
             )}
 
             {validationError && (
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{validationError}</span>
               </div>
@@ -649,7 +649,7 @@ export const BrandAssetsManager: React.FC = () => {
       <div className="space-y-3 pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
+            <History className="w-4 h-4 text-ink" />
             <h3 className="text-sm font-bold text-primary">
               {t.admin.versionHistory} ({selectedVariant})
             </h3>
@@ -704,7 +704,7 @@ export const BrandAssetsManager: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-surface rounded-3xl border border-theme p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
@@ -759,7 +759,7 @@ export const BrandAssetsManager: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-surface rounded-3xl border border-theme p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#1E1E1E] text-[#FFD84D] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-ink text-accent-on-ink flex items-center justify-center shrink-0">
                 <History className="w-5 h-5" />
               </div>
               <div>

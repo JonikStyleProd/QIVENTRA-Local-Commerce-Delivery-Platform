@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>QIVENTRA</title>
     <script>
-      // Set language and direction before first paint; LanguageContext keeps them in sync afterwards.
+      // Set language, direction and theme before first paint; the contexts keep them in sync afterwards.
       try {
         var savedLang = localStorage.getItem('qiventra_language');
         if (savedLang === 'ru' || savedLang === 'en' || savedLang === 'he') {
           document.documentElement.lang = savedLang;
           document.documentElement.dir = savedLang === 'he' ? 'rtl' : 'ltr';
+        }
+        var savedTheme = localStorage.getItem('qiventra-theme');
+        if (savedTheme === 'dark' || (savedTheme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
         }
       } catch (e) {}
     </script>

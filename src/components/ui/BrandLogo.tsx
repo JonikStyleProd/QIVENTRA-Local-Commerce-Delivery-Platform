@@ -68,7 +68,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   // - compact mark -> official mark (2k transparent)
   const targetLockupUrl =
     isDesktopHeader || effectiveTheme === 'dark' ? BRAND_ASSETS.lightLockup : BRAND_ASSETS.darkLockup;
-  const initialUrl = isMarkVariant ? BRAND_ASSETS.mark : targetLockupUrl;
+  // The official mark is dark green, which disappears on dark paper.
+  const targetMarkUrl = effectiveTheme === 'dark' ? '/brand/mark-light.png' : BRAND_ASSETS.mark;
+  const initialUrl = isMarkVariant ? targetMarkUrl : targetLockupUrl;
 
   const [currentSrc, setCurrentSrc] = useState<string>(initialUrl);
   const [isLoaded, setIsLoaded] = useState<boolean>(() => preloadedUrls.has(initialUrl));
@@ -78,7 +80,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   // Keep src in sync with theme and variant
   useEffect(() => {
-    const nextUrl = isMarkVariant ? BRAND_ASSETS.mark : targetLockupUrl;
+    const nextUrl = isMarkVariant ? targetMarkUrl : targetLockupUrl;
     setCurrentSrc(`${nextUrl}${cacheBuster ? `?v=${cacheBuster}` : ''}`);
     setIsMarkFallback(isMarkVariant);
     if (preloadedUrls.has(nextUrl)) {
@@ -89,7 +91,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     } else {
       setIsLoaded(false);
     }
-  }, [isMarkVariant, targetLockupUrl, cacheBuster]);
+  }, [isMarkVariant, targetLockupUrl, targetMarkUrl, cacheBuster]);
 
   // Subscribe to live admin brand asset updates
   useEffect(() => {

@@ -187,7 +187,7 @@ export const DeliveryPage: React.FC = () => {
           onChange={() => setSlot(id)}
           className="peer sr-only"
         />
-        <span className="relative shrink-0 w-6 h-6 desk:w-[26px] desk:h-[26px] border-[2.5px] border-ink rounded-md peer-focus-visible:outline-3 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-link">
+        <span className="relative shrink-0 w-6 h-6 desk:w-[26px] desk:h-[26px] border-[2.5px] border-ink rounded-md peer-focus-visible:outline-3 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-focus">
           {isOn && <HandCheck />}
         </span>
         <span className="hand text-2xl desk:text-[30px] leading-none whitespace-nowrap">{label}</span>
@@ -200,7 +200,7 @@ export const DeliveryPage: React.FC = () => {
 
   const form = (
     <div>
-      <p className="hand text-[26px] desk:text-[28px] leading-[44px] text-link">{copy.when}</p>
+      <p className="hand text-[26px] desk:text-[28px] leading-[44px] text-link-text">{copy.when}</p>
       <div role="radiogroup" aria-label={copy.windowLabel}>
         {renderSlotRow('asap', t.collage.slots.asap, `≈ ${storeTime}`)}
 
@@ -231,7 +231,7 @@ export const DeliveryPage: React.FC = () => {
         )}
       </div>
 
-      <label htmlFor={noteId} className="hand block text-2xl desk:text-[28px] leading-[44px] text-link">
+      <label htmlFor={noteId} className="hand block text-2xl desk:text-[28px] leading-[44px] text-link-text">
         {copy.note}
       </label>
       <input
@@ -243,7 +243,7 @@ export const DeliveryPage: React.FC = () => {
         className="hand w-full h-11 px-1.5 bg-transparent border-b-2 border-dashed border-ink text-2xl desk:text-[28px] placeholder:text-ink-3"
       />
 
-      <p className="hand mt-1 text-2xl desk:text-[28px] leading-[44px] text-link">{copy.where}</p>
+      <p className="hand mt-1 text-2xl desk:text-[28px] leading-[44px] text-link-text">{copy.where}</p>
       <div className="flex flex-wrap items-center justify-between gap-x-3 pb-1">
         <p className="min-w-0 font-bold leading-[22px]">{currentAddress}</p>
         <button
@@ -287,7 +287,7 @@ export const DeliveryPage: React.FC = () => {
   const stamp = (className: string) => (
     <span
       aria-hidden="true"
-      className={`anim-stamp absolute bg-white/90 border-action text-action font-black tracking-[0.04em] ${className}`}
+      className={`anim-stamp absolute bg-card/90 border-action text-action font-black tracking-[0.04em] ${className}`}
     >
       {copy.stamp}
     </span>
@@ -329,7 +329,7 @@ export const DeliveryPage: React.FC = () => {
       <section className="grid desk:grid-cols-2 gap-10 items-start max-w-[1200px] mx-auto px-4 desk:px-10 pt-3 desk:pt-2.5 pb-5">
         {/* ---------- Notebook page ---------- */}
         <div
-          className={`anim-page relative bg-white border-2 border-ink rounded-md shadow-hard-5 desk:shadow-hard-8 py-4 desk:py-[34px] ps-[46px] desk:ps-[70px] pe-3.5 desk:pe-[34px] [background-image:repeating-linear-gradient(transparent_0_43px,var(--color-notebook-line)_43px_44px)] [background-position:0_16px] desk:[background-position:0_30px] ${
+          className={`anim-page relative bg-card border-2 border-ink rounded-md shadow-hard-5 desk:shadow-hard-8 py-4 desk:py-[34px] ps-[46px] desk:ps-[70px] pe-3.5 desk:pe-[34px] [background-image:repeating-linear-gradient(transparent_0_43px,var(--color-notebook-line)_43px_44px)] [background-position:0_16px] desk:[background-position:0_30px] ${
             isDone ? 'hidden desk:block' : ''
           }`}
         >
@@ -356,7 +356,7 @@ export const DeliveryPage: React.FC = () => {
                   {copy.note} {note}
                 </p>
               )}
-              <p className="hand text-[28px] leading-[44px] text-link">{copy.packing}</p>
+              <p className="hand text-[28px] leading-[44px] text-link-text">{copy.packing}</p>
               <div className="relative h-[120px]">
                 {stamp('end-0 top-5 px-[26px] py-3.5 border-[5px] rounded-2xl text-[34px]')}
               </div>
@@ -370,7 +370,7 @@ export const DeliveryPage: React.FC = () => {
         {/* ---------- Phone: done screen ---------- */}
         {isDone && (
           <div role="status" className="anim-in desk:hidden">
-            <div className="relative mx-1 mt-3.5 mb-[30px] bg-white p-2.5 pb-3.5 rotate-2 shadow-[0_18px_30px_-18px_rgba(0,0,0,0.5)]">
+            <div className="relative mx-1 mt-3.5 mb-[30px] bg-card p-2.5 pb-3.5 rotate-2 shadow-polaroid">
               <Tape tone="blue" small />
               <PolaroidPhoto src="/photos/doorstep-handoff.webp" alt={copy.photoAlt} aspectClassName="aspect-[4/3]" eager />
               <p className="hand mt-2 text-[26px] leading-none">{copy.soon}</p>
@@ -393,7 +393,7 @@ export const DeliveryPage: React.FC = () => {
 
         {/* ---------- Desktop: order column ---------- */}
         <aside aria-label={copy.orderLabel} className="hidden desk:block relative pt-5">
-          <div className="relative mb-[30px] bg-white p-3.5 pb-5 rotate-2 shadow-[0_24px_36px_-22px_rgba(0,0,0,0.55)]">
+          <div className="relative mb-[30px] bg-card p-3.5 pb-5 rotate-2 shadow-polaroid">
             <Tape tone="blue" />
             {isDone ? (
               <>

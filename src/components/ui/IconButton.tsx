@@ -30,9 +30,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     };
 
     const variantStyles = {
-      primary: 'bg-[#1E1E1E] text-[#FFF8EC] hover:bg-[#1E1E1E] border border-[#1E1E1E]',
-      accent: 'bg-[#FFD84D] text-[#1E1E1E] hover:bg-[#FFD84D] border border-[#FFD84D]',
-      secondary: 'bg-surface-elevated text-primary hover:bg-[#F1EBDD] dark:hover:bg-[#252E2B] border border-theme',
+      primary: 'bg-ink text-paper hover:bg-ink border border-ink',
+      accent: 'bg-accent text-ink hover:bg-accent border border-accent',
+      secondary: 'bg-surface-elevated text-primary hover:bg-tint-pets border border-theme',
       outline: 'bg-transparent text-primary hover:bg-surface-elevated border border-theme',
       ghost: 'bg-transparent text-primary hover:bg-surface-elevated border border-transparent',
     };
@@ -44,7 +44,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         disabled={disabled || isLoading}
         className={`
           relative inline-flex items-center justify-center rounded-xl transition-all duration-150 select-none
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD84D] focus-visible:ring-offset-2
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2
           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95
           ${sizeMap[size]}
           ${variantStyles[variant]}

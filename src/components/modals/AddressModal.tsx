@@ -77,7 +77,7 @@ export const AddressModal: React.FC = () => {
                   flex items-start justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none
                   ${
                     isSelected
-                      ? 'border-[#1E1E1E] dark:border-[#FFD84D] bg-[#1E1E1E]/5 dark:bg-[#FFD84D]/10 ring-1 ring-[#FFD84D]'
+                      ? 'border-ink bg-ink/5 ring-1 ring-accent'
                       : 'border-theme hover:bg-surface-elevated'
                   }
                 `}
@@ -86,7 +86,7 @@ export const AddressModal: React.FC = () => {
                   <div
                     className={`p-2 rounded-xl shrink-0 ${
                       isSelected
-                        ? 'bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E]'
+                        ? 'bg-ink text-paper'
                         : 'bg-surface-elevated text-secondary'
                     }`}
                   >
@@ -110,7 +110,7 @@ export const AddressModal: React.FC = () => {
                 </div>
 
                 {isSelected && (
-                  <Check className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D] shrink-0 mt-1" />
+                  <Check className="w-4 h-4 text-ink shrink-0 mt-1" />
                 )}
               </div>
             );

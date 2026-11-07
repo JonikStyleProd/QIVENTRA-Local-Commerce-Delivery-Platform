@@ -10,9 +10,12 @@ import {
   ChevronLeft,
   Camera,
   Upload,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -22,6 +25,7 @@ import { SafeImage } from '../components/ui/SafeImage';
 import { PhotoUploadModal } from '../components/media/PhotoUploadModal';
 
 export const ProfilePage: React.FC = () => {
+  const { resolvedTheme, toggleTheme } = useTheme();
   const {
     currentUser,
     updateUserProfile,
@@ -58,7 +62,7 @@ export const ProfilePage: React.FC = () => {
       <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="relative group shrink-0">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] overflow-hidden shadow-md flex items-center justify-center border-2 border-theme">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-ink text-paper overflow-hidden shadow-md flex items-center justify-center border-2 border-theme">
               {currentUser.avatarUrl ? (
                 <SafeImage
                   src={currentUser.avatarUrl}
@@ -75,7 +79,7 @@ export const ProfilePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsUploadModalOpen(true)}
-              className="absolute -bottom-2 -end-2 grid place-items-center w-11 h-11 rounded-xl bg-white border-2 border-ink text-ink cursor-pointer"
+              className="absolute -bottom-2 -end-2 grid place-items-center w-11 h-11 rounded-xl bg-card border-2 border-ink text-ink cursor-pointer"
               title={t.media.changePhoto}
               aria-label={t.media.changePhoto}
             >
@@ -107,7 +111,7 @@ export const ProfilePage: React.FC = () => {
             size="sm"
             leftIcon={<LogOut className="w-4 h-4" />}
             onClick={handleLogout}
-            className="text-secondary hover:text-[#C53030]"
+            className="text-secondary hover:text-danger"
           >
             {t.profile.logout}
           </Button>
@@ -121,7 +125,7 @@ export const ProfilePage: React.FC = () => {
         <div className="rounded-3xl bg-surface border border-theme p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-primary flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
+              <MapPin className="w-4 h-4 text-ink" />
               <span>{t.profile.savedAddresses}</span>
             </h3>
             <button
@@ -146,7 +150,7 @@ export const ProfilePage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-primary">{addrTitle}</span>
                       {addr.isDefault && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E] font-semibold">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-ink text-paper font-semibold">
                           {t.address.primaryBadge}
                         </span>
                       )}
@@ -162,7 +166,7 @@ export const ProfilePage: React.FC = () => {
         {/* PWA, Language & System Settings Section */}
         <div className="rounded-3xl bg-surface border border-theme p-6 shadow-xs space-y-4">
           <h3 className="text-base font-bold text-primary flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
+            <Smartphone className="w-4 h-4 text-ink" />
             <span>{t.profile.appSettings}</span>
           </h3>
 
@@ -176,6 +180,24 @@ export const ProfilePage: React.FC = () => {
                 </span>
               </div>
               <LanguageSwitcher variant="compact" />
+            </div>
+
+            {/* Theme Toggle Row */}
+            <div className="p-3.5 rounded-2xl bg-surface-elevated border border-theme flex items-center justify-between gap-3">
+              <div>
+                <span className="font-bold text-primary block">{t.profile.themeSetting}</span>
+                <span className="text-secondary text-[11px]">
+                  {resolvedTheme === 'dark' ? t.profile.themeDark : t.profile.themeLight}
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleTheme}
+                leftIcon={resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              >
+                {t.profile.switchTheme}
+              </Button>
             </div>
 
             {/* PWA In-App Card */}
@@ -206,9 +228,9 @@ export const ProfilePage: React.FC = () => {
               onClick={() => navigateTo('vendor')}
               className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
             >
-              <Store className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] mb-2" />
+              <Store className="w-5 h-5 text-ink mb-2" />
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
+                <span className="text-xs font-bold text-primary group-hover:text-ink">
                   {t.profile.vendorPortalTitle}
                 </span>
                 {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
@@ -223,9 +245,9 @@ export const ProfilePage: React.FC = () => {
               onClick={() => navigateTo('courier')}
               className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
             >
-              <Bike className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] mb-2" />
+              <Bike className="w-5 h-5 text-ink mb-2" />
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
+                <span className="text-xs font-bold text-primary group-hover:text-ink">
                   {t.profile.courierPortalTitle}
                 </span>
                 {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
@@ -240,9 +262,9 @@ export const ProfilePage: React.FC = () => {
               onClick={() => navigateTo('admin')}
               className="p-4 rounded-2xl bg-surface border border-theme hover:border-primary text-start transition group"
             >
-              <ShieldCheck className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] mb-2" />
+              <ShieldCheck className="w-5 h-5 text-ink mb-2" />
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-primary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
+                <span className="text-xs font-bold text-primary group-hover:text-ink">
                   {t.profile.adminPortalTitle}
                 </span>
                 {isRTL ? <ChevronLeft className="w-3.5 h-3.5 text-muted" /> : <ChevronRight className="w-3.5 h-3.5 text-muted" />}
