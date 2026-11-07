@@ -143,7 +143,7 @@ qiventra-local-commerce/
 QIVENTRA features a first-class internationalization layer built specifically for the linguistic landscape of Israel:
 
 - **Supported Languages:**
-  - **Hebrew (`he`)** — Complete Right-to-Left (RTL) layout rendering (`dir="rtl"`), paired with Hebrew display typography (`Rubik` & `Heebo`).
+  - **Hebrew (`he`)** — Complete Right-to-Left (RTL) layout rendering (`dir="rtl"`), paired with Hebrew typography (`Rubik` for text, `Amatic SC` for handwritten notes).
   - **English (`en`)** — Left-to-Right (LTR) default business orientation.
   - **Russian (`ru`)** — Left-to-Right (LTR) localization tailored for Russian-speaking residents.
 - **RTL Integrity Rules:**
@@ -166,7 +166,7 @@ The interface is engineered across an 8-point spatial grid and supports viewport
   - 2-column balanced grid for stores and product cards.
   - Floating action controls and collapsible utility menus.
 - **Desktop Viewports (1024px – 1440px+):**
-  - Fixed 76px three-zone header (`DesktopHeader`): Brand identity & address selector (start), navigation & search (center), language, theme, chat, cart, and profile utilities (end).
+  - Fixed 76px three-zone header (`DesktopHeader`): Brand identity and navigation with search and portals (start), address, language, chat, cart and profile utilities (end).
   - 3-to-4 column responsive catalog grids.
   - Slide-out panels fixed to standard 400px–420px widths with darkened backdrop blur.
 
@@ -357,7 +357,7 @@ The application architecture adheres to modern web application security practice
 
 ## Roadmap
 
-- [x] **Milestone 1 — Frontend Foundation:** Responsive design system, Tailwind v4 integration, 8-point spatial grid, and dark/light themes.
+- [x] **Milestone 1 — Frontend Foundation:** Responsive design system, Tailwind v4 integration, 8-point spatial grid. The current Collage design is light-only.
 - [x] **Milestone 2 — Localization & RTL:** Hebrew, English, and Russian translation system with full bidirectional layout support.
 - [x] **Milestone 3 — Discovery & Commerce Engine:** Category catalogs, store menus, localized pricing, dynamic delivery tiers, and localStorage cart.
 - [x] **Milestone 4 — Brand Governance & Supabase Storage:** Official brand asset hosting, Web Crypto SHA-256 integrity auditing, and administrative versioning.
