@@ -80,7 +80,7 @@ export const VendorPortalPage: React.FC = () => {
       {/* Merchant Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#123B35] text-[#F3F1EA] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
             CF
           </div>
           <div>
@@ -151,7 +151,7 @@ export const VendorPortalPage: React.FC = () => {
 
         <div className="p-5 rounded-2xl bg-surface border border-theme shadow-xs">
           <span className="text-xs text-secondary block">{t.vendor.ratingLabel}</span>
-          <span className="text-2xl font-extrabold text-[#123B35] dark:text-[#B8D96B] font-sans mt-1 block tabular-nums">
+          <span className="text-2xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans mt-1 block tabular-nums">
             4.96 ★
           </span>
           <span className="text-[11px] text-muted mt-1 block">
@@ -164,7 +164,7 @@ export const VendorPortalPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-primary flex items-center gap-2">
-            <Package className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
+            <Package className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
             <span>{t.vendor.liveOrdersQueue}</span>
           </h2>
           <span className="text-xs text-secondary">

@@ -67,11 +67,11 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       onClick={onClick}
       className={`
         group relative flex flex-col items-center text-center p-4 rounded-2xl transition-all duration-200
-        select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8D96B]
+        select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD84D]
         active:scale-96 min-w-[104px]
         ${
           isSelected
-            ? 'bg-[#123B35] text-[#F3F1EA] shadow-md ring-2 ring-[#B8D96B]'
+            ? 'bg-[#1E1E1E] text-[#FFF8EC] shadow-md ring-2 ring-[#FFD84D]'
             : 'bg-surface hover:bg-surface-elevated text-primary border border-theme hover:border-[#CEC9B9] dark:hover:border-[#3A4742] shadow-xs'
         }
       `}
@@ -81,8 +81,8 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
           flex items-center justify-center w-12 h-12 rounded-xl mb-2.5 transition-transform duration-200 group-hover:scale-105
           ${
             isSelected
-              ? 'bg-[#B8D96B] text-[#151817]'
-              : 'bg-surface-elevated text-[#123B35] dark:text-[#B8D96B] group-hover:bg-[#B8D96B]/20'
+              ? 'bg-[#FFD84D] text-[#1E1E1E]'
+              : 'bg-surface-elevated text-[#1E1E1E] dark:text-[#FFD84D] group-hover:bg-[#FFD84D]/20'
           }
         `}
       >
@@ -95,7 +95,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
 
       <span
         className={`text-[11px] mt-0.5 tabular-nums ${
-          isSelected ? 'text-[#F3F1EA]/80' : 'text-secondary'
+          isSelected ? 'text-[#FFF8EC]/80' : 'text-secondary'
         }`}
       >
         {getPlacesCountLabel(category.storesCount)}

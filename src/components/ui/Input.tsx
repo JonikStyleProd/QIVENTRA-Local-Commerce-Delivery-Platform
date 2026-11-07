@@ -53,8 +53,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={`
               w-full h-11 rounded-xl bg-surface border text-primary text-sm placeholder:text-muted/60
               transition-all duration-150
-              focus:outline-none focus:border-[#123B35] focus:ring-2 focus:ring-[#B8D96B]/30
-              dark:focus:border-[#B8D96B] dark:focus:ring-[#B8D96B]/20
+              focus:outline-none focus:border-[#1E1E1E] focus:ring-2 focus:ring-[#FFD84D]/30
+              dark:focus:border-[#FFD84D] dark:focus:ring-[#FFD84D]/20
               disabled:opacity-50 disabled:bg-surface-elevated disabled:cursor-not-allowed
               ${leftIcon ? 'pl-10' : 'pl-3.5'}
               ${rightIcon || isLoading || error ? 'pr-10' : 'pr-3.5'}

@@ -63,8 +63,8 @@ export const CourierPortalPage: React.FC = () => {
       {/* Courier Header */}
       <div className="rounded-3xl bg-surface border border-theme p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-[#123B35] text-[#F3F1EA] flex items-center justify-center font-bold text-xl shadow-sm shrink-0">
-            <Bike className="w-7 h-7 text-[#B8D96B]" />
+          <div className="w-14 h-14 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-xl shadow-sm shrink-0">
+            <Bike className="w-7 h-7 text-[#FFD84D]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export const CourierPortalPage: React.FC = () => {
       <div className="grid grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-surface border border-theme text-center">
           <span className="text-xs text-secondary block">{t.courier.earnedShift}</span>
-          <span className="text-xl font-extrabold text-[#123B35] dark:text-[#B8D96B] font-sans mt-0.5 block tabular-nums">
+          <span className="text-xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans mt-0.5 block tabular-nums">
             {formatCurrency(285)}
           </span>
           <span className="text-[10px] text-muted">{t.courier.includingTips}</span>
@@ -153,7 +153,7 @@ export const CourierPortalPage: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-start gap-3.5">
             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              activeDeliveryStep !== 'to_store' ? 'bg-[#E8F5EE] text-[#1E824C]' : 'bg-[#123B35] text-[#F3F1EA]'
+              activeDeliveryStep !== 'to_store' ? 'bg-[#E8F5EE] text-[#1E824C]' : 'bg-[#1E1E1E] text-[#FFF8EC]'
             }`}>
               {activeDeliveryStep !== 'to_store' ? <CheckCircle2 className="w-5 h-5" /> : '1'}
             </div>

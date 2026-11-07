@@ -214,7 +214,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                 </button>
 
                 {/* Avatar (not mirrored in RTL) */}
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-[#EDE9DE] dark:bg-[#1A2220] border border-theme shrink-0 flex items-center justify-center">
+                <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-[#F1EBDD] dark:bg-[#1A2220] border border-theme shrink-0 flex items-center justify-center">
                   {activeConversation.participantAvatar ? (
                     <img
                       src={activeConversation.participantAvatar}
@@ -222,9 +222,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       className="w-full h-full object-cover"
                     />
                   ) : activeConversation.type === 'courier' ? (
-                    <Bike className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
+                    <Bike className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
                   ) : (
-                    <Store className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
+                    <Store className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
                   )}
                   {activeConversation.isOnline && (
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#1E824C] ring-2 ring-white dark:ring-stone-900" />
@@ -237,7 +237,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                     <h4 className="text-xs sm:text-sm font-bold text-primary truncate leading-tight">
                       {activeConversation.participantNames?.[language] || activeConversation.participantName}
                     </h4>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#123B35]/10 dark:bg-[#B8D96B]/15 text-[#123B35] dark:text-[#B8D96B] font-semibold shrink-0">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[#1E1E1E]/10 dark:bg-[#FFD84D]/15 text-[#1E1E1E] dark:text-[#FFD84D] font-semibold shrink-0">
                       {activeConversation.type === 'courier'
                         ? (language === 'he' ? 'שליח' : language === 'ru' ? 'Курьер' : 'Courier')
                         : (language === 'he' ? 'חנות' : language === 'ru' ? 'Магазин' : 'Store')}
@@ -252,7 +252,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
+                <ShieldCheck className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
                 <h3 className="text-sm font-bold text-primary">
                   {language === 'he' ? 'הודעות וצ\'אט' : language === 'ru' ? 'Сообщения & Чат' : 'Messages & Chat'}
                 </h3>
@@ -287,7 +287,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       <div
                         className={`max-w-[85%] rounded-2xl p-3 text-xs shadow-2xs leading-relaxed break-words ${
                           isMe
-                            ? 'bg-[#123B35] text-[#F3F1EA] rounded-br-xs'
+                            ? 'bg-[#1E1E1E] text-[#FFF8EC] rounded-br-xs'
                             : 'bg-surface text-primary border border-theme rounded-bl-xs'
                         }`}
                       >
@@ -307,14 +307,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         {/* Timestamp and ticks */}
                         <div
                           className={`flex items-center justify-end gap-1 mt-1 text-[9px] font-mono tabular-nums ${
-                            isMe ? 'text-[#F3F1EA]/70' : 'text-muted'
+                            isMe ? 'text-[#FFF8EC]/70' : 'text-muted'
                           }`}
                         >
                           <span>{formatTimestamp(msg.timestamp)}</span>
                           {isMe && (
                             <span>
                               {msg.status === 'read' ? (
-                                <CheckCheck className="w-3 h-3 text-[#B8D96B]" />
+                                <CheckCheck className="w-3 h-3 text-[#FFD84D]" />
                               ) : (
                                 <Check className="w-3 h-3 text-white/60" />
                               )}
@@ -377,13 +377,13 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         ? 'Напишите сообщение...'
                         : 'Type a message...'
                     }
-                    className="flex-1 bg-surface-elevated border border-theme rounded-xl px-3 py-2 text-xs sm:text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#123B35] dark:focus:ring-[#B8D96B]"
+                    className="flex-1 bg-surface-elevated border border-theme rounded-xl px-3 py-2 text-xs sm:text-sm text-primary placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-[#1E1E1E] dark:focus:ring-[#FFD84D]"
                   />
 
                   <button
                     type="submit"
                     disabled={!inputText.trim()}
-                    className="p-2.5 rounded-xl bg-[#123B35] text-[#F3F1EA] hover:bg-[#0E2E29] disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0 dark:bg-[#B8D96B] dark:text-[#151817] dark:hover:bg-[#A6C958]"
+                    className="p-2.5 rounded-xl bg-[#1E1E1E] text-[#FFF8EC] hover:bg-[#1E1E1E] disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0 dark:bg-[#FFD84D] dark:text-[#1E1E1E] dark:hover:bg-[#FFD84D]"
                     aria-label={language === 'he' ? 'שלח הודעה' : language === 'ru' ? 'Отправить' : 'Send message'}
                   >
                     <Send className={`w-4 h-4 ${isRTL ? 'rotate-180' : ''}`} />
@@ -420,7 +420,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                       className="flex items-center gap-3 p-3 rounded-2xl bg-surface border border-theme hover:border-secondary cursor-pointer transition shadow-2xs group select-none"
                     >
                       {/* Avatar (not mirrored in RTL) */}
-                      <div className="relative w-11 h-11 rounded-2xl overflow-hidden bg-[#EDE9DE] dark:bg-[#1A2220] border border-theme shrink-0 flex items-center justify-center">
+                      <div className="relative w-11 h-11 rounded-2xl overflow-hidden bg-[#F1EBDD] dark:bg-[#1A2220] border border-theme shrink-0 flex items-center justify-center">
                         {conv.participantAvatar ? (
                           <img
                             src={conv.participantAvatar}
@@ -428,9 +428,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             className="w-full h-full object-cover"
                           />
                         ) : conv.type === 'courier' ? (
-                          <Bike className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
+                          <Bike className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
                         ) : (
-                          <Store className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B]" />
+                          <Store className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D]" />
                         )}
                         {conv.isOnline && (
                           <span className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-[#1E824C] ring-2 ring-white dark:ring-stone-900" />
@@ -442,10 +442,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                         {/* Top: Name, Role badge, and Time */}
                         <div className="flex items-center justify-between gap-1 mb-0.5 min-w-0">
                           <div className="flex items-center gap-1.5 min-w-0 truncate">
-                            <h4 className="text-xs font-bold text-primary truncate group-hover:text-[#123B35] dark:group-hover:text-[#B8D96B]">
+                            <h4 className="text-xs font-bold text-primary truncate group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D]">
                               {participantName}
                             </h4>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-[#123B35]/10 dark:bg-[#B8D96B]/15 text-[#123B35] dark:text-[#B8D96B] shrink-0">
+                            <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-[#1E1E1E]/10 dark:bg-[#FFD84D]/15 text-[#1E1E1E] dark:text-[#FFD84D] shrink-0">
                               {roleLabel}
                             </span>
                           </div>
@@ -467,7 +467,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({
                             {lastMsg}
                           </p>
                           {conv.unreadCount > 0 && (
-                            <span className="min-w-[18px] h-4 px-1 rounded-full bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817] text-[10px] font-black flex items-center justify-center shrink-0 tabular-nums">
+                            <span className="min-w-[18px] h-4 px-1 rounded-full bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E] text-[10px] font-black flex items-center justify-center shrink-0 tabular-nums">
                               {conv.unreadCount}
                             </span>
                           )}

@@ -102,7 +102,7 @@ export const OrdersPage: React.FC = () => {
               <span className="text-xs text-secondary block">
                 {isDelivered ? t.orders.statusLabel : t.orders.estimatedTimeLabel}
               </span>
-              <span className="text-xl sm:text-2xl font-extrabold text-[#123B35] dark:text-[#B8D96B] font-sans tabular-nums">
+              <span className="text-xl sm:text-2xl font-extrabold text-[#1E1E1E] dark:text-[#FFD84D] font-sans tabular-nums">
                 {isDelivered ? t.orders.statusCompleted : `~${formatMinutes(activeOrder.etaMinutes)}`}
               </span>
             </div>
@@ -113,19 +113,19 @@ export const OrdersPage: React.FC = () => {
         <div className="py-6 sm:py-8">
           <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center text-xs font-semibold mb-3">
             <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'received' ? 'text-[#123B35] dark:text-[#B8D96B] font-bold' : 'text-secondary'}>
+              <span className={activeOrder.status === 'received' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
                 1. {t.orders.stepReceived}
               </span>
               <span className="text-[10px] text-muted hidden sm:inline">12:30</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'preparing' ? 'text-[#123B35] dark:text-[#B8D96B] font-bold' : 'text-secondary'}>
+              <span className={activeOrder.status === 'preparing' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
                 2. {t.orders.stepPreparing}
               </span>
               <span className="text-[10px] text-muted hidden sm:inline">12:34</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className={activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way' ? 'text-[#123B35] dark:text-[#B8D96B] font-bold' : 'text-secondary'}>
+              <span className={activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way' ? 'text-[#1E1E1E] dark:text-[#FFD84D] font-bold' : 'text-secondary'}>
                 3. {t.orders.stepOnTheWay}
               </span>
               <span className="text-[10px] text-muted hidden sm:inline">12:41</span>
@@ -140,7 +140,7 @@ export const OrdersPage: React.FC = () => {
 
           <div className="relative h-2.5 sm:h-3 rounded-full bg-surface-elevated border border-theme overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#123B35] to-[#B8D96B] transition-all duration-500 rounded-full"
+              className="h-full bg-gradient-to-r from-[#1E1E1E] to-[#FFD84D] transition-all duration-500 rounded-full"
               style={{
                 width:
                   activeOrder.status === 'received'
@@ -159,8 +159,8 @@ export const OrdersPage: React.FC = () => {
         {activeOrder.courier && (
           <div className="p-4 sm:p-5 rounded-2xl bg-surface-elevated border border-theme flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-2xl bg-[#123B35] text-[#F3F1EA] flex items-center justify-center shrink-0 shadow-xs">
-                <Bike className="w-5 sm:w-6 h-5 sm:h-6 text-[#B8D96B]" />
+              <div className="w-11 sm:w-12 h-11 sm:h-12 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center shrink-0 shadow-xs">
+                <Bike className="w-5 sm:w-6 h-5 sm:h-6 text-[#FFD84D]" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export const OrdersPage: React.FC = () => {
             variant="primary"
             size="md"
             onClick={advanceOrderSimulation}
-            leftIcon={<TrendingUp className="w-4 h-4 text-[#B8D96B]" />}
+            leftIcon={<TrendingUp className="w-4 h-4 text-[#FFD84D]" />}
           >
             {t.orders.nextStepBtn}
           </Button>

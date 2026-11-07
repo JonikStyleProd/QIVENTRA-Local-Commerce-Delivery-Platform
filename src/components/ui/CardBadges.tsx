@@ -33,7 +33,7 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
       dir="ltr"
       className={`
         inline-flex items-center justify-center gap-1 h-6 min-w-[58px] px-2 rounded-full
-        bg-[#151817]/85 backdrop-blur-xs text-[#F3F1EA] border border-white/20 shadow-xs
+        bg-[#1E1E1E]/85 backdrop-blur-xs text-[#FFF8EC] border border-white/20 shadow-xs
         text-xs font-bold whitespace-nowrap select-none shrink-0 pointer-events-none
         ${isAbsolute ? 'absolute top-2.5 end-2.5 z-10' : ''}
         ${className}
@@ -41,10 +41,10 @@ export const RatingBadge: React.FC<RatingBadgeProps> = ({
       style={isAbsolute ? { insetBlockStart: '10px', insetInlineEnd: '10px' } : undefined}
       aria-label={`Рейтинг ${formattedRating}`}
     >
-      <Star className="w-3.5 h-3.5 fill-[#B8D96B] text-[#B8D96B] shrink-0" aria-hidden="true" />
+      <Star className="w-3.5 h-3.5 fill-[#FFD84D] text-[#FFD84D] shrink-0" aria-hidden="true" />
       <span className="tabular-nums leading-none tracking-tight">{formattedRating}</span>
       {reviewsCount !== undefined && (
-        <span className="text-[10px] font-normal text-[#F3F1EA]/75 tabular-nums leading-none ps-0.5">
+        <span className="text-[10px] font-normal text-[#FFF8EC]/75 tabular-nums leading-none ps-0.5">
           ({reviewsCount})
         </span>
       )}
@@ -72,12 +72,12 @@ export const DeliveryTimeBadge: React.FC<DeliveryTimeBadgeProps> = ({
       dir="ltr"
       className={`
         inline-flex items-center gap-1.5 h-6 px-2 rounded-md
-        bg-[#151817]/75 backdrop-blur-xs text-[#F3F1EA] text-[11px] font-semibold
+        bg-[#1E1E1E]/75 backdrop-blur-xs text-[#FFF8EC] text-[11px] font-semibold
         border border-white/15 tabular-nums whitespace-nowrap select-none
         ${className}
       `}
     >
-      <Clock className="w-3.5 h-3.5 text-[#B8D96B] shrink-0" aria-hidden="true" />
+      <Clock className="w-3.5 h-3.5 text-[#FFD84D] shrink-0" aria-hidden="true" />
       <span>{minMinutes}–{maxMinutes} min</span>
     </span>
   );
@@ -103,12 +103,12 @@ export const DistanceBadge: React.FC<DistanceBadgeProps> = ({
       dir="ltr"
       className={`
         inline-flex items-center gap-1 h-6 px-2 rounded-md
-        bg-[#151817]/75 backdrop-blur-xs text-[#F3F1EA] text-[11px] font-semibold
+        bg-[#1E1E1E]/75 backdrop-blur-xs text-[#FFF8EC] text-[11px] font-semibold
         border border-white/15 tabular-nums whitespace-nowrap select-none
         ${className}
       `}
     >
-      <MapPin className="w-3 h-3 text-[#B8D96B] shrink-0" aria-hidden="true" />
+      <MapPin className="w-3 h-3 text-[#FFD84D] shrink-0" aria-hidden="true" />
       <span>{formattedDistance}</span>
     </span>
   );
@@ -133,8 +133,8 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({
     <span
       className={`
         inline-flex items-center gap-1 h-6 px-2.5 rounded-md
-        bg-[#F3F1EA] text-[#151817] text-[11px] font-bold
-        border border-[#E2DFD4] shadow-xs truncate max-w-[140px] select-none
+        bg-[#FFF8EC] text-[#1E1E1E] text-[11px] font-bold
+        border border-[#E9DFCB] shadow-xs truncate max-w-[140px] select-none
         ${className}
       `}
     >
@@ -164,8 +164,8 @@ export const PromotionBadge: React.FC<PromotionBadgeProps> = ({
   className = '',
 }) => {
   const variantStyles = {
-    pistachio: 'bg-[#B8D96B] text-[#151817] border border-[#A6C958]/50',
-    mineral: 'bg-[#123B35] text-[#F3F1EA] border border-[#1E524A]',
+    pistachio: 'bg-[#FFD84D] text-[#1E1E1E] border border-[#FFD84D]/50',
+    mineral: 'bg-[#1E1E1E] text-[#FFF8EC] border border-[#1E1E1E]',
     warning: 'bg-[#FEF8E7] text-[#B7791F] dark:bg-[#332612] dark:text-[#F6AD55] border border-[#F6AD55]/30',
     eco: 'bg-[#E8F5EE] text-[#1E824C] dark:bg-[#132E20] dark:text-[#48BB78] border border-[#1E824C]/30',
   };

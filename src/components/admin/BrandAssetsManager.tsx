@@ -279,8 +279,8 @@ export const BrandAssetsManager: React.FC = () => {
       {/* Header & Section Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-theme">
         <div className="flex items-start gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-[#123B35] text-[#F3F1EA] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            <ShieldCheck className="w-6 h-6 text-[#B8D96B]" />
+          <div className="w-11 h-11 rounded-2xl bg-[#1E1E1E] text-[#FFF8EC] flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+            <ShieldCheck className="w-6 h-6 text-[#FFD84D]" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -316,9 +316,9 @@ export const BrandAssetsManager: React.FC = () => {
       {/* Backend & Bucket Info Pill */}
       <div className="p-4 rounded-2xl bg-surface-elevated border border-theme flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
+          <Database className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
           <span className="font-medium text-primary">
-            Bucket: <span className="font-mono text-[#123B35] dark:text-[#B8D96B] font-bold">{BRAND_ASSETS_BUCKET}</span>
+            Bucket: <span className="font-mono text-[#1E1E1E] dark:text-[#FFD84D] font-bold">{BRAND_ASSETS_BUCKET}</span>
           </span>
           <span className="text-muted">•</span>
           <span className="text-secondary">Публичное чтение активно, запись ограничена Admin RLS</span>
@@ -341,7 +341,7 @@ export const BrandAssetsManager: React.FC = () => {
           }}
           className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
             selectedVariant === 'lockup'
-              ? 'bg-[#123B35] text-[#F3F1EA] shadow-xs'
+              ? 'bg-[#1E1E1E] text-[#FFF8EC] shadow-xs'
               : 'text-secondary hover:text-primary'
           }`}
         >
@@ -357,7 +357,7 @@ export const BrandAssetsManager: React.FC = () => {
           }}
           className={`flex-1 py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
             selectedVariant === 'mark'
-              ? 'bg-[#123B35] text-[#F3F1EA] shadow-xs'
+              ? 'bg-[#1E1E1E] text-[#FFF8EC] shadow-xs'
               : 'text-secondary hover:text-primary'
           }`}
         >
@@ -390,8 +390,8 @@ export const BrandAssetsManager: React.FC = () => {
             {selectedVariant === 'lockup' ? (
               <div className="space-y-3">
                 {/* Light theme: darkLockup (dark letters on light background) */}
-                <div className="p-4 rounded-xl bg-[#F3F1EA] border border-[#E4E1D7] flex flex-col items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold text-[#4D5956] uppercase tracking-wider">
+                <div className="p-4 rounded-xl bg-[#FFF8EC] border border-[#E9DFCB] flex flex-col items-center justify-center gap-2">
+                  <span className="text-[10px] font-semibold text-[#5A554C] uppercase tracking-wider">
                     Light Theme & Header (darkLockup)
                   </span>
                   <img
@@ -418,8 +418,8 @@ export const BrandAssetsManager: React.FC = () => {
                 </div>
 
                 {/* Dark theme & Footer: lightLockup (light letters on dark background) */}
-                <div className="p-4 rounded-xl bg-[#123B35] border border-[#1C524A] flex flex-col items-center justify-center gap-2">
-                  <span className="text-[10px] font-semibold text-[#B8D96B] uppercase tracking-wider">
+                <div className="p-4 rounded-xl bg-[#1E1E1E] border border-[#1E1E1E] flex flex-col items-center justify-center gap-2">
+                  <span className="text-[10px] font-semibold text-[#FFD84D] uppercase tracking-wider">
                     Dark Theme & Footer (lightLockup)
                   </span>
                   <img
@@ -494,7 +494,7 @@ export const BrandAssetsManager: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => copyToClipboard(activeRecord.sha256)}
-                    className="text-[11px] text-[#123B35] dark:text-[#B8D96B] hover:underline flex items-center gap-1 font-medium"
+                    className="text-[11px] text-[#1E1E1E] dark:text-[#FFD84D] hover:underline flex items-center gap-1 font-medium"
                   >
                     {copiedSha === activeRecord.sha256 ? (
                       <Check className="w-3 h-3 text-emerald-500" />
@@ -531,9 +531,9 @@ export const BrandAssetsManager: React.FC = () => {
             {!stagedFile ? (
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="min-h-[160px] p-6 rounded-2xl border-2 border-dashed border-theme hover:border-[#123B35] dark:hover:border-[#B8D96B] transition-colors flex flex-col items-center justify-center gap-3 cursor-pointer bg-surface group"
+                className="min-h-[160px] p-6 rounded-2xl border-2 border-dashed border-theme hover:border-[#1E1E1E] dark:hover:border-[#FFD84D] transition-colors flex flex-col items-center justify-center gap-3 cursor-pointer bg-surface group"
               >
-                <div className="w-10 h-10 rounded-xl bg-surface-elevated text-secondary group-hover:text-[#123B35] dark:group-hover:text-[#B8D96B] flex items-center justify-center transition">
+                <div className="w-10 h-10 rounded-xl bg-surface-elevated text-secondary group-hover:text-[#1E1E1E] dark:group-hover:text-[#FFD84D] flex items-center justify-center transition">
                   <Upload className="w-5 h-5" />
                 </div>
                 <div className="text-center space-y-1">
@@ -565,7 +565,7 @@ export const BrandAssetsManager: React.FC = () => {
                 </div>
 
                 {/* Staged Live Preview */}
-                <div className="min-h-[140px] p-4 rounded-2xl bg-[#F3F1EA] border border-[#E4E1D7] flex items-center justify-center">
+                <div className="min-h-[140px] p-4 rounded-2xl bg-[#FFF8EC] border border-[#E9DFCB] flex items-center justify-center">
                   {stagedPreviewUrl && (
                     <img
                       src={stagedPreviewUrl}
@@ -649,7 +649,7 @@ export const BrandAssetsManager: React.FC = () => {
       <div className="space-y-3 pt-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
+            <History className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
             <h3 className="text-sm font-bold text-primary">
               {t.admin.versionHistory} ({selectedVariant})
             </h3>
@@ -759,7 +759,7 @@ export const BrandAssetsManager: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-surface rounded-3xl border border-theme p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#123B35] text-[#B8D96B] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#1E1E1E] text-[#FFD84D] flex items-center justify-center shrink-0">
                 <History className="w-5 h-5" />
               </div>
               <div>

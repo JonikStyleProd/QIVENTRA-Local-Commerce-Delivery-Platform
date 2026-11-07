@@ -43,14 +43,14 @@ export const HeroDeliveryAnimation: React.FC = () => {
     >
       {/* Direction-aware soft vignette ensuring left-side text has 100% clarity */}
       <div
-        className={`absolute inset-0 z-10 bg-gradient-to-r from-[#123B35] via-[#123B35]/30 to-transparent ${
+        className={`absolute inset-0 z-10 bg-gradient-to-r from-[#1E1E1E] via-[#1E1E1E]/30 to-transparent ${
           isRTL ? 'rotate-180' : ''
         }`}
       />
 
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Soft Ambient Radial Glow */}
-        <div className="absolute w-64 h-64 rounded-full bg-[#B8D96B]/10 blur-3xl pointer-events-none" />
+        <div className="absolute w-64 h-64 rounded-full bg-[#FFD84D]/10 blur-3xl pointer-events-none" />
 
         {/* Clean Vector City Grid & Route Radar */}
         <svg
@@ -61,32 +61,32 @@ export const HeroDeliveryAnimation: React.FC = () => {
         >
           <defs>
             <linearGradient id="vectorRoute" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#B8D96B" stopOpacity="0.2" />
-              <stop offset="50%" stopColor="#B8D96B" stopOpacity="0.9" />
+              <stop offset="0%" stopColor="#FFD84D" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="#FFD84D" stopOpacity="0.9" />
               <stop offset="100%" stopColor="#EAF8C6" stopOpacity="0.8" />
             </linearGradient>
 
             <linearGradient id="pulseFill" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#B8D96B" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#1A4B44" stopOpacity="0" />
+              <stop offset="0%" stopColor="#FFD84D" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#1E1E1E" stopOpacity="0" />
             </linearGradient>
           </defs>
 
           {/* Gentle concentric radar waves */}
-          <circle cx="210" cy="130" r="105" stroke="#B8D96B" strokeOpacity="0.06" strokeWidth="1" />
-          <circle cx="210" cy="130" r="70" stroke="#B8D96B" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="4 4" />
-          <circle cx="210" cy="130" r="38" stroke="#B8D96B" strokeOpacity="0.12" strokeWidth="1" />
+          <circle cx="210" cy="130" r="105" stroke="#FFD84D" strokeOpacity="0.06" strokeWidth="1" />
+          <circle cx="210" cy="130" r="70" stroke="#FFD84D" strokeOpacity="0.08" strokeWidth="1" strokeDasharray="4 4" />
+          <circle cx="210" cy="130" r="38" stroke="#FFD84D" strokeOpacity="0.12" strokeWidth="1" />
 
           {/* Abstract City Grid Geometry (Low opacity, non-cluttered) */}
-          <line x1="30" y1="70" x2="390" y2="70" stroke="#F3F1EA" strokeOpacity="0.05" strokeWidth="1" />
-          <line x1="30" y1="190" x2="390" y2="190" stroke="#F3F1EA" strokeOpacity="0.05" strokeWidth="1" />
-          <line x1="120" y1="20" x2="120" y2="240" stroke="#F3F1EA" strokeOpacity="0.05" strokeWidth="1" />
-          <line x1="300" y1="20" x2="300" y2="240" stroke="#F3F1EA" strokeOpacity="0.05" strokeWidth="1" />
+          <line x1="30" y1="70" x2="390" y2="70" stroke="#FFF8EC" strokeOpacity="0.05" strokeWidth="1" />
+          <line x1="30" y1="190" x2="390" y2="190" stroke="#FFF8EC" strokeOpacity="0.05" strokeWidth="1" />
+          <line x1="120" y1="20" x2="120" y2="240" stroke="#FFF8EC" strokeOpacity="0.05" strokeWidth="1" />
+          <line x1="300" y1="20" x2="300" y2="240" stroke="#FFF8EC" strokeOpacity="0.05" strokeWidth="1" />
 
           {/* Primary Route Path (Vendor Hub -> Mid Transit -> Customer Destination) */}
           <path
             d="M 65 175 C 130 115, 175 205, 245 140 C 295 95, 325 145, 360 85"
-            stroke="#B8D96B"
+            stroke="#FFD84D"
             strokeWidth="3"
             strokeOpacity="0.25"
             strokeLinecap="round"
@@ -103,47 +103,47 @@ export const HeroDeliveryAnimation: React.FC = () => {
           />
 
           {/* Point 1: Origin Hub Beacon (65, 175) */}
-          <circle cx="65" cy="175" r="14" fill="#B8D96B" fillOpacity="0.12" />
-          <circle cx="65" cy="175" r="7" fill="#163F39" stroke="#B8D96B" strokeWidth="2" />
-          <circle cx="65" cy="175" r="3" fill="#B8D96B" />
+          <circle cx="65" cy="175" r="14" fill="#FFD84D" fillOpacity="0.12" />
+          <circle cx="65" cy="175" r="7" fill="#1E1E1E" stroke="#FFD84D" strokeWidth="2" />
+          <circle cx="65" cy="175" r="3" fill="#FFD84D" />
 
           {/* Point 2: Midpoint Checkpoint (245, 140) */}
-          <circle cx="245" cy="140" r="4.5" fill="#163F39" stroke="#B8D96B" strokeWidth="1.5" strokeOpacity="0.6" />
-          <circle cx="245" cy="140" r="2" fill="#B8D96B" />
+          <circle cx="245" cy="140" r="4.5" fill="#1E1E1E" stroke="#FFD84D" strokeWidth="1.5" strokeOpacity="0.6" />
+          <circle cx="245" cy="140" r="2" fill="#FFD84D" />
 
           {/* Point 3: Customer Destination Beacon (360, 85) */}
-          <circle cx="360" cy="85" r="16" fill="#B8D96B" fillOpacity="0.14" />
-          <circle cx="360" cy="85" r="8" fill="#163F39" stroke="#B8D96B" strokeWidth="2" />
-          <circle cx="360" cy="85" r="3.5" fill="#B8D96B" />
+          <circle cx="360" cy="85" r="16" fill="#FFD84D" fillOpacity="0.14" />
+          <circle cx="360" cy="85" r="8" fill="#1E1E1E" stroke="#FFD84D" strokeWidth="2" />
+          <circle cx="360" cy="85" r="3.5" fill="#FFD84D" />
         </svg>
 
         {/* Localized Floating Pill 1: Origin (Farm / Hub) */}
         <div className="absolute top-[182px] start-[35px] -translate-y-1/2">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#163F39]/95 border border-[#276B61] text-[10px] font-semibold text-[#F3F1EA] shadow-md backdrop-blur-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#B8D96B]" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#1E1E1E]/95 border border-[#5A554C] text-[10px] font-semibold text-[#FFF8EC] shadow-md backdrop-blur-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFD84D]" />
             <span>{statusLabels.hub}</span>
           </div>
         </div>
 
         {/* Localized Floating Pill 2: Destination (Your Address) */}
         <div className="absolute top-[52px] end-[18px]">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#163F39]/95 border border-[#B8D96B]/50 text-[10px] font-bold text-[#B8D96B] shadow-md backdrop-blur-xs">
-            <Sparkles className="w-3 h-3 text-[#B8D96B] shrink-0" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#1E1E1E]/95 border border-[#FFD84D]/50 text-[10px] font-bold text-[#FFD84D] shadow-md backdrop-blur-xs">
+            <Sparkles className="w-3 h-3 text-[#FFD84D] shrink-0" />
             <span>{statusLabels.client}</span>
           </div>
         </div>
 
         {/* Localized In-Transit Active Courier Card */}
         <div className="absolute top-[96px] start-[185px] -translate-x-1/2">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#123B35] border border-[#B8D96B] text-[#F3F1EA] shadow-xl backdrop-blur-md">
-            <div className="w-6 h-6 rounded-lg bg-[#B8D96B] text-[#151817] flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1E1E1E] border border-[#FFD84D] text-[#FFF8EC] shadow-xl backdrop-blur-md">
+            <div className="w-6 h-6 rounded-lg bg-[#FFD84D] text-[#1E1E1E] flex items-center justify-center shrink-0">
               <Bike className="w-3.5 h-3.5" />
             </div>
             <div className="flex flex-col text-start leading-tight">
-              <span className="text-[10px] font-extrabold text-[#B8D96B] tabular-nums">
+              <span className="text-[10px] font-extrabold text-[#FFD84D] tabular-nums">
                 {statusLabels.eta}
               </span>
-              <span className="text-[9px] text-[#F3F1EA]/80 font-medium whitespace-nowrap">
+              <span className="text-[9px] text-[#FFF8EC]/80 font-medium whitespace-nowrap">
                 {statusLabels.courierStatus}
               </span>
             </div>
@@ -152,8 +152,8 @@ export const HeroDeliveryAnimation: React.FC = () => {
 
         {/* Subtle Eco-fleet indicator chip */}
         <div className="absolute bottom-[22px] end-[30px]">
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1A4B44]/80 border border-[#276B61]/60 text-[9px] font-medium text-[#F3F1EA]/70">
-            <ShieldCheck className="w-2.5 h-2.5 text-[#B8D96B]" />
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1E1E1E]/80 border border-[#5A554C]/60 text-[9px] font-medium text-[#FFF8EC]/70">
+            <ShieldCheck className="w-2.5 h-2.5 text-[#FFD84D]" />
             <span>{statusLabels.ecoFleet}</span>
           </div>
         </div>

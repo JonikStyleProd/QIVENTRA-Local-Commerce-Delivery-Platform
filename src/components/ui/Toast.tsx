@@ -12,14 +12,14 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
     success: <CheckCircle2 className="w-5 h-5 text-[#1E824C] dark:text-[#48BB78] shrink-0" />,
     error: <AlertCircle className="w-5 h-5 text-[#C53030] dark:text-[#FC8181] shrink-0" />,
     warning: <AlertTriangle className="w-5 h-5 text-[#B7791F] dark:text-[#F6AD55] shrink-0" />,
-    info: <Info className="w-5 h-5 text-[#123B35] dark:text-[#B8D96B] shrink-0" />,
+    info: <Info className="w-5 h-5 text-[#1E1E1E] dark:text-[#FFD84D] shrink-0" />,
   };
 
   const borderMap = {
     success: 'border-s-4 border-s-[#1E824C]',
     error: 'border-s-4 border-s-[#C53030]',
     warning: 'border-s-4 border-s-[#B7791F]',
-    info: 'border-s-4 border-s-[#B8D96B]',
+    info: 'border-s-4 border-s-[#FFD84D]',
   };
 
   return (

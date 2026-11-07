@@ -123,7 +123,7 @@ export const SearchPage: React.FC = () => {
               px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
               ${
                 selectedCategory === 'all'
-                  ? 'bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817]'
+                  ? 'bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E]'
                   : 'bg-surface-elevated text-secondary hover:text-primary border border-theme'
               }
             `}
@@ -142,7 +142,7 @@ export const SearchPage: React.FC = () => {
                   px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap select-none
                   ${
                     isSelected
-                      ? 'bg-[#123B35] text-[#F3F1EA] dark:bg-[#B8D96B] dark:text-[#151817]'
+                      ? 'bg-[#1E1E1E] text-[#FFF8EC] dark:bg-[#FFD84D] dark:text-[#1E1E1E]'
                       : 'bg-surface-elevated text-secondary hover:text-primary border border-theme'
                   }
                 `}
@@ -176,7 +176,7 @@ export const SearchPage: React.FC = () => {
         <div className="pt-4">
           <div className="text-center max-w-md mx-auto p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-surface border border-theme">
             <div className="w-12 h-12 rounded-2xl bg-surface-elevated text-secondary flex items-center justify-center mx-auto mb-3 border border-theme">
-              <Search className="w-6 h-6 text-[#123B35] dark:text-[#B8D96B]" />
+              <Search className="w-6 h-6 text-[#1E1E1E] dark:text-[#FFD84D]" />
             </div>
             <h3 className="text-sm sm:text-base font-bold text-primary mb-1">
               {t.search.startTypingTitle}
@@ -200,7 +200,7 @@ export const SearchPage: React.FC = () => {
           {matchedStores.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <StoreIcon className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
+                <StoreIcon className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
                 <h2 className="text-base font-bold text-primary">
                   {t.catalog.tabStores} ({matchedStores.length})
                 </h2>
@@ -221,7 +221,7 @@ export const SearchPage: React.FC = () => {
           {matchedProducts.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Package className="w-4 h-4 text-[#123B35] dark:text-[#B8D96B]" />
+                <Package className="w-4 h-4 text-[#1E1E1E] dark:text-[#FFD84D]" />
                 <h2 className="text-base font-bold text-primary">
                   {t.catalog.tabProducts} ({matchedProducts.length})
                 </h2>

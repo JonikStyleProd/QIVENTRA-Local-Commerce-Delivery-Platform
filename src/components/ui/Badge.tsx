@@ -21,8 +21,8 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantStyles = {
-    pistachio: 'bg-[#B8D96B] text-[#151817] font-semibold',
-    mineral: 'bg-[#123B35] text-[#F3F1EA]',
+    pistachio: 'bg-[#FFD84D] text-[#1E1E1E] font-semibold',
+    mineral: 'bg-[#1E1E1E] text-[#FFF8EC]',
     success: 'bg-[#E8F5EE] text-[#1E824C] dark:bg-[#132E20] dark:text-[#48BB78]',
     warning: 'bg-[#FEF8E7] text-[#B7791F] dark:bg-[#332612] dark:text-[#F6AD55]',
     error: 'bg-[#FDECEB] text-[#C53030] dark:bg-[#3D1919] dark:text-[#FC8181]',
@@ -31,13 +31,13 @@ export const Badge: React.FC<BadgeProps> = ({
   };
 
   const dotColor = {
-    pistachio: 'bg-[#151817]',
-    mineral: 'bg-[#B8D96B]',
+    pistachio: 'bg-[#1E1E1E]',
+    mineral: 'bg-[#FFD84D]',
     success: 'bg-[#1E824C] dark:bg-[#48BB78]',
     warning: 'bg-[#B7791F] dark:bg-[#F6AD55]',
     error: 'bg-[#C53030] dark:bg-[#FC8181]',
     neutral: 'bg-muted',
-    outline: 'bg-[#123B35]',
+    outline: 'bg-[#1E1E1E]',
   };
 
   return (

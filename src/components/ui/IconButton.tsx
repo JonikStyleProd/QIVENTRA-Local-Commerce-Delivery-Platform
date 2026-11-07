@@ -30,9 +30,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     };
 
     const variantStyles = {
-      primary: 'bg-[#123B35] text-[#F3F1EA] hover:bg-[#0E2E29] border border-[#16463F]',
-      accent: 'bg-[#B8D96B] text-[#151817] hover:bg-[#A6C958] border border-[#A4C756]',
-      secondary: 'bg-surface-elevated text-primary hover:bg-[#EDE9DE] dark:hover:bg-[#252E2B] border border-theme',
+      primary: 'bg-[#1E1E1E] text-[#FFF8EC] hover:bg-[#1E1E1E] border border-[#1E1E1E]',
+      accent: 'bg-[#FFD84D] text-[#1E1E1E] hover:bg-[#FFD84D] border border-[#FFD84D]',
+      secondary: 'bg-surface-elevated text-primary hover:bg-[#F1EBDD] dark:hover:bg-[#252E2B] border border-theme',
       outline: 'bg-transparent text-primary hover:bg-surface-elevated border border-theme',
       ghost: 'bg-transparent text-primary hover:bg-surface-elevated border border-transparent',
     };
@@ -44,7 +44,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         disabled={disabled || isLoading}
         className={`
           relative inline-flex items-center justify-center rounded-xl transition-all duration-150 select-none
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8D96B] focus-visible:ring-offset-2
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD84D] focus-visible:ring-offset-2
           disabled:opacity-50 disabled:cursor-not-allowed active:scale-95
           ${sizeMap[size]}
           ${variantStyles[variant]}
