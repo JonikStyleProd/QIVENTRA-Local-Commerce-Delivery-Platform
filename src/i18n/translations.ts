@@ -1,11 +1,13 @@
 import { CollageStrings, collageTranslations } from './collage';
 import { ScreenStrings, screenTranslations } from './screens';
+import { PromotionStrings, promotionTranslations } from './promotions';
 
 export type Language = 'ru' | 'en' | 'he';
 
 export interface Translations {
   collage: CollageStrings;
   screens: ScreenStrings;
+  promotions: PromotionStrings;
   nav: {
     home: string;
     catalog: string;
@@ -417,8 +419,6 @@ export interface Translations {
     inCart: string;
     decrease: string;
     increase: string;
-    topBadge: string;
-    newBadge: string;
   };
   storeCard: {
     eco: string;
@@ -494,6 +494,7 @@ export const translations: Record<Language, Translations> = {
   he: {
     collage: collageTranslations.he,
     screens: screenTranslations.he,
+    promotions: promotionTranslations.he,
     nav: {
       home: 'בית',
       catalog: 'קטלוג',
@@ -905,8 +906,6 @@ export const translations: Record<Language, Translations> = {
       inCart: 'בסל',
       decrease: 'הפחת כמות',
       increase: 'הגדל כמות',
-      topBadge: 'מוביל',
-      newBadge: 'חדש',
     },
     storeCard: {
       eco: 'ירוק',
@@ -980,6 +979,7 @@ export const translations: Record<Language, Translations> = {
   en: {
     collage: collageTranslations.en,
     screens: screenTranslations.en,
+    promotions: promotionTranslations.en,
     nav: {
       home: 'Home',
       catalog: 'Catalog',
@@ -1391,8 +1391,6 @@ export const translations: Record<Language, Translations> = {
       inCart: 'In cart',
       decrease: 'Decrease quantity',
       increase: 'Increase quantity',
-      topBadge: 'Top',
-      newBadge: 'New',
     },
     storeCard: {
       eco: 'Eco',
@@ -1466,6 +1464,7 @@ export const translations: Record<Language, Translations> = {
   ru: {
     collage: collageTranslations.ru,
     screens: screenTranslations.ru,
+    promotions: promotionTranslations.ru,
     nav: {
       home: 'Главная',
       catalog: 'Каталог',
@@ -1877,8 +1876,6 @@ export const translations: Record<Language, Translations> = {
       inCart: 'В корзине',
       decrease: 'Уменьшить количество',
       increase: 'Увеличить количество',
-      topBadge: 'Хит',
-      newBadge: 'Новинка',
     },
     storeCard: {
       eco: 'Эко',

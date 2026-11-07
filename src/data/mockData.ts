@@ -175,7 +175,7 @@ export const MOCK_STORES: Store[] = [
     reviewsCount: 420,
     deliveryTimeMin: 20,
     deliveryTimeMax: 35,
-    deliveryFee: 0,
+    deliveryFee: 15,
     minOrder: 50,
     address: 'Тель-Авив, ул. Ха-Кармель, 18',
     addresses: {
@@ -258,13 +258,6 @@ export const MOCK_STORES: Store[] = [
     isVerified: true,
     isEco: true,
     isFeatured: true,
-    isPromo: true,
-    promoText: 'Спешелти кофе в подарок к выпечке до 11:30',
-    promoTexts: {
-      ru: 'Спешелти кофе в подарок к выпечке до 11:30',
-      en: 'Free specialty coffee with pastries until 11:30',
-      he: 'קפה ספיישלטי במתנה עם מאפה עד 11:30',
-    },
     tags: ['Свежая хала', 'Спешелти кофе', 'На закваске'],
     bannerGradient: 'from-[#382613] to-[#5C3E20]',
     logoUrl: '/photos/store-levinsky-bakery.webp',
@@ -401,7 +394,6 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'לאבנה עשירה וקרמית מחלב עיזים גלילי עם שמן זית בכבישה קרה וזעתר בר',
     },
     price: 24,
-    oldPrice: 29,
     unit: '250 г',
     units: {
       ru: '250 г',
@@ -412,20 +404,12 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.96,
     reviewsCount: 148,
     inStock: true,
-    isBestSeller: true,
     origin: 'Ферма в Верхней Галилее',
     origins: {
       ru: 'Ферма в Верхней Галилее',
       en: 'Upper Galilee Boutique Farm',
       he: 'משק בוטיק בגליל העליון',
     },
-    badge: 'Хит продаж',
-    badges: {
-      ru: 'Хит продаж',
-      en: 'Best Seller',
-      he: 'רב מכר',
-    },
-    tagColor: 'pistachio',
     imageUrl: '/photos/labneh.webp',
   },
   {
@@ -451,7 +435,6 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'מרקם עשיר וחמאתי, מושלם לטוסט ארוחת בוקר, סלטים וגוואקמולי',
     },
     price: 18,
-    oldPrice: 22,
     unit: '2 шт',
     units: {
       ru: '2 шт',
@@ -462,8 +445,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.92,
     reviewsCount: 95,
     inStock: true,
-    badge: '-18%',
-    tagColor: 'pistachio',
     imageUrl: '/photos/avocado.webp'
   },
   {
@@ -499,15 +480,7 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.99,
     reviewsCount: 112,
     inStock: true,
-    isBestSeller: true,
     origin: 'Оливковые рощи Галилеи',
-    badge: 'Органик',
-    badges: {
-      ru: 'Органик',
-      en: 'Organic',
-      he: 'אורגני',
-    },
-    tagColor: 'mineral',
     imageUrl: '/photos/olive-oil.webp'
   },
   {
@@ -543,14 +516,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 310,
     inStock: true,
-    isBestSeller: true,
-    badge: 'С пылу с жару',
-    badges: {
-      ru: 'С пылу с жару',
-      en: 'Freshly Baked',
-      he: 'חם מהתנור',
-    },
-    tagColor: 'pistachio',
     imageUrl: '/photos/challah.webp'
   },
   {
@@ -586,14 +551,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.97,
     reviewsCount: 220,
     inStock: true,
-    isNew: true,
-    badge: 'Топ выбор',
-    badges: {
-      ru: 'Топ выбор',
-      en: 'Top Pick',
-      he: 'בחירה מובילה',
-    },
-    tagColor: 'mineral',
     imageUrl: '/photos/almond-croissant.webp'
   },
   {
@@ -654,7 +611,6 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'סינון רעשים אקטיבי היברידי 45dB, מצב שקיפות, עמידות למים בתקן IPX5 ועד 38 שעות סוללה',
     },
     price: 289,
-    oldPrice: 349,
     unit: '1 компл',
     units: {
       ru: '1 компл',
@@ -665,9 +621,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.93,
     reviewsCount: 104,
     inStock: true,
-    isBestSeller: true,
-    badge: '-17%',
-    tagColor: 'pistachio',
     imageUrl: '/photos/earbuds.webp'
   },
   {
@@ -703,13 +656,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.95,
     reviewsCount: 62,
     inStock: true,
-    badge: 'Хит',
-    badges: {
-      ru: 'Хит',
-      en: 'Top Tech',
-      he: 'להיט',
-    },
-    tagColor: 'mineral',
     imageUrl: '/photos/charger.webp'
   },
   {
@@ -745,14 +691,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.98,
     reviewsCount: 118,
     inStock: true,
-    isBestSeller: true,
-    badge: 'Эко-состав',
-    badges: {
-      ru: 'Эко-состав',
-      en: 'Eco Clean',
-      he: '100% טבעי',
-    },
-    tagColor: 'pistachio',
     imageUrl: '/photos/candle-fig.webp'
   },
   {
@@ -788,13 +726,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.94,
     reviewsCount: 54,
     inStock: true,
-    badge: 'Ручная работа',
-    badges: {
-      ru: 'Ручная работа',
-      en: 'Handmade',
-      he: 'עבודת יד',
-    },
-    tagColor: 'neutral',
     imageUrl: '/photos/mug-seafoam.webp'
   },
   {
@@ -830,13 +761,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.99,
     reviewsCount: 92,
     inStock: true,
-    badge: 'Премиум',
-    badges: {
-      ru: 'Премиум',
-      en: 'Premium',
-      he: 'פרימיום',
-    },
-    tagColor: 'mineral',
     imageUrl: '/photos/bouquet.webp'
   },
   {
@@ -872,13 +796,6 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.97,
     reviewsCount: 175,
     inStock: true,
-    badge: 'Кошер & Веган',
-    badges: {
-      ru: 'Кошер & Веган',
-      en: 'Kosher & Vegan',
-      he: 'כשר וטבעוני',
-    },
-    tagColor: 'pistachio',
     imageUrl: '/photos/supplement.webp'
   },
 ];

@@ -3,8 +3,9 @@ import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText }
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_USER } from '../data/mockData';
 import { DeliveryWindow } from '../data/deliverySlots';
 import { collageTranslations } from '../i18n/collage';
-import { OrderStoreLine, orderDeliveryFee, summarizeOrderStores } from '../data/cartRules';
+import { OrderCalculation, OrderStoreLine, calculateOrder } from '../data/cartRules';
 import { useLanguage } from './LanguageContext';
+import { PromotionsProvider, usePromotions } from './PromotionsContext';
 
 interface NavigationOptions {
   storeId?: string;
@@ -38,9 +39,11 @@ interface AppContextType {
   clearCart: () => void;
   cartTotalCount: number;
   cartSubtotal: number;
-  /** Promo discount in ₪ applied on the cart page; carried through to the delivery window. */
+  /** The value of the promo code entered on the cart page. Whether it applies is up to `order`. */
   cartDiscount: number;
   setCartDiscount: (amount: number) => void;
+  /** The whole calculation: promotions, the promo code, fees and the total. */
+  order: OrderCalculation;
   deliveryFee: number;
   totalAmount: number;
 
@@ -83,8 +86,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export function AppProvider({ children }: { children: ReactNode }) {
+function AppStateProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
+  const { promotions, now } = usePromotions();
   const [currentRoute, setCurrentRoute] = useState<AppRoute>('home');
   const [selectedStoreId, setSelectedStoreId] = useState<string | null>('store-3');
   const [pickedStoreId, setPickedStoreId] = useState<string | null>(null);
@@ -322,12 +326,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   }, [cart]);
 
-  const orderStores = useMemo(() => summarizeOrderStores(cart, pickedStoreId), [cart, pickedStoreId]);
-  const deliveryFee = useMemo(() => orderDeliveryFee(orderStores), [orderStores]);
-
-  const totalAmount = useMemo(() => {
-    return Math.max(0, cartSubtotal - cartDiscount + deliveryFee);
-  }, [cartSubtotal, cartDiscount, deliveryFee]);
+  const order = useMemo(
+    () => calculateOrder({ cart, pickedStoreId, promotions, promoCodeAmount: cartDiscount, now }),
+    [cart, pickedStoreId, promotions, cartDiscount, now]
+  );
+  const orderStores = order.stores;
+  const deliveryFee = order.deliveryFee;
+  const totalAmount = order.total;
 
   // Delivery simulation stepper for the live tracker demo
   const advanceOrderSimulation = () => {
@@ -358,7 +363,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .join(', ');
     const placedAt = new Date();
 
-    const order: Order = {
+    const placed: Order = {
       id: `ord-${placedAt.getTime()}`,
       orderNumber: `QIV-IL-${String(placedAt.getTime()).slice(-4)}`,
       createdAt: placedAt.toISOString(),
@@ -376,11 +381,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         storeId: line.product.storeId,
         imageUrl: line.product.imageUrl,
       })),
-      subtotal: cartSubtotal,
-      discount: cartDiscount,
-      feeLines: orderStores.map((line) => ({ storeId: line.store.id, fee: line.fee })),
+      subtotal: order.itemsSubtotal,
+      discount: order.promoCodeDiscount,
+      feeLines: orderStores.map((line) => ({ storeId: line.store.id, fee: line.baseFee })),
+      promotionLines: order.promotionLines,
       totalAmount,
-      deliveryFee,
+      deliveryFee: order.baseDeliveryFee,
       address: currentAddress,
       addresses: currentAddressTexts,
       etaMinutes: Math.max(...orderStores.map((line) => line.store.deliveryTimeMax)),
@@ -388,11 +394,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       note: note.trim() || undefined,
     };
 
-    setPlacedOrders((prev) => [order, ...prev]);
-    setFocusedOrderId(order.id);
+    setPlacedOrders((prev) => [placed, ...prev]);
+    setFocusedOrderId(placed.id);
     setPickedStoreId(null);
     clearCart();
-    return order;
+    return placed;
   };
 
   return (
@@ -420,6 +426,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         cartSubtotal,
         cartDiscount,
         setCartDiscount,
+        order,
         deliveryFee,
         totalAmount,
         isAuthModalOpen,
@@ -441,6 +448,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     >
       {children}
     </AppContext.Provider>
+  );
+}
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  return (
+    <PromotionsProvider>
+      <AppStateProvider>{children}</AppStateProvider>
+    </PromotionsProvider>
   );
 }
 

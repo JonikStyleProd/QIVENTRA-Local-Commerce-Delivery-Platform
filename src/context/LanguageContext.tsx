@@ -1,3 +1,4 @@
+import { formatShekels } from '../i18n/format';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language, Translations, translations } from '../i18n/translations';
 
@@ -59,11 +60,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const currentTranslations = translations[language] || translations.ru;
 
   const formatCurrency = (amount: number): string => {
-    // Israeli standard currency representation with non-breaking space
-    if (language === 'he') {
-      return `₪\u00A0${amount}`;
-    }
-    return `${amount}\u00A0₪`;
+    return formatShekels(amount, language);
   };
 
   const formatMinutes = (minutes: number): string => {

@@ -9,9 +9,7 @@ describe('QIVENTRA Localization Suite', () => {
       const t = translations[lang];
       expect(t).toBeDefined();
 
-      // ProductCard badges
-      expect(t.productCard.topBadge).toBeTruthy();
-      expect(t.productCard.newBadge).toBeTruthy();
+      // ProductCard
       expect(t.productCard.addToCart).toBeTruthy();
 
       // Profile
@@ -40,10 +38,6 @@ describe('QIVENTRA Localization Suite', () => {
     expect(translations.he.footer.pwaReady).toBe('מוכן כ-PWA');
     expect(translations.en.footer.pwaReady).toBe('PWA Ready');
 
-    expect(translations.ru.productCard.topBadge).toBe('Хит');
-    expect(translations.ru.productCard.newBadge).toBe('Новинка');
-    expect(translations.he.productCard.topBadge).toBe('מוביל');
-    expect(translations.he.productCard.newBadge).toBe('חדש');
   });
 });
 
@@ -82,18 +76,14 @@ describe('QIVENTRA Cart & Financial Logic', () => {
     expect(pickedEmpty.find((l) => l.store.id === 'store-4')?.shortfall).toBe(90);
   });
 
-  it('formats Israeli currency tightly with non-breaking space', () => {
-    const formatCurrency = (amount: number, language: 'ru' | 'en' | 'he') => {
-      if (language === 'he') {
-        return `₪\u00A0${amount}`;
-      }
-      return `${amount}\u00A0₪`;
-    };
-
-    expect(formatCurrency(45, 'he')).toBe('₪\u00A045');
-    expect(formatCurrency(45, 'ru')).toBe('45\u00A0₪');
-    expect(formatCurrency(45, 'en')).toBe('45\u00A0₪');
-    expect(formatCurrency(45, 'ru')).toContain('\u00A0');
+  it('formats shekels through Intl in each language', async () => {
+    const { formatShekels } = await import('../i18n/format');
+    const plain = (text: string) => text.replace(/[\u200e\u200f\u061c]/g, '').replace(/\u00a0/g, ' ');
+    expect(plain(formatShekels(45, 'ru'))).toBe('45 ₪');
+    expect(plain(formatShekels(45, 'en'))).toBe('₪45');
+    expect(plain(formatShekels(45, 'he'))).toContain('45');
+    expect(plain(formatShekels(45, 'he'))).toContain('₪');
+    expect(plain(formatShekels(12.5, 'en'))).toBe('₪12.50');
   });
 });
 

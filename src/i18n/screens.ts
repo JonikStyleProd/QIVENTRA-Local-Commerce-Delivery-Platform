@@ -49,6 +49,7 @@ export interface ScreenStrings {
   search: {
     note: string;
     start: string;
+    examples: string;
     nothing: string;
     clearFilters: string;
   };
@@ -223,6 +224,7 @@ export const screenTranslations: Record<'ru' | 'en' | 'he', ScreenStrings> = {
     search: {
       note: 'найдём',
       start: 'что ищем?',
+      examples: 'Например',
       nothing: 'пусто!',
       clearFilters: 'Сбросить фильтры',
     },
@@ -387,6 +389,7 @@ export const screenTranslations: Record<'ru' | 'en' | 'he', ScreenStrings> = {
     search: {
       note: 'we will find it',
       start: 'looking for?',
+      examples: 'For example',
       nothing: 'nothing!',
       clearFilters: 'Reset filters',
     },
@@ -551,6 +554,7 @@ export const screenTranslations: Record<'ru' | 'en' | 'he', ScreenStrings> = {
     search: {
       note: 'נמצא',
       start: 'מה מחפשים?',
+      examples: 'לדוגמה',
       nothing: 'ריק!',
       clearFilters: 'איפוס מסננים',
     },
