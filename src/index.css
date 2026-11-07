@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* -------------------------------------------------------------
-   COLLAGE DESIGN TOKENS (design/collage/README.md)
+   COLLAGE DESIGN TOKENS (docs/design-collage.md)
 ------------------------------------------------------------- */
 @theme {
   --color-paper: #FFF8EC;

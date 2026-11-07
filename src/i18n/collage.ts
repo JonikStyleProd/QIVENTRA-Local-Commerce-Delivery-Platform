@@ -1,6 +1,6 @@
 /**
  * Collage design copy, exposed through the app's localization system as `t.collage`.
- * Source: design/collage/i18n/collage-strings.json. Prices, times, fees and minimums are
+ * Source: the design set's collage-strings.json. Prices, times, fees and minimums are
  * NOT here: they come from src/data/mockData.ts and the AppContext cart calculation.
  *
  * The Hebrew text was not written by a native speaker and needs proofreading.
