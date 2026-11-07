@@ -1,4 +1,4 @@
-import { CartItem, Store } from '../types';
+import { CartItem, OrderItem, Product, Store } from '../types';
 import { MOCK_STORES } from './mockData';
 
 /** One shop's part of the current order: what it gets, its fee and how far it is from its minimum. */
@@ -29,6 +29,26 @@ export const summarizeOrderStores = (cart: CartItem[], pickedStoreId: string | n
       .reduce((sum, line) => sum + line.product.price * line.quantity, 0);
     return [{ store, subtotal, fee: store.deliveryFee, shortfall: Math.max(0, store.minOrder - subtotal) }];
   });
+};
+
+/** What a past order can put back in the basket today, and what it cannot. */
+export interface RepeatedOrder {
+  available: { product: Product; quantity: number }[];
+  unavailable: OrderItem[];
+}
+
+/** An item counts only if its product is still in the catalog and in stock. */
+export const resolveRepeatOrder = (items: OrderItem[], catalog: Product[]): RepeatedOrder => {
+  const result: RepeatedOrder = { available: [], unavailable: [] };
+  items.forEach((item) => {
+    const product = catalog.find((p) => p.id === item.productId);
+    if (product?.inStock) {
+      result.available.push({ product, quantity: item.quantity });
+    } else {
+      result.unavailable.push(item);
+    }
+  });
+  return result;
 };
 
 /** Each shop delivers its own goods, so a basket from several shops pays each shop's own fee. */

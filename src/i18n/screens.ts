@@ -59,6 +59,8 @@ export interface ScreenStrings {
     callDemoTitle: string;
     callDemoMsg: string;
     demoStep: string;
+    repeatNoneTitle: string;
+    repeatMissing: string;
   };
   profile: {
     note: string;
@@ -231,6 +233,8 @@ export const screenTranslations: Record<'ru' | 'en' | 'he', ScreenStrings> = {
       callDemoTitle: 'Звонок не подключён',
       callDemoMsg: 'В демо-проекте нет настоящих номеров. Напишите курьеру в чат.',
       demoStep: 'Демо: статус меняется кнопкой',
+      repeatNoneTitle: 'Эти товары сейчас недоступны',
+      repeatMissing: 'Нет в наличии',
     },
     profile: {
       note: 'это вы',
@@ -393,6 +397,8 @@ export const screenTranslations: Record<'ru' | 'en' | 'he', ScreenStrings> = {
       callDemoTitle: 'Calls are not connected',
       callDemoMsg: 'This demo has no real phone numbers. Message the courier in chat instead.',
       demoStep: 'Demo: this button changes the status',
+      repeatNoneTitle: 'These items are not available now',
+      repeatMissing: 'Out of stock',
     },
     profile: {
       note: "that's you",
@@ -555,6 +561,8 @@ export const screenTranslations: Record<'ru' | 'en' | 'he', ScreenStrings> = {
       callDemoTitle: 'שיחות אינן מחוברות',
       callDemoMsg: 'בפרויקט ההדגמה אין מספרים אמיתיים. אפשר לכתוב לשליח בצ׳אט.',
       demoStep: 'הדגמה: הכפתור משנה את הסטטוס',
+      repeatNoneTitle: 'הפריטים האלה אינם זמינים כעת',
+      repeatMissing: 'אזל מהמלאי',
     },
     profile: {
       note: 'זה אתם',

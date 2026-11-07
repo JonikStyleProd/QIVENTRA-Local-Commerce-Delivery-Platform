@@ -3,7 +3,9 @@ import { Bike, MapPin, MessageSquare, Phone, RefreshCw, Store, TrendingUp } from
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
-import { MOCK_PAST_ORDERS } from '../data/mockData';
+import { MOCK_PAST_ORDERS, MOCK_PRODUCTS } from '../data/mockData';
+import { resolveRepeatOrder } from '../data/cartRules';
+import { Order } from '../types';
 import { formatWindow } from '../data/deliverySlots';
 import { Button } from '../components/ui/Button';
 import { NotebookPage, NotebookStep, NotebookSteps } from '../components/collage/NotebookPage';
@@ -23,7 +25,7 @@ const stepIndex = (status: string): number => {
 };
 
 export const OrdersPage: React.FC = () => {
-  const { activeOrder, trackedOrders, advanceOrderSimulation, navigateTo, openChatWithParticipant, currentAddress } = useApp();
+  const { activeOrder, trackedOrders, advanceOrderSimulation, navigateTo, openChatWithParticipant, currentAddress, addToCart } = useApp();
   const { language, t, formatCurrency, formatMinutes } = useLanguage();
   const { showToast } = useToast();
   const copy = t.screens.orders;
@@ -36,12 +38,21 @@ export const OrdersPage: React.FC = () => {
     });
   };
 
-  const handleRepeatOrder = (orderNum: string) => {
-    showToast({
-      type: 'success',
-      title: t.orders.repeatOrderToastTitle,
-      message: `${t.orders.repeatOrderToastMsg} #${orderNum}`,
-    });
+  const handleRepeatOrder = (order: Order) => {
+    const { available, unavailable } = resolveRepeatOrder(order.items, MOCK_PRODUCTS);
+    const missingNames = unavailable.map((item) => item.names?.[language] || item.name).join(', ');
+
+    if (available.length === 0) {
+      showToast({ type: 'error', title: copy.repeatNoneTitle, message: missingNames });
+      return;
+    }
+
+    available.forEach(({ product, quantity }) => addToCart(product, quantity));
+    showToast(
+      unavailable.length > 0
+        ? { type: 'warning', title: t.orders.repeatOrderToastTitle, message: `${copy.repeatMissing}: ${missingNames}` }
+        : { type: 'success', title: t.orders.repeatOrderToastTitle, message: `${t.orders.repeatOrderToastMsg} #${order.orderNumber}` }
+    );
     navigateTo('cart');
   };
 
@@ -276,7 +287,7 @@ export const OrdersPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   leftIcon={<RefreshCw aria-hidden="true" className="w-4 h-4" />}
-                  onClick={() => handleRepeatOrder(order.orderNumber)}
+                  onClick={() => handleRepeatOrder(order)}
                 >
                   {t.orders.repeatOrder}
                 </Button>

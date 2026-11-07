@@ -988,6 +988,7 @@ export const MOCK_PAST_ORDERS: Order[] = [
     storeId: 'store-3',
     items: [
       {
+        productId: 'prod-4',
         name: 'Праздничная сдобная хала с кунжутом',
         names: {
           ru: 'Праздничная сдобная хала с кунжутом',
@@ -998,6 +999,7 @@ export const MOCK_PAST_ORDERS: Order[] = [
         price: 16,
       },
       {
+        productId: 'prod-5',
         name: 'Французский миндальный круассан',
         names: {
           ru: 'Французский миндальный круассан',
@@ -1037,6 +1039,7 @@ export const MOCK_PAST_ORDERS: Order[] = [
     storeId: 'store-2',
     items: [
       {
+        productId: 'prod-8',
         name: 'Сетевое GaN зарядное устройство 65W Ultra',
         names: {
           ru: 'Сетевое GaN зарядное устройство 65W Ultra',
