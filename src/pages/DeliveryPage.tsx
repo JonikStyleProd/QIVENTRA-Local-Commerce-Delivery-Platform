@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { MOCK_STORES } from '../data/mockData';
+import { hasVariantChoice, keyOfLine, priceOf, variantOf } from '../data/variants';
 import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfDay } from '../data/deliverySlots';
 import { pathFor } from '../router/paths';
 import { Button } from '../components/ui/Button';
@@ -108,8 +109,8 @@ export const DeliveryPage: React.FC = () => {
 
   const orderLines = placedOrder
     ? placedOrder.items.map((item) => ({
-        key: item.name,
-        name: item.names?.[language] || item.name,
+        key: `${item.name}-${item.variantId ?? ''}`,
+        name: `${item.names?.[language] || item.name}${item.variantLabels ? ` · ${item.variantLabels[language]}` : ''}`,
         quantity: item.quantity,
         lineTotal: item.price * item.quantity,
         imageUrl: item.imageUrl,
@@ -117,10 +118,12 @@ export const DeliveryPage: React.FC = () => {
         storeId: item.storeId ?? '',
       }))
     : cart.map((line) => ({
-        key: line.product.id,
-        name: line.product.names?.[language] || line.product.name,
+        key: keyOfLine(line),
+        name: `${line.product.names?.[language] || line.product.name}${
+          hasVariantChoice(line.product) ? ` · ${variantOf(line.product, line.variantId)?.labels[language]}` : ''
+        }`,
         quantity: line.quantity,
-        lineTotal: line.product.price * line.quantity,
+        lineTotal: priceOf(line.product, line.variantId) * line.quantity,
         imageUrl: line.product.imageUrl,
         label: t.collage.productLabels[line.product.id] || line.product.names?.[language] || line.product.name,
         storeId: line.product.storeId,

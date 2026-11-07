@@ -7,6 +7,7 @@ import { usePromotions } from '../../context/PromotionsContext';
 import { bestPromotion } from '../../data/promotions';
 import { promotionBadge } from '../collage/promotionCopy';
 import { tiltFor } from '../../data/collageCatalog';
+import { FavoriteButton } from '../collage/FavoriteButton';
 import { Tape } from '../collage/Tape';
 import { HandCircle } from '../collage/HandMarks';
 import { PolaroidPhoto } from '../collage/PolaroidPhoto';
@@ -120,13 +121,18 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store, onClick, to, isSele
     </>
   );
 
-  return to ? (
-    <Link to={to} className={cardClass} style={cardStyle}>
-      {body}
-    </Link>
-  ) : (
-    <button type="button" onClick={onClick} aria-pressed={isSelected} className={cardClass} style={cardStyle}>
-      {body}
-    </button>
+  return (
+    <div className="relative h-full">
+      {to ? (
+        <Link to={to} className={cardClass} style={cardStyle}>
+          {body}
+        </Link>
+      ) : (
+        <button type="button" onClick={onClick} aria-pressed={isSelected} className={cardClass} style={cardStyle}>
+          {body}
+        </button>
+      )}
+      <FavoriteButton kind="stores" id={store.id} name={name} className="absolute! top-2.5 end-2.5 z-[1]" />
+    </div>
   );
 };

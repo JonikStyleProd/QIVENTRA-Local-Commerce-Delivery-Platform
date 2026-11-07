@@ -18,6 +18,7 @@ import { IconButton } from '../components/ui/IconButton';
 import { BottomPanel } from '../components/collage/BottomPanel';
 import { CategoryChip } from '../components/collage/CategoryChip';
 import { FACT_LABEL_ICON } from '../components/collage/ProductLabelChips';
+import { FavoriteButton } from '../components/collage/FavoriteButton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PageShell, SectionHeading } from '../components/collage/Page';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
@@ -29,7 +30,7 @@ const FACT = 'min-w-0 px-3 py-2 border-2 border-ink rounded-xl';
 
 export const StoreDetailPage: React.FC = () => {
   const { storeId } = useParams();
-  const { deliveryFor, setIsAddressModalOpen, addToCart, updateCartQuantity, cart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
+  const { deliveryFor, setIsAddressModalOpen, addToCart, updateCartQuantity, quantityInCart, cartTotalCount, cartSubtotal, openChatWithParticipant } = useApp();
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const share = useShare();
   const { promotions, now, labelsFor } = usePromotions();
@@ -53,8 +54,6 @@ export const StoreDetailPage: React.FC = () => {
 
   const toggleRequiredLabel = (label: ProductLabel) =>
     setRequiredLabels((prev) => (prev.includes(label) ? prev.filter((entry) => entry !== label) : [...prev, label]));
-
-  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
   if (!store) {
     return <NotFoundView title={t.demo.notFound.storeTitle} description={t.demo.notFound.storeDesc} />;
@@ -163,6 +162,7 @@ export const StoreDetailPage: React.FC = () => {
             >
               {t.chat.withStore}
             </Button>
+            <FavoriteButton kind="stores" id={store.id} name={displayName} />
             <IconButton
               onClick={handleShare}
               aria-label={t.store.shareStore}
@@ -235,7 +235,7 @@ export const StoreDetailPage: React.FC = () => {
             <ProductCard
               key={product.id}
               product={product}
-              inCartQuantity={getInCartQuantity(product.id)}
+              inCartQuantity={quantityInCart(product.id)}
               onAddToCart={addToCart}
               onUpdateQuantity={updateCartQuantity}
             />

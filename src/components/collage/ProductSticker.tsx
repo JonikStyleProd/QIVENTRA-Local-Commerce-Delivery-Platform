@@ -39,7 +39,7 @@ export const ProductSticker: React.FC<ProductStickerProps> = ({ product, inCart,
         />
         <p className="hand mt-1.5 text-[22px] leading-none">{label}</p>
         <div className="relative flex items-center justify-between mt-1">
-          <ProductPrice product={product} />
+          <ProductPrice product={product} variantId={product.variants?.[0]?.id ?? ''} />
           {!deliveryFor(product.storeId).inRange ? (
             <span className="text-xs font-extrabold text-action-text max-w-[70px] text-end leading-tight">{t.demo.delivery.cannotAdd}</span>
           ) : (

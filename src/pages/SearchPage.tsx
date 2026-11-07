@@ -19,7 +19,7 @@ import { CategoryChip } from '../components/collage/CategoryChip';
 import { PageHeading, PageShell, SectionHeading } from '../components/collage/Page';
 
 export const SearchPage: React.FC = () => {
-  const { navigateTo, addToCart, updateCartQuantity, cart } = useApp();
+  const { navigateTo, addToCart, updateCartQuantity, quantityInCart } = useApp();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') ?? '';
   const setSearchQuery = (next: string) =>
@@ -47,8 +47,6 @@ export const SearchPage: React.FC = () => {
     );
     return { matchedStores: stores, matchedProducts: products };
   }, [query, categoryName, onlyEco, labelsFor]);
-
-  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
   const sampleQueries = useMemo(() => buildSearchSuggestions(language), [language]);
 
@@ -151,7 +149,7 @@ export const SearchPage: React.FC = () => {
                     <ProductCard
                       key={product.id}
                       product={product}
-                      inCartQuantity={getInCartQuantity(product.id)}
+                      inCartQuantity={quantityInCart(product.id)}
                       onAddToCart={addToCart}
                       onUpdateQuantity={updateCartQuantity}
                     />

@@ -408,6 +408,11 @@ export const MOCK_PRODUCTS: Product[] = [
       en: 'Upper Galilee Boutique Farm',
       he: 'משק בוטיק בגליל העליון',
     },
+    variantKind: 'weight',
+    variants: [
+      { id: '250g', labels: { ru: '250 г', en: '250 g', he: '250 גרם' }, price: 24 },
+      { id: '500g', labels: { ru: '500 г', en: '500 g', he: '500 גרם' }, price: 44 },
+    ],
     imageUrl: '/photos/labneh.webp',
   },
   {
@@ -479,6 +484,12 @@ export const MOCK_PRODUCTS: Product[] = [
     reviewsCount: 112,
     inStock: true,
     origin: 'Оливковые рощи Галилеи',
+    variantKind: 'volume',
+    variants: [
+      { id: '750ml', labels: { ru: '750 мл', en: '750 ml', he: '750 מ״ל' }, price: 48 },
+      { id: '500ml', labels: { ru: '500 мл', en: '500 ml', he: '500 מ״ל' }, price: 36 },
+      { id: '250ml', labels: { ru: '250 мл', en: '250 ml', he: '250 מ״ל' }, price: 22 },
+    ],
     imageUrl: '/photos/olive-oil.webp'
   },
   {
@@ -514,6 +525,11 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 5.0,
     reviewsCount: 310,
     inStock: true,
+    variantKind: 'weight',
+    variants: [
+      { id: '500g', labels: { ru: '500 г', en: '500 g', he: '500 גרם' }, price: 16 },
+      { id: '800g', labels: { ru: '800 г', en: '800 g', he: '800 גרם' }, price: 24 },
+    ],
     imageUrl: '/photos/challah.webp'
   },
   {
@@ -584,6 +600,11 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.91,
     reviewsCount: 88,
     inStock: true,
+    variantKind: 'volume',
+    variants: [
+      { id: '330ml', labels: { ru: '330 мл', en: '330 ml', he: '330 מ״ל' }, price: 20 },
+      { id: '1l', labels: { ru: '1 л', en: '1 l', he: '1 ליטר' }, price: 52 },
+    ],
     imageUrl: '/photos/cold-brew.webp'
   },
   {
@@ -724,6 +745,12 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.94,
     reviewsCount: 54,
     inStock: true,
+    variantKind: 'color',
+    variants: [
+      { id: 'seafoam', labels: { ru: 'морская пена', en: 'sea foam', he: 'קצף ים' }, price: 65 },
+      { id: 'terracotta', labels: { ru: 'терракота', en: 'terracotta', he: 'טרקוטה' }, price: 65 },
+      { id: 'sand', labels: { ru: 'песок', en: 'sand', he: 'חול' }, price: 70 },
+    ],
     imageUrl: '/photos/mug-seafoam.webp'
   },
   {
@@ -759,6 +786,12 @@ export const MOCK_PRODUCTS: Product[] = [
     rating: 4.99,
     reviewsCount: 92,
     inStock: true,
+    variantKind: 'size',
+    variants: [
+      { id: 'standard', labels: { ru: 'стандартный', en: 'standard', he: 'רגיל' }, price: 160 },
+      { id: 'small', labels: { ru: 'маленький', en: 'small', he: 'קטן' }, price: 110 },
+      { id: 'large', labels: { ru: 'большой', en: 'large', he: 'גדול' }, price: 220 },
+    ],
     imageUrl: '/photos/bouquet.webp'
   },
   {
@@ -823,6 +856,10 @@ export const MOCK_ACTIVE_ORDER: Order = {
         en: 'Fresh Goat Labneh with Za\'atar',
         he: 'לאבנה עיזים טרייה עם זעתר',
       },
+      productId: 'prod-1',
+      variantId: '250g',
+      storeId: 'store-1',
+      imageUrl: '/photos/labneh.webp',
       quantity: 2,
       price: 24,
     },
@@ -833,6 +870,9 @@ export const MOCK_ACTIVE_ORDER: Order = {
         en: 'Ripe Organic Israeli Hass Avocado',
         he: 'אבוקדו האס אורגני מוכן לאכילה',
       },
+      productId: 'prod-2',
+      storeId: 'store-1',
+      imageUrl: '/photos/avocado.webp',
       quantity: 1,
       price: 18,
     },
@@ -843,6 +883,10 @@ export const MOCK_ACTIVE_ORDER: Order = {
         en: 'Boutique Extra Virgin Olive Oil',
         he: 'שמן זית בוטיק כתית מעולה',
       },
+      productId: 'prod-3',
+      variantId: '750ml',
+      storeId: 'store-1',
+      imageUrl: '/photos/olive-oil.webp',
       quantity: 1,
       price: 48,
     },
@@ -1039,6 +1083,5 @@ export const MOCK_USER: UserProfile = {
       isDefault: false,
     },
   ],
-  favoriteStoreIds: ['store-1', 'store-3'],
   role: 'customer',
 };

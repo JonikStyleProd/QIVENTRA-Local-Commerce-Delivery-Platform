@@ -23,7 +23,7 @@ export const useRepeatOrder = () => {
         return;
       }
 
-      available.forEach(({ product, quantity }) => addToCart(product, quantity));
+      available.forEach(({ product, quantity, variantId }) => addToCart(product, quantity, variantId));
       showToast(
         unavailable.length > 0
           ? { type: 'warning', title: t.orders.repeatOrderToastTitle, message: `${copy.repeatMissing}: ${missingNames}` }

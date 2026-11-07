@@ -207,7 +207,6 @@ export interface UserProfile {
   phone: string;
   email: string;
   savedAddresses: AddressItem[];
-  favoriteStoreIds: string[];
   role: 'customer' | 'vendor' | 'courier' | 'admin';
   avatarUrl?: string;
 }

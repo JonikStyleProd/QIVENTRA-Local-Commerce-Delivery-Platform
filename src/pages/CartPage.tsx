@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { PROMO_CODES, PromoCode, findPromoCode } from '../data/promotions';
+import { keyOfLine } from '../data/variants';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -87,7 +88,7 @@ export const CartPage: React.FC = () => {
         <div className="space-y-5 min-w-0">
           <Panel tape="blue" className="divide-y-2 divide-paper-dot" aria-label={t.cart.orderSummary}>
             {cart.map((item) => (
-              <CartLine key={item.product.id} item={item} />
+              <CartLine key={keyOfLine(item)} item={item} />
             ))}
           </Panel>
 

@@ -1,5 +1,6 @@
 import { Language } from '../i18n/translations';
 import { Product } from '../types';
+import { priceOf, variantOf } from './variants';
 
 /** Shop promotions: the data model, their status over time, and the seller form's validation. */
 
@@ -19,8 +20,12 @@ export interface Promotion {
   amount?: number;
   /** The shop's product given for 0 ₪, for type "gift". */
   giftProductId?: string;
+  /** Which variant is the gift, if the product has variants. */
+  giftVariantId?: string;
   /** The product and its new price, for type "productPrice". */
   productId?: string;
+  /** Limits the new price to one variant. Without it every variant the price is lower for gets it. */
+  variantId?: string;
   newPrice?: number;
   /** The shop's goods at regular prices must reach this sum. 0 means no threshold. */
   minSubtotal: number;
@@ -101,13 +106,19 @@ export const bestPromotion = (promotions: Promotion[], storeId: string, now: Dat
     )[0];
 
 /** The live "new price" promotion on a product, if there is one. */
-export const productPricePromotion = (promotions: Promotion[], product: Product, now: Date): Promotion | undefined =>
+export const productPricePromotion = (
+  promotions: Promotion[],
+  product: Product,
+  now: Date,
+  variantId?: string
+): Promotion | undefined =>
   promotions
     .filter(
       (promotion) =>
         promotion.type === 'productPrice' &&
         promotion.productId === product.id &&
-        (promotion.newPrice ?? product.price) < product.price &&
+        (!promotion.variantId || promotion.variantId === variantOf(product, variantId)?.id) &&
+        (promotion.newPrice ?? Infinity) < priceOf(product, variantId) &&
         isLive(promotion, now)
     )
     .sort((a, b) => (a.newPrice ?? 0) - (b.newPrice ?? 0))[0];
@@ -124,6 +135,8 @@ export type PromotionField =
   | 'amount'
   | 'giftProductId'
   | 'productId'
+  | 'variantId'
+  | 'giftVariantId'
   | 'newPrice'
   | 'minSubtotal'
   | 'startsOn'
@@ -137,6 +150,7 @@ export type PromotionError =
   | 'giftRequired'
   | 'giftForeign'
   | 'productRequired'
+  | 'variantForeign'
   | 'newPriceRange'
   | 'minInvalid'
   | 'startRequired'
@@ -163,12 +177,20 @@ export const validatePromotion = (
   }
   if (draft.type === 'gift') {
     if (!draft.giftProductId) errors.giftProductId = 'giftRequired';
-    else if (!storeProducts.some((product) => product.id === draft.giftProductId)) errors.giftProductId = 'giftForeign';
+    else {
+      const gift = storeProducts.find((product) => product.id === draft.giftProductId);
+      if (!gift) errors.giftProductId = 'giftForeign';
+      else if (draft.giftVariantId && !gift.variants?.some((variant) => variant.id === draft.giftVariantId)) {
+        errors.giftVariantId = 'variantForeign';
+      }
+    }
   }
   if (draft.type === 'productPrice') {
     const product = storeProducts.find((candidate) => candidate.id === draft.productId);
     if (!product) errors.productId = 'productRequired';
-    else if (!isNumber(draft.newPrice) || draft.newPrice <= 0 || draft.newPrice >= product.price) {
+    else if (draft.variantId && !product.variants?.some((variant) => variant.id === draft.variantId)) {
+      errors.variantId = 'variantForeign';
+    } else if (!isNumber(draft.newPrice) || draft.newPrice <= 0 || draft.newPrice >= priceOf(product, draft.variantId)) {
       errors.newPrice = 'newPriceRange';
     }
   }

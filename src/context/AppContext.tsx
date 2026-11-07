@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { AppRoute, CartItem, Product, Store, Order, UserProfile } from '../types';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_PAST_ORDERS, MOCK_USER } from '../data/mockData';
 import { advanceOrder } from '../data/orderTracker';
+import { hasVariantChoice, keyOfLine, lineKey, normalizeVariantId, priceOf, variantOf } from '../data/variants';
 import { DEFAULT_ADDRESS_ID, DEMO_ADDRESSES, StoreDelivery, addressById, storeDelivery } from '../data/addresses';
 import { DeliveryWindow } from '../data/deliverySlots';
 import { collageTranslations } from '../i18n/collage';
@@ -32,9 +33,13 @@ interface AppContextType {
   
   // Cart
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  updateCartQuantity: (productId: string, quantity: number) => void;
-  removeFromCart: (productId: string) => void;
+  /** Adds a product in the given variant, or in its first one. Each variant is its own line. */
+  addToCart: (product: Product, quantity?: number, variantId?: string) => void;
+  /** `key` is the line's key: the product id, plus the variant if it has one. */
+  updateCartQuantity: (key: string, quantity: number) => void;
+  removeFromCart: (key: string) => void;
+  /** All units of a product in the basket, across its variants. */
+  quantityInCart: (productId: string) => number;
   clearCart: () => void;
   cartTotalCount: number;
   cartSubtotal: number;
@@ -45,6 +50,10 @@ interface AppContextType {
   order: OrderCalculation;
   deliveryFee: number;
   totalAmount: number;
+
+  /** Hearts on shops and products. They stay in this browser. */
+  favorites: Favorites;
+  toggleFavorite: (kind: keyof Favorites, id: string) => void;
 
   // Modals & Drawers
   isAuthModalOpen: boolean;
@@ -92,6 +101,23 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+export interface Favorites {
+  stores: string[];
+  products: string[];
+}
+
+const FAVORITES_KEY = 'qiventra_favorites';
+
+const readFavorites = (): Favorites => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(FAVORITES_KEY) ?? 'null');
+    const clean = (list: unknown) => (Array.isArray(list) ? list.filter((id) => typeof id === 'string') : []);
+    return { stores: clean(parsed?.stores), products: clean(parsed?.products) };
+  } catch {
+    return { stores: [], products: [] };
+  }
+};
+
 const ORDERS_KEY = 'qiventra_orders';
 const ADDRESS_KEY = 'qiventra_address';
 const DEMO_ORDER_KEY = 'qiventra_demo_order';
@@ -132,7 +158,6 @@ const GUEST_USER: UserProfile = {
   phone: '',
   email: '',
   savedAddresses: [],
-  favoriteStoreIds: [],
   role: 'customer',
 };
 
@@ -235,10 +260,10 @@ function AppStateProvider({ children }: { children: ReactNode }) {
                 item.quantity > 0
             );
             // An emptied basket stays empty, and saved items pick up current catalog data.
-            return valid.map((item) => ({
-              ...item,
-              product: MOCK_PRODUCTS.find((p) => p.id === item.product.id) ?? item.product,
-            }));
+            return valid.map((item) => {
+              const product = MOCK_PRODUCTS.find((p) => p.id === item.product.id) ?? item.product;
+              return { ...item, product, variantId: normalizeVariantId(product, item.variantId) };
+            });
           }
         }
       }
@@ -248,7 +273,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     // First visit starts with one shop's order that meets its minimum, as in the design.
     return ['prod-4', 'prod-5', 'prod-6'].flatMap((id, index) => {
       const product = MOCK_PRODUCTS.find((p) => p.id === id);
-      return product ? [{ product, quantity: index === 1 ? 2 : 1 }] : [];
+      return product ? [{ product, quantity: index === 1 ? 2 : 1, variantId: normalizeVariantId(product) }] : [];
     });
   });
 
@@ -277,6 +302,23 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     return 'applied';
   };
   const removePromoCode = () => setPromoCodeText(null);
+
+  const [favorites, setFavorites] = useState<Favorites>(readFavorites);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+    } catch {
+      // Without storage favorites last until the page closes.
+    }
+  }, [favorites]);
+
+  const toggleFavorite = useCallback((kind: keyof Favorites, id: string) => {
+    setFavorites((prev) => ({
+      ...prev,
+      [kind]: prev[kind].includes(id) ? prev[kind].filter((entry) => entry !== id) : [...prev[kind], id],
+    }));
+  }, []);
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -355,35 +397,30 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     [navigate]
   );
 
-  const addToCart = (product: Product, quantity = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prev, { product, quantity }];
-    });
+  const addToCart = useCallback((product: Product, quantity = 1, variantId?: string) => {
+    const chosen = normalizeVariantId(product, variantId);
+    const key = lineKey(product.id, chosen);
+    setCart((prev) =>
+      prev.some((item) => keyOfLine(item) === key)
+        ? prev.map((item) => (keyOfLine(item) === key ? { ...item, quantity: item.quantity + quantity } : item))
+        : [...prev, { product, quantity, variantId: chosen }]
+    );
+  }, []);
+
+  const removeFromCart = (key: string) => {
+    setCart((prev) => prev.filter((item) => keyOfLine(item) !== key));
   };
 
-  const updateCartQuantity = (productId: string, quantity: number) => {
+  const updateCartQuantity = (key: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(key);
       return;
     }
-    setCart((prev) =>
-      prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    setCart((prev) => prev.map((item) => (keyOfLine(item) === key ? { ...item, quantity } : item)));
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
-  };
+  const quantityInCart = (productId: string) =>
+    cart.reduce((sum, item) => (item.product.id === productId ? sum + item.quantity : sum), 0);
 
   const removeStoreItems = (storeId: string) => {
     setCart((prev) => prev.filter((item) => item.product.storeId !== storeId));
@@ -399,7 +436,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   const cartSubtotal = useMemo(() => {
-    return cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+    return cart.reduce((acc, item) => acc + priceOf(item.product, item.variantId) * item.quantity, 0);
   }, [cart]);
 
   const order = useMemo(
@@ -456,9 +493,11 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         name: line.product.name,
         names: line.product.names,
         quantity: line.quantity,
-        price: line.product.price,
+        price: priceOf(line.product, line.variantId),
         storeId: line.product.storeId,
         imageUrl: line.product.imageUrl,
+        variantId: line.variantId,
+        variantLabels: hasVariantChoice(line.product) ? variantOf(line.product, line.variantId)?.labels : undefined,
       })),
       subtotal: order.itemsSubtotal,
       discount: order.promoCodeDiscount,
@@ -501,6 +540,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         addToCart,
         updateCartQuantity,
         removeFromCart,
+        quantityInCart,
         clearCart,
         cartTotalCount,
         cartSubtotal,
@@ -509,6 +549,8 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         order,
         deliveryFee,
         totalAmount,
+        favorites,
+        toggleFavorite,
         isAuthModalOpen,
         setIsAuthModalOpen,
         isAddressModalOpen,

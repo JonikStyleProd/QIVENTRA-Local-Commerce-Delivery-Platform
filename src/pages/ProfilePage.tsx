@@ -7,7 +7,12 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { AppRoute } from '../types';
 import { pathFor } from '../router/paths';
+import { MOCK_PRODUCTS, MOCK_STORES } from '../data/mockData';
 import { Button } from '../components/ui/Button';
+import { EmptyState } from '../components/ui/EmptyState';
+import { LinkButton } from '../components/ui/LinkButton';
+import { ProductCard } from '../components/ui/ProductCard';
+import { StoreCard } from '../components/ui/StoreCard';
 import { IconButton } from '../components/ui/IconButton';
 import { LanguageSwitcher } from '../components/ui/LanguageSwitcher';
 import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
@@ -16,6 +21,59 @@ import { PageHeading, PageShell, SectionHeading } from '../components/collage/Pa
 import { Panel } from '../components/collage/Panel';
 import { PolaroidPhoto } from '../components/collage/PolaroidPhoto';
 import { Stamp } from '../components/collage/Stamp';
+
+/** Everything hearted, on the profile. Empty until the first heart. */
+const FavoritesSection: React.FC = () => {
+  const { favorites, addToCart, updateCartQuantity, quantityInCart } = useApp();
+  const { t } = useLanguage();
+  const copy = t.demo.favorites;
+  const stores = MOCK_STORES.filter((store) => favorites.stores.includes(store.id));
+  const products = MOCK_PRODUCTS.filter((product) => favorites.products.includes(product.id));
+
+  return (
+    <section id="favorites" className="mt-8 desk:mt-10">
+      <SectionHeading note={copy.note} title={copy.title} />
+      {stores.length === 0 && products.length === 0 ? (
+        <EmptyState title={copy.emptyTitle} description={copy.emptyDesc}>
+          <LinkButton to={pathFor('catalog')} variant="secondary">
+            {copy.toShops}
+          </LinkButton>
+        </EmptyState>
+      ) : (
+        <div className="space-y-6">
+          {stores.length > 0 && (
+            <div>
+              <h3 className="mb-3 text-lg font-black">{copy.stores}</h3>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-[26px] desk:grid-cols-3 desk:gap-x-[26px]">
+                {stores.map((store) => (
+                  <li key={store.id}>
+                    <StoreCard store={store} to={pathFor('store', { storeId: store.id })} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {products.length > 0 && (
+            <div>
+              <h3 className="mb-3 text-lg font-black">{copy.products}</h3>
+              <div className="product-grid">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    inCartQuantity={quantityInCart(product.id)}
+                    onAddToCart={addToCart}
+                    onUpdateQuantity={updateCartQuantity}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+};
 
 const ROW = 'flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-3 first:pt-0 last:pb-0';
 const TILE =
@@ -175,6 +233,8 @@ export const ProfilePage: React.FC = () => {
           </div>
         </Panel>
       </div>
+
+      <FavoritesSection />
 
       <section className="mt-8 desk:mt-10">
         <SectionHeading note={copy.moreNote} title={copy.workspaces} />

@@ -31,6 +31,7 @@ export const appRoutes: RouteObject[] = [
       { index: true, Component: HomePage },
       { path: relative(ROUTE_PATTERNS.catalog), Component: CatalogPage },
       { path: relative(ROUTE_PATTERNS.store), Component: StoreDetailPage },
+      lazyPage(ROUTE_PATTERNS.product, () => import('../pages/ProductPage').then((m) => ({ Component: m.ProductPage }))),
       { path: relative(ROUTE_PATTERNS.cart), Component: CartPage },
       { path: relative(ROUTE_PATTERNS.delivery), Component: DeliveryPage },
       { path: relative(ROUTE_PATTERNS.orders), Component: OrdersPage },

@@ -33,7 +33,9 @@ interface Draft {
   percent: string;
   amount: string;
   giftProductId: string;
+  giftVariantId: string;
   productId: string;
+  variantId: string;
   newPrice: string;
   minSubtotal: string;
   productIds: string[];
@@ -61,7 +63,9 @@ const toDraft = (promotion: Promotion | null): Draft => {
     percent: promotion?.percent?.toString() ?? '',
     amount: promotion?.amount?.toString() ?? '',
     giftProductId: promotion?.giftProductId ?? '',
+    giftVariantId: promotion?.giftVariantId ?? '',
     productId: promotion?.productId ?? '',
+    variantId: promotion?.variantId ?? '',
     newPrice: promotion?.newPrice?.toString() ?? '',
     minSubtotal: promotion ? String(promotion.minSubtotal) : '0',
     productIds: promotion?.productIds ?? [],
@@ -85,7 +89,9 @@ const toPromotion = (draft: Draft, storeId: string): Promotion => ({
   percent: draft.type === 'percent' ? parseNumber(draft.percent) : undefined,
   amount: draft.type === 'amount' ? parseNumber(draft.amount) : undefined,
   giftProductId: draft.type === 'gift' ? draft.giftProductId || undefined : undefined,
+  giftVariantId: draft.type === 'gift' ? draft.giftVariantId || undefined : undefined,
   productId: draft.type === 'productPrice' ? draft.productId || undefined : undefined,
+  variantId: draft.type === 'productPrice' ? draft.variantId || undefined : undefined,
   newPrice: draft.type === 'productPrice' ? parseNumber(draft.newPrice) : undefined,
   minSubtotal: parseNumber(draft.minSubtotal) ?? 0,
   // A new product price is about that one product, so it has no separate scope.
@@ -111,7 +117,7 @@ interface PromotionFormProps {
 
 /** Create or edit a promotion, with errors at the fields and a live preview of the buyer's view. */
 export const PromotionForm: React.FC<PromotionFormProps> = ({ storeId, promotion, onClose, onSave }) => {
-  const { language, t } = useLanguage();
+  const { language, t, formatCurrency } = useLanguage();
   const copy = t.promotions.seller;
   const descriptionId = useId();
   const formRef = useRef<HTMLFormElement>(null);
@@ -126,6 +132,16 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({ storeId, promotion
   const current = toPromotion(draft, storeId);
   const allErrors = validatePromotion(current, storeProducts);
   const errors: typeof allErrors = wasSubmitted ? allErrors : {};
+  const variantOptions = (productId: string) => {
+    const product = MOCK_PRODUCTS.find((candidate) => candidate.id === productId);
+    return product && product.variants && product.variants.length > 1
+      ? product.variants.map((variant) => ({
+          value: variant.id,
+          label: `${variant.labels[language]} · ${formatCurrency(variant.price)}`,
+        }))
+      : undefined;
+  };
+
   const errorText = (field: PromotionField) => (errors[field] ? t.promotions.errors[errors[field]!] : undefined);
 
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => setDraft((prev) => ({ ...prev, [key]: value }));
@@ -221,10 +237,23 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({ storeId, promotion
             <SelectField
               label={copy.fieldGift}
               value={draft.giftProductId}
-              onChange={(e) => set('giftProductId', e.target.value)}
+              onChange={(e) => {
+                set('giftProductId', e.target.value);
+                set('giftVariantId', '');
+              }}
               placeholder={copy.choose}
               options={productOptions}
               error={errorText('giftProductId')}
+            />
+          )}
+          {draft.type === 'gift' && (variantOptions(draft.giftProductId)?.length ?? 0) > 0 && (
+            <SelectField
+              label={t.demo.variants.giftVariantField}
+              value={draft.giftVariantId}
+              onChange={(e) => set('giftVariantId', e.target.value)}
+              placeholder={t.demo.variants.allVariants}
+              options={variantOptions(draft.giftProductId) ?? []}
+              error={errorText('giftVariantId')}
             />
           )}
           {draft.type === 'productPrice' && (
@@ -232,11 +261,24 @@ export const PromotionForm: React.FC<PromotionFormProps> = ({ storeId, promotion
               <SelectField
                 label={copy.fieldProduct}
                 value={draft.productId}
-                onChange={(e) => set('productId', e.target.value)}
+                onChange={(e) => {
+                  set('productId', e.target.value);
+                  set('variantId', '');
+                }}
                 placeholder={copy.choose}
                 options={productOptions}
                 error={errorText('productId')}
               />
+              {(variantOptions(draft.productId)?.length ?? 0) > 0 && (
+                <SelectField
+                  label={t.demo.variants.variantField}
+                  value={draft.variantId}
+                  onChange={(e) => set('variantId', e.target.value)}
+                  placeholder={t.demo.variants.allVariants}
+                  options={variantOptions(draft.productId) ?? []}
+                  error={errorText('variantId')}
+                />
+              )}
               <Input
                 label={copy.fieldNewPrice}
                 type="number"

@@ -31,6 +31,7 @@ export const CatalogPage: React.FC = () => {
     navigateTo,
     addToCart,
     updateCartQuantity,
+    quantityInCart,
     cart,
   } = useApp();
 
@@ -101,8 +102,6 @@ export const CatalogPage: React.FC = () => {
       activeGroup === 'all' ? MOCK_PRODUCTS : MOCK_PRODUCTS.filter((p) => groupOfCategoryName(p.category) === activeGroup);
     return filterProductsByLabels(inGroup, requiredLabels, labelsFor);
   }, [activeGroup, requiredLabels, labelsFor]);
-
-  const getInCartQuantity = (productId: string) => cart.find((i) => i.product.id === productId)?.quantity ?? 0;
 
   const resetFilters = () => {
     setSelectedCategorySlug(null);
@@ -258,7 +257,7 @@ export const CatalogPage: React.FC = () => {
               <ProductCard
                 key={product.id}
                 product={product}
-                inCartQuantity={getInCartQuantity(product.id)}
+                inCartQuantity={quantityInCart(product.id)}
                 onAddToCart={addToCart}
                 onUpdateQuantity={updateCartQuantity}
               />
