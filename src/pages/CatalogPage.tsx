@@ -20,7 +20,7 @@ export const CatalogPage: React.FC = () => {
     selectedCategorySlug,
     setSelectedCategorySlug,
     selectedStoreId,
-    setSelectedStoreId,
+    pickStore,
     navigateTo,
     addToCart,
     updateCartQuantity,
@@ -174,7 +174,7 @@ export const CatalogPage: React.FC = () => {
                   <StoreCard
                     store={store}
                     isSelected={store.id === selectedStoreId}
-                    onClick={() => setSelectedStoreId(store.id)}
+                    onClick={() => pickStore(store.id)}
                   />
                 </li>
               ))}
@@ -221,7 +221,14 @@ export const CatalogPage: React.FC = () => {
             <StoreIcon aria-hidden="true" className="w-5 h-5 shrink-0" />
             <span className="hidden desk:inline whitespace-nowrap">{copy.openStore}</span>
           </button>
-          <Button size="lg" onClick={() => navigateTo('delivery')} className="whitespace-nowrap px-3.5 desk:px-6">
+          <Button
+            size="lg"
+            onClick={() => {
+              pickStore(pickedStore.id);
+              navigateTo('delivery');
+            }}
+            className="whitespace-nowrap px-3.5 desk:px-6"
+          >
             <span className="desk:hidden">{copy.nextMobile}</span>
             <span className="hidden desk:inline">{copy.next}</span>
           </Button>

@@ -187,8 +187,6 @@ export const MOCK_STORES: Store[] = [
     isVerified: true,
     isEco: true,
     isFeatured: true,
-    isPromo: true,
-    promoText: 'Бесплатная доставка от 80 ₪',
     tags: ['Фермерское', 'Эко-упаковка', 'Кошер Органик'],
     bannerGradient: 'from-[#123B35] to-[#1D5E54]',
     logoUrl: '/photos/store-carmel-market.webp',

@@ -29,8 +29,6 @@ describe('QIVENTRA Localization Suite', () => {
 
       // Cart
       expect(t.cart.checkoutTitle).toBeTruthy();
-      expect(t.cart.freeDeliveryProgress).toBeTruthy();
-      expect(t.cart.freeDeliveryUnlocked).toBeTruthy();
     });
 
     // Language specific values
@@ -50,21 +48,38 @@ describe('QIVENTRA Localization Suite', () => {
 });
 
 describe('QIVENTRA Cart & Financial Logic', () => {
-  const freeDeliveryThreshold = 100;
-  const deliveryFee = 15;
+  const lineFor = async (productId: string, quantity = 1) => {
+    const { MOCK_PRODUCTS } = await import('../data/mockData');
+    return { product: MOCK_PRODUCTS.find((p) => p.id === productId)!, quantity };
+  };
 
-  it('calculates free delivery when subtotal reaches or exceeds 100 ILS', () => {
-    const subtotalBelow: number = 85;
-    const subtotalEqual: number = 100;
-    const subtotalAbove: number = 145;
+  it('takes the delivery fee from the shop, whatever the basket total', async () => {
+    const { summarizeOrderStores, orderDeliveryFee } = await import('../data/cartRules');
+    // Jaffa charges 18, even far above the old 100 threshold.
+    const jaffa = summarizeOrderStores([await lineFor('prod-11', 5)], null);
+    expect(orderDeliveryFee(jaffa)).toBe(18);
+    // Levinsky charges 0, even below it.
+    const levinsky = summarizeOrderStores([await lineFor('prod-4')], null);
+    expect(orderDeliveryFee(levinsky)).toBe(0);
+    expect(orderDeliveryFee(summarizeOrderStores([], 'store-4'))).toBe(0);
+  });
 
-    const feeBelow = subtotalBelow >= freeDeliveryThreshold || subtotalBelow === 0 ? 0 : deliveryFee;
-    const feeEqual = subtotalEqual >= freeDeliveryThreshold || subtotalEqual === 0 ? 0 : deliveryFee;
-    const feeAbove = subtotalAbove >= freeDeliveryThreshold || subtotalAbove === 0 ? 0 : deliveryFee;
+  it('pays each shop its own fee, including a picked shop with no goods yet', async () => {
+    const { summarizeOrderStores, orderDeliveryFee } = await import('../data/cartRules');
+    const mixed = summarizeOrderStores([await lineFor('prod-11'), await lineFor('prod-9')], null);
+    expect(orderDeliveryFee(mixed)).toBe(18 + 12);
+    const picked = summarizeOrderStores([await lineFor('prod-4')], 'store-4');
+    expect(orderDeliveryFee(picked)).toBe(18);
+  });
 
-    expect(feeBelow).toBe(15);
-    expect(feeEqual).toBe(0);
-    expect(feeAbove).toBe(0);
+  it('reports how much each shop is short of its minimum order', async () => {
+    const { summarizeOrderStores } = await import('../data/cartRules');
+    const [below] = summarizeOrderStores([await lineFor('prod-4')], null);
+    expect(below.shortfall).toBe(45 - 16);
+    const [met] = summarizeOrderStores([await lineFor('prod-4', 3)], null);
+    expect(met.shortfall).toBe(0);
+    const pickedEmpty = summarizeOrderStores([await lineFor('prod-4', 3)], 'store-4');
+    expect(pickedEmpty.find((l) => l.store.id === 'store-4')?.shortfall).toBe(90);
   });
 
   it('formats Israeli currency tightly with non-breaking space', () => {

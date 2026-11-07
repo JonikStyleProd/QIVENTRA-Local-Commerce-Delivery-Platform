@@ -182,7 +182,7 @@ export const StoreDetailPage: React.FC = () => {
             <div>
               <span className="text-[10px] text-secondary block">{t.store.deliveryCostLabel}</span>
               <span className="font-bold text-primary text-sm tabular-nums">
-                {store.deliveryFee === 0 ? t.cart.free : formatCurrency(store.deliveryFee)}
+                {formatCurrency(store.deliveryFee)}
               </span>
             </div>
           </div>

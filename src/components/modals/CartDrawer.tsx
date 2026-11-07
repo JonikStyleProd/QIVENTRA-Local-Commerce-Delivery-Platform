@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { Drawer } from '../ui/Drawer';
@@ -16,7 +16,6 @@ export const CartDrawer: React.FC = () => {
     cartSubtotal,
     deliveryFee,
     totalAmount,
-    freeDeliveryThreshold,
     navigateTo,
   } = useApp();
 
@@ -139,21 +138,6 @@ export const CartDrawer: React.FC = () => {
 
           {/* Checkout & Summary Footer */}
           <div className="pt-4 mt-4 border-t border-theme shrink-0 space-y-3">
-            
-            {/* Free Delivery progress */}
-            {cartSubtotal < freeDeliveryThreshold ? (
-              <div className="p-2.5 rounded-xl bg-surface-elevated border border-theme text-xs text-secondary flex items-center justify-between">
-                <span>{t.cart.freeDeliveryProgress}</span>
-                <span className="font-bold text-[#1E1E1E] dark:text-[#FFD84D] tabular-nums">
-                  {formatCurrency(freeDeliveryThreshold - cartSubtotal)}
-                </span>
-              </div>
-            ) : (
-              <div className="p-2 rounded-xl bg-[#E8F5EE] dark:bg-[#132E20] text-[#1E824C] dark:text-[#48BB78] text-xs font-medium flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span>{t.cart.freeDeliveryUnlocked}</span>
-              </div>
-            )}
 
             {/* Calculations */}
             <div className="space-y-1.5 text-xs">
@@ -164,7 +148,7 @@ export const CartDrawer: React.FC = () => {
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-secondary">
                 <span>{t.cart.deliveryFee}</span>
                 <span className="font-medium text-primary whitespace-nowrap tabular-nums">
-                  {deliveryFee === 0 ? t.cart.free : formatCurrency(deliveryFee)}
+                  {formatCurrency(deliveryFee)}
                 </span>
               </div>
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-sm font-extrabold text-primary pt-2 border-t border-theme/60">

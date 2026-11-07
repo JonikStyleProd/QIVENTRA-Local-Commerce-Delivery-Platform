@@ -242,8 +242,6 @@ export interface Translations {
     checkoutButton: string;
     securePaymentNote: string;
     paymentConfirmationNote: string;
-    freeDeliveryProgress: string;
-    freeDeliveryUnlocked: string;
     drawerTitle: string;
     itemWord1: string;
     itemWordFew: string;
@@ -731,8 +729,6 @@ export const translations: Record<Language, Translations> = {
       checkoutButton: 'ביצוע הזמנה',
       securePaymentNote: 'תשלום מאובטח באמצעות Bit, Apple Pay או כרטיס אשראי',
       paymentConfirmationNote: 'חיוב מתבצע לאחר אישור בית העסק',
-      freeDeliveryProgress: 'למשלוח חינם:',
-      freeDeliveryUnlocked: 'זכאי למשלוח חינם!',
       drawerTitle: 'סל קניות',
       itemWord1: 'פריט',
       itemWordFew: 'פריטים',
@@ -1218,8 +1214,6 @@ export const translations: Record<Language, Translations> = {
       checkoutButton: 'Place Order',
       securePaymentNote: 'Pay with Bit, Apple Pay, or Credit Card after confirmation',
       paymentConfirmationNote: 'Payment processed after merchant confirmation',
-      freeDeliveryProgress: 'For free delivery:',
-      freeDeliveryUnlocked: 'Free delivery unlocked!',
       drawerTitle: 'Shopping Cart',
       itemWord1: 'item',
       itemWordFew: 'items',
@@ -1705,8 +1699,6 @@ export const translations: Record<Language, Translations> = {
       checkoutButton: 'Оформить заказ',
       securePaymentNote: 'Оплата Bit, Apple Pay или картой после подтверждения',
       paymentConfirmationNote: 'Оплата после подтверждения мерчантами',
-      freeDeliveryProgress: 'До бесплатной доставки:',
-      freeDeliveryUnlocked: 'Бесплатная доставка активна!',
       drawerTitle: 'Корзина покупок',
       itemWord1: 'товар',
       itemWordFew: 'товара',

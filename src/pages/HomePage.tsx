@@ -51,7 +51,7 @@ const STEP_STYLES = [
 ];
 
 export const HomePage: React.FC = () => {
-  const { navigateTo, addToCart, cart } = useApp();
+  const { navigateTo, pickStore, addToCart, cart } = useApp();
   const { t } = useLanguage();
 
   const landing = t.collage.landing;
@@ -249,7 +249,10 @@ export const HomePage: React.FC = () => {
                     store={store}
                     detail="board"
                     tilt={BOARD_TILTS[index]}
-                    onClick={() => navigateTo('catalog', { storeId: store.id })}
+                    onClick={() => {
+                      pickStore(store.id);
+                      navigateTo('catalog');
+                    }}
                   />
                 </li>
               ))}

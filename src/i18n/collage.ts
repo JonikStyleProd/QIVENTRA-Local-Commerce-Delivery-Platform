@@ -116,10 +116,11 @@ export interface CollageStrings {
     confirmMobile: string;
     busy: string;
     windowWord: string;
-    noStoreItems: string;
+    /** {n} is the missing amount, {store} the shop, {min} its minimum order. */
+    addMore: string;
+    toStoreItems: string;
     deliveryLabel: string;
     total: string;
-    openStore: string;
   };
   groups: Record<CollageGroupId, string>;
   storeCopy: Record<string, CollageStoreCopy>;
@@ -229,10 +230,10 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       confirmMobile: 'Подтвердить заказ',
       busy: 'Передаём заказ в лавку…',
       windowWord: 'Окно',
-      noStoreItems: 'В корзине пока нет товаров этой лавки.',
+      addMore: 'Добавьте ещё {n}: минимальный заказ в {store} — {min}.',
+      toStoreItems: 'К товарам лавки',
       deliveryLabel: 'Доставка',
       total: 'Итого',
-      openStore: 'Открыть лавку',
     },
     groups: {
       all: 'Все',
@@ -373,10 +374,10 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       confirmMobile: 'Confirm order',
       busy: 'Sending your order…',
       windowWord: 'Window',
-      noStoreItems: 'Your basket has nothing from this shop yet.',
+      addMore: 'Add {n} more: the minimum order at {store} is {min}.',
+      toStoreItems: 'To the shop’s items',
       deliveryLabel: 'Delivery',
       total: 'Total',
-      openStore: 'Open shop',
     },
     groups: {
       all: 'All',
@@ -517,10 +518,10 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       confirmMobile: 'אישור ההזמנה',
       busy: 'שולחים את ההזמנה…',
       windowWord: 'חלון',
-      noStoreItems: 'עדיין אין בסל מוצרים מהחנות הזו.',
+      addMore: 'הוסיפו עוד {n}: ההזמנה המינימלית ב־{store} היא {min}.',
+      toStoreItems: 'למוצרי החנות',
       deliveryLabel: 'משלוח',
       total: 'סה״כ',
-      openStore: 'פתיחת החנות',
     },
     groups: {
       all: 'הכול',

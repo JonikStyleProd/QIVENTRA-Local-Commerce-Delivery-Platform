@@ -1,7 +1,6 @@
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import { MOCK_STORES } from '../data/mockData';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HandCheck } from '../components/collage/HandMarks';
@@ -24,6 +23,7 @@ export const DeliveryPage: React.FC = () => {
     totalAmount,
     currentAddress,
     selectedStore,
+    orderStores,
     setIsAddressModalOpen,
     navigateTo,
   } = useApp();
@@ -45,31 +45,31 @@ export const DeliveryPage: React.FC = () => {
   const isDone = phase === 'done';
   const isBusy = phase === 'busy';
 
-  const storeTime = selectedStore ? formatTimeRange(selectedStore.deliveryTimeMin, selectedStore.deliveryTimeMax) : '';
+  // The shop on the polaroid: the picked one when it is part of the order, otherwise the first in it.
+  const headStore = orderStores.find((line) => line.store.id === selectedStore?.id)?.store ?? orderStores[0]?.store;
+  const shortfalls = orderStores.filter((line) => line.shortfall > 0);
+  const canConfirm = shortfalls.length === 0;
+
+  const storeTime = orderStores.length
+    ? formatTimeRange(
+        Math.min(...orderStores.map((line) => line.store.deliveryTimeMin)),
+        Math.max(...orderStores.map((line) => line.store.deliveryTimeMax))
+      )
+    : '';
   const slots = t.collage.slots.map((s, index) => ({ ...s, hint: index === 0 ? `≈ ${storeTime}` : s.hint }));
   const currentSlot = slots[slot];
 
   const storeName = (id: string, fallback: string) => t.collage.storeCopy[id]?.name || fallback;
-  const pickedName = selectedStore
-    ? storeName(selectedStore.id, selectedStore.names?.[language] || selectedStore.name)
-    : '';
-  const pickedCopy = selectedStore ? t.collage.storeCopy[selectedStore.id] : undefined;
+  const pickedName = headStore ? storeName(headStore.id, headStore.names?.[language] || headStore.name) : '';
+  const pickedCopy = headStore ? t.collage.storeCopy[headStore.id] : undefined;
 
-  // The basket is not limited to one shop, so the order goes to the shops of its items.
-  const cartStoreNames = useMemo(() => {
-    const ids = Array.from(new Set(cart.map((line) => line.product.storeId)));
-    return ids.map((id) => {
-      const store = MOCK_STORES.find((s) => s.id === id);
-      return storeName(id, store?.names?.[language] || store?.name || id);
-    });
-    // storeName only reads t, which changes with language.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cart, language]);
-
-  const pickedHasItems = cart.some((line) => line.product.storeId === selectedStore?.id);
+  // The basket is not limited to one shop, so the order goes to all of its shops.
+  const cartStoreNames = orderStores.map((line) =>
+    storeName(line.store.id, line.store.names?.[language] || line.store.name)
+  );
 
   const totalLabel = formatCurrency(totalAmount);
-  const feeLabel = deliveryFee === 0 ? t.cart.free : formatCurrency(deliveryFee);
+  const feeLabel = formatCurrency(deliveryFee);
 
   const itemSummary = cart
     .map((line) => {
@@ -80,7 +80,7 @@ export const DeliveryPage: React.FC = () => {
     .join(', ');
 
   const confirm = () => {
-    if (phase !== 'form') return;
+    if (phase !== 'form' || !canConfirm) return;
     setPhase('busy');
     timer.current = window.setTimeout(() => setPhase('done'), SENDING_TIME_MS);
   };
@@ -172,6 +172,32 @@ export const DeliveryPage: React.FC = () => {
       </div>
     </div>
   );
+
+  const minOrderNotice = (id: string) =>
+    !isDone && !canConfirm ? (
+      <ul id={id} className="grid gap-1 mb-2.5 text-sm font-extrabold">
+        {shortfalls.map((line) => {
+          const [before, after] = copy.addMore
+            .replace('{n}', formatCurrency(line.shortfall))
+            .replace('{min}', formatCurrency(line.store.minOrder))
+            .split('{store}');
+          return (
+            <li key={line.store.id}>
+              {before}
+              <bdi>{storeName(line.store.id, line.store.name)}</bdi>
+              {after}{' '}
+              <button
+                type="button"
+                onClick={() => navigateTo('store', { storeId: line.store.id })}
+                className="inline-flex items-center min-h-11 font-black underline cursor-pointer"
+              >
+                {copy.toStoreItems}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    ) : null;
 
   const stamp = (className: string) => (
     <span
@@ -286,26 +312,14 @@ export const DeliveryPage: React.FC = () => {
               </>
             ) : (
               <>
-                <PolaroidPhoto src={selectedStore?.coverUrl} alt={pickedName} aspectClassName="aspect-[16/10]" eager />
+                <PolaroidPhoto src={headStore?.coverUrl} alt={pickedName} aspectClassName="aspect-[16/10]" eager />
                 <p className="hand mt-2.5 text-[34px] leading-none">
                   <bdi>{pickedName}</bdi>
                 </p>
-                {selectedStore && (
+                {headStore && (
                   <p className="mt-1 font-bold text-ink-2">
                     {pickedCopy?.area ? `${pickedCopy.area} · ` : ''}
-                    {formatDistance(selectedStore.distanceKm)} · {storeTime}
-                  </p>
-                )}
-                {!pickedHasItems && selectedStore && (
-                  <p className="mt-1.5 text-sm font-bold">
-                    {copy.noStoreItems}{' '}
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('store', { storeId: selectedStore.id })}
-                      className="inline-flex items-center min-h-11 font-extrabold underline cursor-pointer"
-                    >
-                      {copy.openStore}
-                    </button>
+                    {formatDistance(headStore.distanceKm)} · {formatTimeRange(headStore.deliveryTimeMin, headStore.deliveryTimeMax)}
                   </p>
                 )}
               </>
@@ -351,16 +365,36 @@ export const DeliveryPage: React.FC = () => {
                 </p>
               </>
             )}
-            <p className="flex justify-between mb-1 font-bold">
-              <span>{copy.deliveryLabel}</span>
-              <span className="whitespace-nowrap">{feeLabel}</span>
-            </p>
+            {orderStores.length > 1 ? (
+              orderStores.map((line) => (
+                <p key={line.store.id} className="flex justify-between gap-2 mb-1 font-bold">
+                  <span>
+                    {copy.deliveryLabel} · <bdi>{storeName(line.store.id, line.store.name)}</bdi>
+                  </span>
+                  <span className="whitespace-nowrap">{formatCurrency(line.fee)}</span>
+                </p>
+              ))
+            ) : (
+              <p className="flex justify-between mb-1 font-bold">
+                <span>{copy.deliveryLabel}</span>
+                <span className="whitespace-nowrap">{feeLabel}</span>
+              </p>
+            )}
             <p className="flex justify-between items-baseline mb-[18px]">
               <span className="text-xl font-black">{copy.total}</span>
               <span className="text-[38px] font-black whitespace-nowrap">{totalLabel}</span>
             </p>
+            {minOrderNotice('min-order-desktop')}
             {!isDone && (
-              <Button size="lg" fullWidth isLoading={isBusy} onClick={confirm} className="min-h-[60px]">
+              <Button
+                size="lg"
+                fullWidth
+                isLoading={isBusy}
+                disabled={!canConfirm}
+                aria-describedby={canConfirm ? undefined : 'min-order-desktop'}
+                onClick={confirm}
+                className="min-h-[60px]"
+              >
                 {isBusy ? copy.busy : `${copy.confirm} · ${totalLabel}`}
               </Button>
             )}
@@ -393,7 +427,15 @@ export const DeliveryPage: React.FC = () => {
             </span>
             <span className="text-[26px] font-black whitespace-nowrap">{totalLabel}</span>
           </div>
-          <Button size="lg" fullWidth isLoading={isBusy} onClick={confirm}>
+          {minOrderNotice('min-order-phone')}
+          <Button
+            size="lg"
+            fullWidth
+            isLoading={isBusy}
+            disabled={!canConfirm}
+            aria-describedby={canConfirm ? undefined : 'min-order-phone'}
+            onClick={confirm}
+          >
             {isBusy ? copy.busy : copy.confirmMobile}
           </Button>
           <p className="mt-2 text-center text-xs font-bold">

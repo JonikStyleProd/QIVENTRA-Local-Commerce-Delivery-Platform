@@ -18,6 +18,7 @@ export const CartPage: React.FC = () => {
     cartDiscount,
     setCartDiscount,
     deliveryFee,
+    orderStores,
     totalAmount,
     currentAddress,
     setIsAddressModalOpen,
@@ -196,12 +197,21 @@ export const CartPage: React.FC = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-secondary">
-                <span>{t.collage.delivery.deliveryLabel}</span>
-                <span className="font-semibold text-primary whitespace-nowrap tabular-nums">
-                  {deliveryFee === 0 ? t.cart.free : formatCurrency(deliveryFee)}
-                </span>
-              </div>
+              {orderStores.length > 1 ? (
+                orderStores.map((line) => (
+                  <div key={line.store.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-secondary">
+                    <span>
+                      {t.collage.delivery.deliveryLabel} · <bdi>{t.collage.storeCopy[line.store.id]?.name || line.store.name}</bdi>
+                    </span>
+                    <span className="font-semibold text-primary whitespace-nowrap tabular-nums">{formatCurrency(line.fee)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center text-secondary">
+                  <span>{t.collage.delivery.deliveryLabel}</span>
+                  <span className="font-semibold text-primary whitespace-nowrap tabular-nums">{formatCurrency(deliveryFee)}</span>
+                </div>
+              )}
 
               <div className="pt-3 border-t border-theme grid grid-cols-[minmax(0,1fr)_auto] items-center text-base font-extrabold text-primary">
                 <span>{t.collage.delivery.total}</span>

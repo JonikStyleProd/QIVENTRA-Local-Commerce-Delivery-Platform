@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { AppRoute, CartItem, Product, Store, Order, UserProfile, LocalizedText } from '../types';
 import { MOCK_STORES, MOCK_PRODUCTS, MOCK_ACTIVE_ORDER, MOCK_USER } from '../data/mockData';
+import { OrderStoreLine, orderDeliveryFee, summarizeOrderStores } from '../data/cartRules';
 import { useLanguage } from './LanguageContext';
 
 interface NavigationOptions {
@@ -15,6 +16,10 @@ interface AppContextType {
   selectedStoreId: string | null;
   setSelectedStoreId: (id: string | null) => void;
   selectedStore: Store | undefined;
+  /** The customer chose this shop in the picker, so it joins the order even with no goods yet. */
+  pickStore: (id: string) => void;
+  /** Shops in the current order, with each one's fee and distance from its minimum. */
+  orderStores: OrderStoreLine[];
   selectedCategorySlug: string | null;
   setSelectedCategorySlug: (slug: string | null) => void;
   searchQuery: string;
@@ -33,7 +38,6 @@ interface AppContextType {
   /** Promo discount in ₪ applied on the cart page; carried through to the delivery window. */
   cartDiscount: number;
   setCartDiscount: (amount: number) => void;
-  freeDeliveryThreshold: number;
   deliveryFee: number;
   totalAmount: number;
   isCartDrawerOpen: boolean;
@@ -77,7 +81,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const { language } = useLanguage();
   const [currentRoute, setCurrentRoute] = useState<AppRoute>('home');
-  const [selectedStoreId, setSelectedStoreId] = useState<string | null>('store-1');
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>('store-3');
+  const [pickedStoreId, setPickedStoreId] = useState<string | null>(null);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -154,19 +159,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 typeof item.quantity === 'number' &&
                 item.quantity > 0
             );
-            if (valid.length > 0) {
-              return valid;
-            }
+            // An emptied basket stays empty, and saved items pick up current catalog data.
+            return valid.map((item) => ({
+              ...item,
+              product: MOCK_PRODUCTS.find((p) => p.id === item.product.id) ?? item.product,
+            }));
           }
         }
       }
     } catch {
       // ignore corrupted state and fallback
     }
-    return [
-      { product: MOCK_PRODUCTS[0], quantity: 1 },
-      { product: MOCK_PRODUCTS[3], quantity: 1 },
-    ];
+    // First visit starts with one shop's order that meets its minimum, as in the design.
+    return ['prod-4', 'prod-5', 'prod-6'].flatMap((id, index) => {
+      const product = MOCK_PRODUCTS.find((p) => p.id === id);
+      return product ? [{ product, quantity: index === 1 ? 2 : 1 }] : [];
+    });
   });
 
   const [promoDiscount, setCartDiscount] = useState(0);
@@ -215,6 +223,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const selectedStore = useMemo(() => {
     return MOCK_STORES.find((s) => s.id === selectedStoreId) || MOCK_STORES[0];
   }, [selectedStoreId]);
+
+  const pickStore = useCallback((id: string) => {
+    setSelectedStoreId(id);
+    setPickedStoreId(id);
+  }, []);
 
   const navigateTo = (route: AppRoute, options?: NavigationOptions) => {
     if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
@@ -272,11 +285,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   }, [cart]);
 
-  const freeDeliveryThreshold = 100;
-  const deliveryFee = useMemo(() => {
-    if (cartSubtotal === 0 || cartSubtotal >= freeDeliveryThreshold) return 0;
-    return 15;
-  }, [cartSubtotal]);
+  const orderStores = useMemo(() => summarizeOrderStores(cart, pickedStoreId), [cart, pickedStoreId]);
+  const deliveryFee = useMemo(() => orderDeliveryFee(orderStores), [orderStores]);
 
   const totalAmount = useMemo(() => {
     return Math.max(0, cartSubtotal - cartDiscount + deliveryFee);
@@ -306,6 +316,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         selectedStoreId,
         setSelectedStoreId,
         selectedStore,
+        pickStore,
+        orderStores,
         selectedCategorySlug,
         setSelectedCategorySlug,
         searchQuery,
@@ -321,7 +333,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
         cartSubtotal,
         cartDiscount,
         setCartDiscount,
-        freeDeliveryThreshold,
         deliveryFee,
         totalAmount,
         isCartDrawerOpen,
