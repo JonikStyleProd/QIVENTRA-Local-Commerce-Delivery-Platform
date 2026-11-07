@@ -6,6 +6,7 @@ import { DeliveryWindow } from '../data/deliverySlots';
 import { collageTranslations } from '../i18n/collage';
 import { OrderCalculation, OrderStoreLine, calculateOrder } from '../data/cartRules';
 import { useLanguage } from './LanguageContext';
+import { findPromoCode } from '../data/promotions';
 import { PromotionsProvider, usePromotions } from './PromotionsContext';
 import { NavigationOptions, pathFor, routeOfPath } from '../router/paths';
 
@@ -30,9 +31,9 @@ interface AppContextType {
   clearCart: () => void;
   cartTotalCount: number;
   cartSubtotal: number;
-  /** The value of the promo code entered on the cart page. Whether it applies is up to `order`. */
-  cartDiscount: number;
-  setCartDiscount: (amount: number) => void;
+  /** Enters a promo code. Whether it gives a discount is up to `order`. */
+  applyPromoCode: (raw: string) => 'applied' | 'already' | 'invalid';
+  removePromoCode: () => void;
   /** The whole calculation: promotions, the promo code, fees and the total. */
   order: OrderCalculation;
   deliveryFee: number;
@@ -203,8 +204,31 @@ function AppStateProvider({ children }: { children: ReactNode }) {
     });
   });
 
-  const [promoDiscount, setCartDiscount] = useState(0);
-  const cartDiscount = cart.length > 0 ? promoDiscount : 0;
+  const [promoCodeText, setPromoCodeText] = useState<string | null>(() => {
+    try {
+      return findPromoCode(localStorage.getItem('qiventra_promo_code'))?.code ?? null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (promoCodeText) localStorage.setItem('qiventra_promo_code', promoCodeText);
+      else localStorage.removeItem('qiventra_promo_code');
+    } catch {
+      // Without storage the code simply lasts until the page closes.
+    }
+  }, [promoCodeText]);
+
+  const applyPromoCode = (raw: string) => {
+    const found = findPromoCode(raw);
+    if (!found) return 'invalid';
+    if (found.code === promoCodeText) return 'already';
+    setPromoCodeText(found.code);
+    return 'applied';
+  };
+  const removePromoCode = () => setPromoCodeText(null);
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -304,7 +328,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setCart([]);
-    setCartDiscount(0);
+    setPromoCodeText(null);
   };
 
   const cartTotalCount = useMemo(() => {
@@ -316,8 +340,8 @@ function AppStateProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   const order = useMemo(
-    () => calculateOrder({ cart, pickedStoreId, promotions, promoCodeAmount: cartDiscount, now }),
-    [cart, pickedStoreId, promotions, cartDiscount, now]
+    () => calculateOrder({ cart, pickedStoreId, promotions, promoCode: findPromoCode(promoCodeText), now }),
+    [cart, pickedStoreId, promotions, promoCodeText, now]
   );
   const orderStores = order.stores;
   const deliveryFee = order.deliveryFee;
@@ -372,6 +396,7 @@ function AppStateProvider({ children }: { children: ReactNode }) {
       })),
       subtotal: order.itemsSubtotal,
       discount: order.promoCodeDiscount,
+      promoCode: order.promoCodeDiscount > 0 ? order.promoCode?.code : undefined,
       feeLines: orderStores.map((line) => ({ storeId: line.store.id, fee: line.baseFee })),
       promotionLines: order.promotionLines,
       totalAmount,
@@ -408,8 +433,8 @@ function AppStateProvider({ children }: { children: ReactNode }) {
         clearCart,
         cartTotalCount,
         cartSubtotal,
-        cartDiscount,
-        setCartDiscount,
+        applyPromoCode,
+        removePromoCode,
         order,
         deliveryFee,
         totalAmount,

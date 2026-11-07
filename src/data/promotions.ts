@@ -301,6 +301,24 @@ export const buildDemoPromotions = (now: Date): Promotion[] => {
   ];
 };
 
+/* ------------------------------ Promo codes ------------------------------ */
+
+/** A code the buyer types in. It competes with the shop promotions inside calculateOrder. */
+export interface PromoCode {
+  code: string;
+  /** Discount in ₪. */
+  amount: number;
+  /** The goods at regular prices must reach this sum. */
+  minSubtotal: number;
+}
+
+export const PROMO_CODES: PromoCode[] = [{ code: 'START20', amount: 20, minSubtotal: 80 }];
+
+export const findPromoCode = (raw: string | null | undefined): PromoCode | undefined => {
+  const code = raw?.trim().toUpperCase();
+  return code ? PROMO_CODES.find((candidate) => candidate.code === code) : undefined;
+};
+
 /* ------------------------------ Product labels ------------------------------ */
 
 /** The fixed list a seller picks from. Nothing here claims sales numbers or buyers' opinions. */

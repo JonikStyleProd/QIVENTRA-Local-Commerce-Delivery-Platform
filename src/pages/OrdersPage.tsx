@@ -177,7 +177,10 @@ export const OrdersPage: React.FC = () => {
                   showStore={(activeOrder.feeLines?.length ?? 0) > 1}
                 />
                 {(activeOrder.discount ?? 0) > 0 && (
-                  <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(activeOrder.discount ?? 0)}`} />
+                  <SummaryRow
+                    label={<bdi>{t.demo.orders.promoCode.replace('{code}', activeOrder.promoCode ?? '')}</bdi>}
+                    value={`− ${formatCurrency(activeOrder.discount ?? 0)}`}
+                  />
                 )}
                 <SummaryRow label={t.collage.delivery.deliveryLabel} value={formatCurrency(activeOrder.deliveryFee)} />
               </>

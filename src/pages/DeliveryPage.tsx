@@ -125,6 +125,8 @@ export const DeliveryPage: React.FC = () => {
 
   const orderSubtotal = placedOrder?.subtotal ?? order.itemsSubtotal;
   const orderDiscount = placedOrder?.discount ?? order.promoCodeDiscount;
+  const orderPromoCode = placedOrder?.promoCode ?? order.promoCode?.code ?? '';
+  const promoCodeLabel = <bdi>{t.demo.promo.active.replace('{code}', orderPromoCode)}</bdi>;
   const orderPromotionLines = placedOrder?.promotionLines ?? order.promotionLines;
   // Delivery rows show each shop's regular fee; free delivery is taken off in its own row.
   const orderFee = placedOrder?.deliveryFee ?? order.baseDeliveryFee;
@@ -430,7 +432,7 @@ export const DeliveryPage: React.FC = () => {
               <SummaryRow label={t.cart.itemsSubtotal} value={formatCurrency(orderSubtotal)} />
             )}
             <PromotionRows lines={orderPromotionLines} showStore={feeLines.length > 1} />
-            {orderDiscount > 0 && <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(orderDiscount)}`} />}
+            {orderDiscount > 0 && <SummaryRow label={promoCodeLabel} value={`− ${formatCurrency(orderDiscount)}`} />}
             {feeLines.length > 1 ? (
               feeLines.map((line) => (
                 <SummaryRow
@@ -505,7 +507,7 @@ export const DeliveryPage: React.FC = () => {
           )}
           {orderDiscount > 0 && (
             <div className="mb-2 text-sm">
-              <SummaryRow label={t.cart.promoDiscount} value={`− ${formatCurrency(orderDiscount)}`} />
+              <SummaryRow label={promoCodeLabel} value={`− ${formatCurrency(orderDiscount)}`} />
             </div>
           )}
           {!placedOrder && order.discountChoice !== 'promoCode' && <PromotionHints stores={orderStores} className="mb-2" />}

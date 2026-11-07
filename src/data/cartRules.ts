@@ -1,6 +1,6 @@
 import { CartItem, OrderItem, OrderPromotionLine, Product, Store } from '../types';
 import { MOCK_PRODUCTS, MOCK_STORES } from './mockData';
-import { Promotion, isLive } from './promotions';
+import { PromoCode, Promotion, isLive } from './promotions';
 
 /** A promotion working on the current order, and what it is worth to the buyer. */
 export interface AppliedPromotion {
@@ -188,6 +188,8 @@ export interface OrderCalculation {
   discountChoice: DiscountChoice;
   /** The promo code's value, if it won. */
   promoCodeDiscount: number;
+  /** The entered code, with what is still missing to its threshold (0 once it is reached). */
+  promoCode: (PromoCode & { missing: number }) | null;
   /** What the entered promo code would give, and what the promotions would give, for the explanation. */
   promoCodeValue: number;
   promotionsValue: number;
@@ -214,13 +216,13 @@ export const calculateOrder = ({
   cart,
   pickedStoreId,
   promotions,
-  promoCodeAmount,
+  promoCode = null,
   now,
 }: {
   cart: CartItem[];
   pickedStoreId: string | null;
   promotions: Promotion[];
-  promoCodeAmount: number;
+  promoCode?: PromoCode | null;
   now: Date;
 }): OrderCalculation => {
   const withPromotions = summarizeOrderStores(cart, pickedStoreId, promotions, now);
@@ -228,7 +230,9 @@ export const calculateOrder = ({
   const promotionsValue = roundMoney(
     withPromotions.reduce((sum, line) => sum + line.applied.reduce((total, entry) => total + entry.saving, 0), 0)
   );
-  const promoCodeValue = Math.min(promoCodeAmount, itemsSubtotal);
+  // Below its threshold a code is worth nothing yet, but stays entered and says what is missing.
+  const missing = promoCode ? Math.max(0, promoCode.minSubtotal - itemsSubtotal) : 0;
+  const promoCodeValue = promoCode && cart.length > 0 && missing === 0 ? Math.min(promoCode.amount, itemsSubtotal) : 0;
 
   const codeWins = promoCodeValue > promotionsValue;
   const stores = codeWins ? summarizeOrderStores(cart, pickedStoreId, [], now) : withPromotions;
@@ -249,6 +253,7 @@ export const calculateOrder = ({
     baseDeliveryFee,
     discountChoice: codeWins ? 'promoCode' : promotionsValue > 0 ? 'promotions' : 'none',
     promoCodeDiscount,
+    promoCode: promoCode && cart.length > 0 ? { ...promoCode, missing } : null,
     promoCodeValue,
     promotionsValue,
     promotionLines,

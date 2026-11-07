@@ -149,6 +149,7 @@ export interface Order {
   subtotal?: number;
   /** The promo code's discount, if it beat the shop promotions. */
   discount?: number;
+  promoCode?: string;
   /** Each shop's regular fee; free delivery is taken off as a promotion line. */
   feeLines?: { storeId: string; fee: number }[];
   promotionLines?: OrderPromotionLine[];
