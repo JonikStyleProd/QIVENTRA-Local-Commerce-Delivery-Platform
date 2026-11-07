@@ -420,9 +420,44 @@ describe('QIVENTRA Collage design', () => {
     }
   });
 
-  it('isolates numeric ranges so RTL text cannot reverse them', () => {
-    for (const slot of translations.he.collage.slots.slice(1)) {
-      expect(slot.label).toMatch(/\u2066\d+–\d+\u2069/);
-    }
+  it('builds delivery windows from the current time, without past hours', async () => {
+    const { buildSlotDays } = await import('../data/deliverySlots');
+    const hours = (iso: string) => new Date(iso).getHours();
+
+    const afternoon = buildSlotDays(new Date(2026, 10, 9, 14, 20));
+    expect(afternoon.map((d) => d.key)).toEqual(['today', 'tomorrow', 'dayAfter']);
+    // 14–15 has already begun, so today starts at 15–16.
+    expect(hours(afternoon[0].windows[0])).toBe(15);
+    expect(hours(afternoon[0].windows[afternoon[0].windows.length - 1])).toBe(21);
+    expect(hours(afternoon[1].windows[0])).toBe(8);
+    expect(new Date(afternoon[2].windows[0]).getDate()).toBe(11);
+
+    const earlyMorning = buildSlotDays(new Date(2026, 10, 9, 6, 5));
+    expect(hours(earlyMorning[0].windows[0])).toBe(8);
+  });
+
+  it('drops today once its last window has begun', async () => {
+    const { buildSlotDays } = await import('../data/deliverySlots');
+    const lateEvening = buildSlotDays(new Date(2026, 10, 9, 21, 10));
+    expect(lateEvening.map((d) => d.key)).toEqual(['tomorrow', 'dayAfter']);
+  });
+
+  it('crosses month ends when building delivery windows', async () => {
+    const { buildSlotDays } = await import('../data/deliverySlots');
+    const [, tomorrow] = buildSlotDays(new Date(2026, 10, 30, 9, 0));
+    expect(new Date(tomorrow.windows[0]).getMonth()).toBe(11);
+    expect(new Date(tomorrow.windows[0]).getDate()).toBe(1);
+  });
+
+  it('describes a window relative to today and isolates its hours', async () => {
+    const { formatWindow } = await import('../data/deliverySlots');
+    const strings = translations.he.collage.slots;
+    const now = new Date(2026, 10, 9, 14, 20);
+    const at = (day: number) => ({ kind: 'slot' as const, startsAt: new Date(2026, 10, day, 18).toISOString() });
+    expect(formatWindow({ kind: 'asap' }, strings, 'he', now)).toBe('בהקדם האפשרי');
+    expect(formatWindow(at(9), strings, 'he', now)).toBe('היום \u206618–19\u2069');
+    expect(formatWindow(at(10), strings, 'he', now)).toBe('מחר \u206618–19\u2069');
+    expect(formatWindow(at(11), strings, 'he', now)).toBe('מחרתיים \u206618–19\u2069');
+    expect(formatWindow(at(20), strings, 'he', now)).not.toContain('היום');
   });
 });

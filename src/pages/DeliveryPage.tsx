@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
+import { DeliveryWindow, buildSlotDays, formatWindow, formatWindowHours, partOfDay } from '../data/deliverySlots';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
 import { HandCheck } from '../components/collage/HandMarks';
@@ -30,7 +31,10 @@ export const DeliveryPage: React.FC = () => {
   const { language, t, formatCurrency, formatTimeRange, formatDistance } = useLanguage();
   const copy = t.collage.delivery;
 
-  const [slot, setSlot] = useState(0);
+  // 'asap', or the ISO start of an hourly window.
+  const [slot, setSlot] = useState('asap');
+  const [activeDay, setActiveDay] = useState(0);
+  const [now, setNow] = useState(() => new Date());
   const [note, setNote] = useState('');
   const [phase, setPhase] = useState<Phase>('form');
   const timer = useRef<number | undefined>(undefined);
@@ -41,6 +45,21 @@ export const DeliveryPage: React.FC = () => {
   useEffect(() => {
     if (phase === 'done') focusPageHeading();
   }, [phase]);
+
+  // Windows are cut from the current time: keep it fresh, and drop a chosen window once it has begun.
+  useEffect(() => {
+    const clock = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(clock);
+  }, []);
+
+  const slotDays = buildSlotDays(now);
+  const shownDay = slotDays[Math.min(activeDay, slotDays.length - 1)];
+
+  useEffect(() => {
+    if (phase === 'form' && slot !== 'asap' && !slotDays.some((day) => day.windows.includes(slot))) {
+      setSlot('asap');
+    }
+  }, [phase, slot, slotDays]);
 
   const isDone = phase === 'done';
   const isBusy = phase === 'busy';
@@ -56,8 +75,9 @@ export const DeliveryPage: React.FC = () => {
         Math.max(...orderStores.map((line) => line.store.deliveryTimeMax))
       )
     : '';
-  const slots = t.collage.slots.map((s, index) => ({ ...s, hint: index === 0 ? `≈ ${storeTime}` : s.hint }));
-  const currentSlot = slots[slot];
+  const chosenWindow: DeliveryWindow = slot === 'asap' ? { kind: 'asap' } : { kind: 'slot', startsAt: slot };
+  const hintFor = (startsAt: string) => t.collage.slots.parts[partOfDay(new Date(startsAt).getHours())];
+  const chosenHint = slot === 'asap' ? `≈ ${storeTime}` : hintFor(slot);
 
   const storeName = (id: string, fallback: string) => t.collage.storeCopy[id]?.name || fallback;
   const pickedName = headStore ? storeName(headStore.id, headStore.names?.[language] || headStore.name) : '';
@@ -115,35 +135,62 @@ export const DeliveryPage: React.FC = () => {
     );
   }
 
-  const windowLine = `${copy.windowWord}: ${currentSlot.label}`;
+  const windowLine = `${copy.windowWord}: ${formatWindow(chosenWindow, t.collage.slots, language, now)}`;
+
+  const renderSlotRow = (id: string, label: string, hint: string) => {
+    const isOn = slot === id;
+    return (
+      <label key={id} className="notebook-row flex items-center gap-2.5 desk:gap-3 min-h-11 desk:px-1.5 cursor-pointer">
+        <input
+          type="radio"
+          name="delivery-window"
+          checked={isOn}
+          disabled={isBusy}
+          onChange={() => setSlot(id)}
+          className="peer sr-only"
+        />
+        <span className="relative shrink-0 w-6 h-6 desk:w-[26px] desk:h-[26px] border-[2.5px] border-ink rounded-md peer-focus-visible:outline-3 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-link">
+          {isOn && <HandCheck />}
+        </span>
+        <span className="hand text-2xl desk:text-[30px] leading-none whitespace-nowrap">{label}</span>
+        <span className={`text-xs desk:text-[15px] font-extrabold desk:font-bold text-ink-4 ${id === 'asap' ? '' : 'hidden desk:inline'}`}>
+          {hint}
+        </span>
+      </label>
+    );
+  };
 
   const form = (
     <div>
       <p className="hand text-[26px] desk:text-[28px] leading-[44px] text-link">{copy.when}</p>
       <div role="radiogroup" aria-label={copy.windowLabel}>
-        {slots.map((s, index) => {
-          const isOn = slot === index;
-          return (
-            <label
-              key={s.label}
-              className="notebook-row flex items-center gap-3 desk:gap-3.5 min-h-11 desk:px-1.5 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="delivery-window"
-                checked={isOn}
-                disabled={isBusy}
-                onChange={() => setSlot(index)}
-                className="peer sr-only"
-              />
-              <span className="relative shrink-0 w-6 h-6 desk:w-[26px] desk:h-[26px] border-[2.5px] border-ink rounded-md peer-focus-visible:outline-3 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-link">
-                {isOn && <HandCheck />}
-              </span>
-              <span className="hand text-2xl desk:text-[30px] leading-none">{s.label}</span>
-              <span className="text-xs desk:text-[15px] font-extrabold desk:font-bold text-ink-4">{s.hint}</span>
-            </label>
-          );
-        })}
+        {renderSlotRow('asap', t.collage.slots.asap, `≈ ${storeTime}`)}
+
+        {slotDays.length > 0 && (
+          <>
+            <div role="group" aria-label={t.collage.slots.dayLabel} className="flex flex-wrap gap-1.5 py-1">
+              {slotDays.map((day, index) => (
+                <button
+                  key={day.key}
+                  type="button"
+                  onClick={() => setActiveDay(index)}
+                  disabled={isBusy}
+                  aria-pressed={shownDay.key === day.key}
+                  className={`hand min-h-11 px-3 border-2 border-ink rounded-xl text-[22px] desk:text-2xl leading-none cursor-pointer ${
+                    shownDay.key === day.key ? 'bg-accent' : 'bg-transparent'
+                  }`}
+                >
+                  {t.collage.slots.days[day.key]}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-x-2">
+              {shownDay.windows.map((startsAt) =>
+                renderSlotRow(startsAt, formatWindowHours(startsAt), hintFor(startsAt))
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       <label htmlFor={noteId} className="hand block text-2xl desk:text-[28px] leading-[44px] text-link">
@@ -255,7 +302,7 @@ export const DeliveryPage: React.FC = () => {
           {isDone ? (
             <div role="status" className="anim-in relative">
               <p className="text-[19px] font-bold leading-[44px]">
-                {windowLine} ({currentSlot.hint})
+                {windowLine} ({chosenHint})
               </p>
               <p className="text-[19px] font-bold leading-[44px]">
                 {currentAddress} · {totalLabel}

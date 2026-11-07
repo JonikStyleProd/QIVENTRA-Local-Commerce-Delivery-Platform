@@ -4,7 +4,6 @@
  * NOT here: they come from src/data/mockData.ts and the AppContext cart calculation.
  *
  * The Hebrew text was not written by a native speaker and needs proofreading.
- * U+2066/U+2069 isolate numeric ranges so that "18–19" is not reversed inside RTL text.
  */
 
 export type CollageGroupId = 'all' | 'food' | 'health' | 'gift' | 'tech' | 'pets';
@@ -125,8 +124,13 @@ export interface CollageStrings {
   groups: Record<CollageGroupId, string>;
   storeCopy: Record<string, CollageStoreCopy>;
   productLabels: Record<string, string>;
-  /** First slot is "as soon as possible": its hint is the selected shop's own delivery time. */
-  slots: { label: string; hint: string }[];
+  /** Delivery windows are built from the current time in src/data/deliverySlots.ts. */
+  slots: {
+    asap: string;
+    days: Record<'today' | 'tomorrow' | 'dayAfter', string>;
+    parts: Record<'morning' | 'midday' | 'evening', string>;
+    dayLabel: string;
+  };
 }
 
 export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
@@ -265,14 +269,12 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       'prod-11': 'букет',
       'prod-12': 'магний',
     },
-    slots: [
-      { label: 'как можно скорее', hint: '' },
-      { label: 'сегодня 18–19', hint: 'вечер' },
-      { label: 'сегодня 20–21', hint: 'вечер' },
-      { label: 'завтра 8–9', hint: 'утро' },
-      { label: 'завтра 12–13', hint: 'день' },
-      { label: 'пятница 9–10', hint: 'утро' },
-    ],
+    slots: {
+      asap: 'как можно скорее',
+      days: { today: 'сегодня', tomorrow: 'завтра', dayAfter: 'послезавтра' },
+      parts: { morning: 'утро', midday: 'день', evening: 'вечер' },
+      dayLabel: 'День доставки',
+    },
   },
   en: {
     meta: { title: 'QIVENTRA — put your block in one basket' },
@@ -409,14 +411,12 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       'prod-11': 'bouquet',
       'prod-12': 'magnesium',
     },
-    slots: [
-      { label: 'as soon as possible', hint: '' },
-      { label: 'today 18–19', hint: 'evening' },
-      { label: 'today 20–21', hint: 'evening' },
-      { label: 'tomorrow 8–9', hint: 'morning' },
-      { label: 'tomorrow 12–13', hint: 'midday' },
-      { label: 'Friday 9–10', hint: 'morning' },
-    ],
+    slots: {
+      asap: 'as soon as possible',
+      days: { today: 'today', tomorrow: 'tomorrow', dayAfter: 'day after tomorrow' },
+      parts: { morning: 'morning', midday: 'midday', evening: 'evening' },
+      dayLabel: 'Delivery day',
+    },
   },
   he: {
     meta: { title: 'QIVENTRA — כל השכונה בסל אחד' },
@@ -553,13 +553,11 @@ export const collageTranslations: Record<'ru' | 'en' | 'he', CollageStrings> = {
       'prod-11': 'זר',
       'prod-12': 'מגנזיום',
     },
-    slots: [
-      { label: 'בהקדם האפשרי', hint: '' },
-      { label: 'היום ⁦18–19⁩', hint: 'ערב' },
-      { label: 'היום ⁦20–21⁩', hint: 'ערב' },
-      { label: 'מחר ⁦8–9⁩', hint: 'בוקר' },
-      { label: 'מחר ⁦12–13⁩', hint: 'צהריים' },
-      { label: 'שישי ⁦9–10⁩', hint: 'בוקר' },
-    ],
+    slots: {
+      asap: 'בהקדם האפשרי',
+      days: { today: 'היום', tomorrow: 'מחר', dayAfter: 'מחרתיים' },
+      parts: { morning: 'בוקר', midday: 'צהריים', evening: 'ערב' },
+      dayLabel: 'יום המשלוח',
+    },
   },
 };
