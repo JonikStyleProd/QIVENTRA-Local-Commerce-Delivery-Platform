@@ -665,7 +665,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isBestSeller: true,
     badge: '-17%',
     tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/earbuds.webp'
   },
   {
     id: 'prod-8',
@@ -707,7 +707,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'להיט',
     },
     tagColor: 'mineral',
-    imageUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/charger.webp'
   },
   {
     id: 'prod-9',
@@ -750,7 +750,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: '100% טבעי',
     },
     tagColor: 'pistachio',
-    imageUrl: 'https://images.unsplash.com/photo-1602874801007-bd458bb1b8b8?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/candle-fig.webp'
   },
   {
     id: 'prod-10',
@@ -792,7 +792,7 @@ export const MOCK_PRODUCTS: Product[] = [
       he: 'עבודת יד',
     },
     tagColor: 'neutral',
-    imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/photos/mug-seafoam.webp'
   },
   {
     id: 'prod-11',

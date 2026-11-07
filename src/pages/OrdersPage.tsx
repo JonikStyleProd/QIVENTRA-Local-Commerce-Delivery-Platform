@@ -14,6 +14,7 @@ import { useToast } from '../context/ToastContext';
 import { MOCK_PAST_ORDERS } from '../data/mockData';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { Tape } from '../components/collage/Tape';
 
 export const OrdersPage: React.FC = () => {
   const {
@@ -154,6 +155,19 @@ export const OrdersPage: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* On the way: the courier photo from the design set */}
+        {(activeOrder.status === 'courier_assigned' || activeOrder.status === 'on_the_way') && (
+          <div aria-hidden="true" className="relative max-w-md mx-auto mb-8 p-2.5 pb-3 bg-white -rotate-1 shadow-polaroid">
+            <Tape tone="yellow" />
+            <img
+              src="/photos/courier-cargo-bike.webp"
+              alt=""
+              loading="lazy"
+              className="block w-full aspect-[16/9] object-cover"
+            />
+          </div>
+        )}
 
         {/* Courier & Route Information Box */}
         {activeOrder.courier && (

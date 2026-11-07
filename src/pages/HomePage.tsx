@@ -146,6 +146,24 @@ export const HomePage: React.FC = () => {
             <p className="mt-1 font-bold leading-normal">{phone.howD}</p>
           </div>
         </section>
+
+        <section className="px-4 pt-7">
+          <button
+            type="button"
+            onClick={() => navigateTo('catalog')}
+            className="card-tilt relative block w-full p-2 pb-2.5 bg-white text-start shadow-polaroid cursor-pointer"
+            style={{ '--tilt': '1.5deg' } as React.CSSProperties}
+          >
+            <Tape tone="red" />
+            <img
+              src="/photos/hero-grocery-bag.webp"
+              alt=""
+              loading="lazy"
+              className="block w-full aspect-[16/9] object-cover"
+            />
+            <span className="hand block mt-2 text-[26px] leading-none">{landing.wait}</span>
+          </button>
+        </section>
       </div>
 
       {/* ---------- Desktop: N9-Landing ---------- */}
@@ -247,8 +265,19 @@ export const HomePage: React.FC = () => {
             {landing.steps.map(([title, description], index) => (
               <li
                 key={title}
-                className={`anim-reveal p-7 border-[3px] border-ink rounded-[26px] shadow-hard-6 ${STEP_STYLES[index].background}`}
+                className={`anim-reveal relative p-7 border-[3px] border-ink rounded-[26px] shadow-hard-6 ${STEP_STYLES[index].background}`}
               >
+                {index === 0 && (
+                  <div aria-hidden="true" className="absolute -top-7 end-6 w-[132px] p-1.5 pb-2 bg-white rotate-3 shadow-polaroid">
+                    <Tape tone="blue" small />
+                    <img
+                      src="/photos/aerial-tel-aviv.webp"
+                      alt=""
+                      loading="lazy"
+                      className="block w-full aspect-[4/3] object-cover"
+                    />
+                  </div>
+                )}
                 <p className={`hand mb-1.5 text-[54px] leading-none ${STEP_STYLES[index].number}`}>{index + 1}</p>
                 <h3 className="mb-2.5 text-[28px] font-black">{title}</h3>
                 <p className="text-lg font-semibold leading-normal">{description}</p>
@@ -265,6 +294,15 @@ export const HomePage: React.FC = () => {
                 :)
               </span>
             </h2>
+            <div aria-hidden="true" className="hidden min-[1200px]:block relative w-[300px] p-2 pb-3 bg-white -rotate-2 shadow-polaroid">
+              <Tape tone="blue" />
+              <img
+                src="/photos/hero-grocery-bag.webp"
+                alt=""
+                loading="lazy"
+                className="block w-full aspect-[16/10] object-cover"
+              />
+            </div>
             <Button size="lg" onClick={() => navigateTo('catalog')} className="shadow-hard-4 text-xl min-h-[64px]">
               {landing.toShops}
             </Button>
